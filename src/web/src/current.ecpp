@@ -162,11 +162,10 @@ std::vector<uint32_t> asset_ids;
 
     for ( auto asset_id : foo ) {
         http_errors_t errors;
-        uint32_t id = 0;
 
-        if (!check_element_identifier ("dev", asset_id, id, errors)) {
-            http_die_error (errors);
-        }
+        if ( !is_ok_name (asset_id.c_str ()) )
+            http_die ("request-param-bad", "dev", asset_id.c_str (), "valid asset name");
+        auto id = persist::name_to_asset_id (asset_id);
         asset_ids.push_back(id);
     }
 }
