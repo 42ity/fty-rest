@@ -121,6 +121,9 @@ a_elmnt_stp_id_t
     else if (st == "sensor") {
         return asset_subtype::SENSOR;
     }
+    else if (st == "sensorgpio") {
+        return asset_subtype::SENSORGPIO;
+    }
     else if (st == "appliance") {
         return asset_subtype::APPLIANCE;
     }
@@ -175,6 +178,8 @@ std::string
             return "rackcontroller";
         case asset_subtype::SENSOR:
             return "sensor";
+        case asset_subtype::SENSORGPIO:
+            return "sensorgpio";
         case asset_subtype::APPLIANCE:
             return "appliance";
         case asset_subtype::CHASSIS:
