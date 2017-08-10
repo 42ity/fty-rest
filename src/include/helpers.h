@@ -236,6 +236,8 @@ void check_user_permissions (
 
 #endif // SRC_WEB_INCLUDE_HELPERS_H_
 
+// Helper function to work with server status
+char* get_current_db_initialized_file (void);
 // Helper function to work with license
 char* get_current_license_file (void);
 char* get_accepted_license_file (void);

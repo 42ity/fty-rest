@@ -1,0 +1,47 @@
+<#
+ #
+ # Copyright (C) 2017 Eaton
+ #
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License along
+ # with this program; if not, write to the Free Software Foundation, Inc.,
+ # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ #
+ #><#
+/*!
+ * \file server_status.ecpp
+ * \author Jiri Kukacka <JiriKukacka@Eaton.com>
+ * \brief Provide information about system status (database ready check)
+ */
+ #><%pre>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include "helpers.h"
+#include "log.h"
+</%pre>
+<%request scope="global">
+bool database_ready;
+</%request>
+<%cpp>
+{
+    /* Check whether database has started and initialized yet */
+    struct stat db_stat;
+    char *database_ready_file = get_current_db_initialized_file();
+    log_debug("database_ready_file='%s'", database_ready_file);
+    database_ready = stat(database_ready_file, &db_stat);
+    free (database_ready_file); database_ready_file = NULL;
+
+    /* Go on to next module in tntnet.xml */
+    return DECLINED;
+}
+</%cpp>

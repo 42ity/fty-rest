@@ -419,6 +419,19 @@ check_user_permissions (
 }
 
 char*
+get_current_db_initialized_file (void)
+{
+    char *current_db_initalized_file = NULL;
+    char *env = getenv (EV_DB_INITIALIZED_DIR);
+
+    int rv = asprintf (&current_db_initalized_file, "%s/fty-db-ready", env ? env : "/var/run/");
+    if ( rv == -1 ) {
+        return NULL;
+    }
+    return current_db_initalized_file;
+}
+
+char*
 get_current_license_file (void)
 {
     char *current_license = NULL;

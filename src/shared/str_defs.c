@@ -76,3 +76,4 @@ const char* STRFTIME_DATETIME_FORMAT = "%FT%TZ";
 const char* EV_BIOS_LOG_LEVEL = "BIOS_LOG_LEVEL";
 const char* EV_LICENSE_DIR = "LICENSE_DIR";
 const char* EV_DATA_DIR = "DATADIR";
+const char* EV_DB_INITIALIZED_DIR = "DATABASE_READY_DIR";

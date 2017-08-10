@@ -46,6 +46,8 @@ UserInfo user;
 </%request>
 <%cpp>
 {
+    // verify server is ready check is skipped, as this request starts database
+
     // check user permissions
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "C"}

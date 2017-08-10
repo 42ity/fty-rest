@@ -6,6 +6,11 @@
   -->
 <tntnet>
   <mappings>
+    <!-- Global variables setup regarding server status -->
+    <mapping>
+      <target>server_status@tntnet</target>
+    </mapping>
+
     <!-- Everything SSL only -->
     <mapping>
       <target>ssl-redirect@bios_web</target>
