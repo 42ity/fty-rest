@@ -154,7 +154,7 @@ UserInfo user;
 
     {
         int64_t dbid =  persist::name_to_asset_id (checked_asset);
-        if (dbid == -1) {
+        if (!checked_asset.empty() && dbid == -1) {
                 http_die ("element-not-found", checked_asset.c_str ());
         }
         if (dbid == -2) {
