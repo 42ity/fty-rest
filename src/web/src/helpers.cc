@@ -424,8 +424,11 @@ get_current_db_initialized_file (void)
     char *current_db_initalized_file = NULL;
     char *env = getenv (EV_DB_INITIALIZED_DIR);
 
-    int rv = asprintf (&current_db_initalized_file, "%s/fty-db-ready", env ? env : "/var/run/");
+    int rv = asprintf (&current_db_initalized_file, "%s/fty-db-ready", env ? env : "/var/run");
     if ( rv == -1 ) {
+        if (current_db_initalized_file) { // should asprintf failed due to other reasons than OOM
+            free(current_db_initalized_file);
+        }
         return NULL;
     }
     return current_db_initalized_file;
