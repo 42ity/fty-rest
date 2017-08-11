@@ -76,10 +76,12 @@ UserInfo user;
         }
 
         for (auto const& item : DCNames) {
-            ExtName = persist::name_to_extname (item);
+            int rv = persist::name_to_extname (item, ExtName);
 
-            if (ExtName.empty ())
+            if (rv == -1)
                 http_die ("not-found", item.c_str ());
+            if (rv == -2)
+                http_die ("internal-error", "Database failure");
 
             DCExtNames.push_back (ExtName);
 

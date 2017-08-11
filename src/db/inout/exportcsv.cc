@@ -279,7 +279,7 @@ void
                 //nothing here, exists only for consistency reasons
             }
             else {
-                source   = persist::name_to_extname (std::get<0>(power_links[i]));
+                int rv = persist::name_to_extname (std::get<0>(power_links[i]), source);
                 plug_src = std::get<1>(power_links[i]);
                 input    = std::get<2>(power_links[i]);
             }
@@ -292,7 +292,9 @@ void
         {
             auto it = ext_attrs.find ("logical_asset");
             if (it != ext_attrs.end ()) {
-                ext_attrs ["logical_asset"] = make_pair (persist::name_to_extname (it->second.first), it->second.second);
+                std::string extname;
+                int rv = persist::name_to_extname (it->second.first, extname);
+                ext_attrs ["logical_asset"] = make_pair (extname, it->second.second);
             }
         }
         // 2.5.3        read-write (!read_only) extended attributes
@@ -309,8 +311,11 @@ void
         for (uint32_t i = 0; i != max_groups; i++) {
             if (i >= groups.size())
                 lcs.add("");
-            else
-                lcs.add(persist::name_to_extname (groups[i]));
+            else {
+                std::string extname;
+                int rv = persist::name_to_extname (groups[i], extname);
+                lcs.add(extname);
+            }
         }
 
         lcs.add(id);

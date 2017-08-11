@@ -140,9 +140,12 @@ if (!send_msg) {
     log_critical ("zmsg_new() failed.");
     http_die ("internal-error", "zmsg_new() failed.");
 }
-std::string asset_id = persist::extname_to_asset_name (checked_element_name);
-if (asset_id.empty ())
+std::string asset_id;
+rv = persist::extname_to_asset_name (checked_element_name, asset_id);
+if (rv == -1)
     http_die ("not-found", "Cannot get asset_id for ", checked_element_name.c_str ());
+if (rv == -2)
+    http_die ("internal-error", "Database failure");
 zmsg_addstr (send_msg, checked_rule_name.c_str ());
 zmsg_addstr (send_msg, asset_id.c_str ());
 zmsg_addstr (send_msg, checked_state.c_str ());

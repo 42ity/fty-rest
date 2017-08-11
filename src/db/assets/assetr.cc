@@ -37,7 +37,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace persist{
 
-
 std::pair <std::string, std::string>
 id_to_name_ext_name (uint32_t asset_id)
 {
@@ -47,15 +46,15 @@ id_to_name_ext_name (uint32_t asset_id)
     {
         tntdb::Connection conn = tntdb::connectCached(url);
         tntdb::Statement st = conn.prepareCached(
-        " SELECT asset.name, ext.value "
-        " FROM "
-        "   t_bios_asset_element AS asset "
-        " LEFT JOIN "
-        "   t_bios_asset_ext_attributes AS ext "
-        " ON "
-        "   ext.id_asset_element = asset.id_asset_element "
-        " WHERE "
-        "   ext.keytag = \"name\" AND asset.id_asset_element = :asset_id ");
+                " SELECT asset.name, ext.value "
+                " FROM "
+                "   t_bios_asset_element AS asset "
+                " LEFT JOIN "
+                "   t_bios_asset_ext_attributes AS ext "
+                " ON "
+                "   ext.id_asset_element = asset.id_asset_element "
+                " WHERE "
+                "   ext.keytag = \"name\" AND asset.id_asset_element = :asset_id ");
 
         tntdb::Row row = st.set("asset_id", asset_id).selectRow();
         log_debug("[t_bios_asset_element]: were selected %" PRIu32 " rows", 1);
@@ -82,11 +81,11 @@ name_to_asset_id (std::string asset_name)
 
         tntdb::Connection conn = tntdb::connectCached(url);
         tntdb::Statement st = conn.prepareCached(
-        " SELECT id_asset_element"
-        " FROM"
-        "   t_bios_asset_element"
-        " WHERE name = :asset_name"
-        );
+                " SELECT id_asset_element"
+                " FROM"
+                "   t_bios_asset_element"
+                " WHERE name = :asset_name"
+                );
 
         tntdb::Row row = st.set("asset_name", asset_name).selectRow();
         log_debug("[t_bios_asset_element]: were selected %" PRIu32 " rows", 1);
@@ -114,11 +113,11 @@ extname_to_asset_id (std::string asset_ext_name)
 
         tntdb::Connection conn = tntdb::connectCached(url);
         tntdb::Statement st = conn.prepareCached(
-            " SELECT a.id_asset_element FROM t_bios_asset_element AS a "
-            " INNER JOIN t_bios_asset_ext_attributes AS e "
-            " ON a.id_asset_element = e.id_asset_element "
-            " WHERE keytag = 'name' and value = :extname "
-        );
+                " SELECT a.id_asset_element FROM t_bios_asset_element AS a "
+                " INNER JOIN t_bios_asset_ext_attributes AS e "
+                " ON a.id_asset_element = e.id_asset_element "
+                " WHERE keytag = 'name' and value = :extname "
+                );
 
         tntdb::Row row = st.set("extname", asset_ext_name).selectRow();
         log_debug("[t_bios_asset_element]: were selected %" PRIu32 " rows", 1);
@@ -126,66 +125,74 @@ extname_to_asset_id (std::string asset_ext_name)
         row [0].get(id);
         return id;
     }
+    catch (const tntdb::NotFound &e) {
+        log_error ("element %s not found", asset_ext_name.c_str ());
+        return -1;
+    }
     catch (const std::exception &e)
     {
         log_error ("exception caught %s for element '%s'", e.what (), asset_ext_name.c_str ());
-        return -1;
+        return -2;
     }
 }
 
-std::string
-extname_to_asset_name (std::string asset_ext_name)
+int
+extname_to_asset_name (std::string asset_ext_name, std::string &asset_name)
 {
     try
     {
-        std::string name;
-
         tntdb::Connection conn = tntdb::connectCached(url);
         tntdb::Statement st = conn.prepareCached(
-            " SELECT a.name FROM t_bios_asset_element AS a "
-            " INNER JOIN t_bios_asset_ext_attributes AS e "
-            " ON a.id_asset_element = e.id_asset_element "
-            " WHERE keytag = 'name' and value = :extname "
-        );
+                " SELECT a.name FROM t_bios_asset_element AS a "
+                " INNER JOIN t_bios_asset_ext_attributes AS e "
+                " ON a.id_asset_element = e.id_asset_element "
+                " WHERE keytag = 'name' and value = :extname "
+                );
 
         tntdb::Row row = st.set("extname", asset_ext_name).selectRow();
         log_debug("[t_bios_asset_element]: were selected %" PRIu32 " rows", 1);
 
-        row [0].get(name);
-        return name;
+        row [0].get(asset_name);
+        return 0;
+    }
+    catch (const tntdb::NotFound &e) {
+        log_error ("element %s not found", asset_ext_name.c_str ());
+        return -1;
     }
     catch (const std::exception &e)
     {
         log_error ("exception caught %s for element '%s'", e.what (), asset_ext_name.c_str ());
-        return "";
+        return -2;
     }
 }
 
-std::string
-name_to_extname (std::string asset_name)
+int
+name_to_extname (std::string asset_name, std::string &ext_name)
 {
     try
     {
-        std::string ext_name;
-
         tntdb::Connection conn = tntdb::connectCached(url);
         tntdb::Statement st = conn.prepareCached(
-            " SELECT e.value FROM t_bios_asset_ext_attributes AS e  "
-            " INNER JOIN t_bios_asset_element AS a "
-            " ON a.id_asset_element = e.id_asset_element "
-            " WHERE keytag = 'name' AND a.name = :asset_name"
-        );
+                " SELECT e.value FROM t_bios_asset_ext_attributes AS e  "
+                " INNER JOIN t_bios_asset_element AS a "
+                " ON a.id_asset_element = e.id_asset_element "
+                " WHERE keytag = 'name' AND a.name = :asset_name"
+                );
 
         tntdb::Row row = st.set("asset_name", asset_name).selectRow();
         log_debug("[t_bios_asset_element]: were selected %" PRIu32 " rows", 1);
 
         row [0].get(ext_name);
-        return ext_name;
+        return 0;
+    }
+    catch (const tntdb::NotFound &e) {
+        log_error ("element %s not found", asset_name.c_str ());
+        return -1;
     }
     catch (const std::exception &e)
     {
         log_error ("exception caught %s for element '%s'", e.what (), asset_name.c_str ());
-        return "";
+        return -2;
     }
 }
 

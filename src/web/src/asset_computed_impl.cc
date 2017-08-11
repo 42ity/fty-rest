@@ -43,7 +43,9 @@ s_get_devices_usize(
         }
     };
 
-    persist::select_asset_ext_attribute_by_keytag( conn, "u_size", elements, sumarize );
+    int rv = persist::select_asset_ext_attribute_by_keytag( conn, "u_size", elements, sumarize );
+    if (rv != 0)
+        return rv;
     return size;
 }
 
@@ -80,7 +82,11 @@ int free_u_size( a_elmnt_id_t elementId)
             return -1;
         }
         // substract sum( device size ) if there are some
-        freeusize -= element_ids.empty() ? 0 : s_get_devices_usize( conn, element_ids);
+        int freeusize2 = s_get_devices_usize( conn, element_ids);
+        if (!freeusize2) {
+            return -1;
+        }
+        freeusize -= element_ids.empty() ? 0 : freeusize2;
         log_debug( "freeusize %d", freeusize);
         return freeusize;
     }

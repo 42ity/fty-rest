@@ -49,6 +49,7 @@
 #include "dbpath.h"
 #include "assets.h"
 #include "tntmlm.h"
+#include "defs.h"
 
 // Check if value of parameter 'relative' is supported:
 //  * No - return false, value of unixtime is not changed
@@ -194,9 +195,13 @@ UserInfo user;
         tntdb::Connection conn = tntdb::connectCached(url);
 
         auto basic_ret = persist::select_asset_element_web_byId(conn, checked_element_id);
-        if ( basic_ret.status == 0 ) {
+        if ( basic_ret.status == 0 && basic_ret.errsubtype == DB_ERROR_NOTFOUND) {
             http_die ("element-not-found");
         }
+        if ( basic_ret.status == 0 && basic_ret.errsubtype == DB_ERROR_INTERNAL) {
+            http_die ("internal-error", "Database failure");
+        }
+
         element_name = basic_ret.item.name;
     }
     catch (const  std::exception &e ) {

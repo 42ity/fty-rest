@@ -167,8 +167,9 @@ std::map <std::string, std::string>sanitize_row_ext_names (
                     auto it = result.find (title);
                     if (it == result.end ()) break;
 
-                    std::string name = extname_to_asset_name (it->second);
-                    if (name.empty ()) { name = it->second; }
+                    std::string name;
+                    int rv = extname_to_asset_name (it->second, name);
+                    if (rv != 0) { name = it->second; }
                     log_debug ("sanitized %s '%s' -> '%s'", title.c_str(), it->second.c_str(), name.c_str ());
                     result [title] = name;
                 }
@@ -176,8 +177,9 @@ std::map <std::string, std::string>sanitize_row_ext_names (
                 // simple name
                 auto it = result.find (item);
                 if (it != result.end ()) {
-                    std::string name = extname_to_asset_name (it->second);
-                    if (name.empty ()) { name = it->second; }
+                    std::string name;
+                    int rv = extname_to_asset_name (it->second, name);
+                    if (rv != 0) { name = it->second; }
                     log_debug ("sanitized %s '%s' -> '%s'", it->first.c_str (), it->second.c_str(), name.c_str ());
                     result [item] = name;
                 }
@@ -249,10 +251,14 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
     }
 
     auto ename = cm.get(row_i, "name");
-    auto iname = extname_to_asset_name (ename);
+    std::string iname;
+    int rv = extname_to_asset_name (ename, iname);
     log_debug ("name = '%s/%s'", ename.c_str(), iname.c_str());
-    if (ename.empty ()) {
+    if (rv == -1) {
         bios_throw("request-param-bad", "name", "<empty>", "<unique, non empty value>");
+    }
+    if (rv == -2) {
+        bios_throw("internal-error", "Database failure");
     }
     unused_columns.erase("name");
 
@@ -649,7 +655,9 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
             m.id = ret.rowid;
         }
     }
-    m.name = extname_to_asset_name (ename);
+    rv = extname_to_asset_name (ename, m.name);
+    if (rv != 0)
+         bios_throw("internal-error", "Database failure");
     m.status = status;
     m.parent_id = parent_id;
     m.priority = priority;
