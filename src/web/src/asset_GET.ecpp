@@ -240,8 +240,6 @@ bool database_ready;
     }
     // end connect to malamute
     std::pair<std::string,std::string> parent_names = persist::id_to_name_ext_name (tmp.item.basic.parent_id);
-    if (parent_names.first.empty () && parent_names.second.empty ())
-        http_die ("internal-error", "Database failure");
     std::string parent_name = parent_names.first;
     std::string ext_parent_name = parent_names.second;
 
