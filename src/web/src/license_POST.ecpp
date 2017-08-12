@@ -43,6 +43,7 @@
 </%pre>
 <%request scope="global">
 UserInfo user;
+bool database_ready;
 </%request>
 <%cpp>
 {
@@ -120,5 +121,6 @@ UserInfo user;
 </%cpp>
 { "success" : "License version <$ clv $> accepted." }
 <%cpp>
+    database_ready = true;
 }
 </%cpp>

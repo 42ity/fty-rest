@@ -47,7 +47,7 @@ bool database_ready;
     log_debug("database_ready_file='%s'", database_ready_file);
     /* Stat returns 0 on success, so database_ready is inverted value of it. */
     database_ready = !stat(database_ready_file, &db_stat);
-	if (!database_ready) {
+    if (!database_ready) {
         log_debug("Database is not ready, stat errno[%d]: %s\n", errno, strerror(errno));
     }
     free (database_ready_file); database_ready_file = NULL;
