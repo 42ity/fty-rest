@@ -38,6 +38,9 @@
     bool database_ready;
 </%request>
 <%cpp>
+    // Do not verify database because it is expected that in early
+    // wizard we try and fail to read/write user preferences
+
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Dashboard, "RU"},
             {BiosProfile::Admin,     "RU"}
@@ -93,12 +96,6 @@
     return HTTP_OK;
     } // if get
 
-    // verify server is ready
-    if (!database_ready) {
-        log_debug ("Database is not ready yet.");
-        http_die ("internal-error", "Database is not ready yet, please try again after a while.");
-    }
-
     if (method == "PUT" ) {
         std::string profile = request.getBody();
         log_debug ("user profile: '''%s'''", profile.c_str());
@@ -118,6 +115,9 @@
 
                 if ( rv != 0 ) {
                     log_debug ("my_profile: Cannot save changes (default)");
+                    if (database_ready) {
+                        log_debug ("my_profile: database is ready though...");
+                    }
                 }
             } else {
                 std::stringstream s;
@@ -128,11 +128,17 @@
                 int rv = persist::save_agent_info (uid, preferences);
                 if ( rv != 0 ) {
                     log_debug ("my_profile: Cannot save changes");
+                    if (database_ready) {
+                        log_debug ("my_profile: database is ready though...");
+                    }
                 }
             }
         } catch (const std::exception& e) {
             LOG_END_ABNORMAL(e);
             log_debug ("my_profile: Exception caught %s", e.what());
+            if (database_ready) {
+                log_debug ("my_profile: database is ready though...");
+            }
         }
 </%cpp>
 {
