@@ -591,8 +591,7 @@ bool database_ready;
 <%cpp>
     // verify server is ready
     if (!database_ready) {
-        log_debug ("Database is not ready yet.");
-        http_die ("internal-error", "Database is not ready yet, please try again after a while.");
+        log_debug ("sysinfo: Database is not ready yet.");
     }
 
     // permission check
