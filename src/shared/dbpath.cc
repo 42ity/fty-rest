@@ -28,17 +28,22 @@
 #include <stdlib.h>
 #include "filesystem.h"
 
-std::string url = std::string("mysql:db=box_utf8;user=") +
-              ((getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER")) +
-              ((getenv("DB_PASSWD") == NULL) ? ""     :
-                  std::string(";password=") + getenv("DB_PASSWD"));
-
-void dbpath () {
-    log_info("Updating db url with DB_USER=%s ..",(getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER"));
-    url = std::string("mysql:db=box_utf8;user=") +
+static std::string
+s_get_dbpath() {
+    std::string s_url =
+            std::string("mysql:db=box_utf8;user=") +
                   ((getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER")) +
                   ((getenv("DB_PASSWD") == NULL) ? ""     :
                       std::string(";password=") + getenv("DB_PASSWD"));
+    log_debug("s_get_dbpath() : generated DB_URL=%s", s_url.c_str());
+    return s_url;
+}
+
+std::string url = s_get_dbpath();
+
+void dbpath () {
+    log_info("Updating db url with DB_USER=%s ..",(getenv("DB_USER")   == NULL) ? "root" : getenv("DB_USER"));
+    url = s_get_dbpath();
 }
 
 // drop double quotes from a string
