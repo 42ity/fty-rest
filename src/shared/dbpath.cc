@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015-2017 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ s_dropdq (char* buffer) {
 bool dbreadcredentials(){
     if(!shared::is_file (PASSWD_FILE))return false;
     // and setup db username/password
-    log_debug("Reading %s ..",PASSWD_FILE);
+    log_debug("dbreadcredentials : Reading %s ..",PASSWD_FILE);
     std::ifstream dbpasswd {PASSWD_FILE};
     static char db_user[256];
     memset (db_user, '\0', 256);
@@ -76,6 +76,7 @@ bool dbreadcredentials(){
     s_dropdq (db_passwd);
     dbpasswd.close ();
     if(db_user==NULL || db_passwd==NULL)return false;
+    log_debug("dbreadcredentials : setting envvars...");
     putenv (db_user);
     putenv (db_passwd);
     dbpath();
