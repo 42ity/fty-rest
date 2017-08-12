@@ -78,6 +78,7 @@ s_passwd(
     std::string inp = user + "\n" + old_passwd + "\n" + new_passwd + "\n";
     std::string err;
     int ret = output(args, out, err, inp);
+    log_debug ("Executed %s with result %d", "/usr/bin/sudo @libexecdir@/@PACKAGE@/bios-passwd", ret);
     reason = s_reason(err);
     // expect script prints to stdout
     if (reason.empty())
