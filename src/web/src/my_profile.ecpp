@@ -38,12 +38,6 @@
     bool database_ready;
 </%request>
 <%cpp>
-    // verify server is ready
-    if (!database_ready) {
-        log_debug ("Database is not ready yet.");
-        http_die ("internal-error", "Database is not ready yet, please try again after a while.");
-    }
-
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Dashboard, "RU"},
             {BiosProfile::Admin,     "RU"}
@@ -76,12 +70,16 @@
         }
         catch (const std::exception &e)
         {
-            log_debug ("my_profile: exception caugth %s", e.what ());
+            log_debug ("my_profile: exception caught %s", e.what ());
         }
 
         if (preferences.empty()) {
-            // before licence POST = first login
+            // before licence POST = first login... or a DB error...
             preferences = DEFAULT_PREFERENCES;
+
+            if (database_ready) {
+                log_debug ("my_profile: database is ready but got empty preferences - using default set.");
+            }
         }
 </%cpp>
 {
@@ -94,6 +92,12 @@
 <%cpp>
     return HTTP_OK;
     } // if get
+
+    // verify server is ready
+    if (!database_ready) {
+        log_debug ("Database is not ready yet.");
+        http_die ("internal-error", "Database is not ready yet, please try again after a while.");
+    }
 
     if (method == "PUT" ) {
         std::string profile = request.getBody();
