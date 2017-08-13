@@ -36,6 +36,7 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <stdexcept>
+#include <string.h>
 
 // TODO: move to some common header
 // https://gcc.gnu.org/onlinedocs/cpp/Stringification.html
