@@ -45,6 +45,11 @@ UserInfo user;
 bool database_ready;
 </%request>
 <%cpp>
+    // verify server is ready
+    if (!database_ready) {
+        log_debug ("Local database is not ready yet, but we request uptime data via MQ.");
+    }
+
     // check user permissions
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Dashboard, "R"},
