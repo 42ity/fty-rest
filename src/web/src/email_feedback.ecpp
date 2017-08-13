@@ -30,7 +30,6 @@
 #include "defs.h"
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/syscall.h>
 #include <fstream>
 #include <libgen.h> //POSIX version of basename!!
 

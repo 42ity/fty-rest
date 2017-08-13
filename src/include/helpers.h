@@ -243,3 +243,4 @@ char* get_current_license_file (void);
 char* get_accepted_license_file (void);
 char* get_current_license_version (const char* license_file);
 const char* basename2 (const char *inp);
+unsigned long get_current_thread_id(void);

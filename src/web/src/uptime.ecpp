@@ -26,7 +26,6 @@
 #include <malamute.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/syscall.h>
 #include <cxxtools/split.h>
 #include <tntdb/error.h>
 #include "data.h"
@@ -102,7 +101,7 @@ bool database_ready;
         if (!client)
             throw std::runtime_error ("Can't allocate malamute client");
 
-        std::string name = "web.uptime." + std::to_string (::getpid ()) + "." + std::to_string (::syscall (SYS_gettid));
+        std::string name = "web.uptime." + std::to_string (::getpid ()) + "." + std::to_string (::get_current_thread_id());
         mlm_client_connect (client, "ipc://@/malamute", 1000, name.c_str());
 
         json << "{\n\t\"outage\": [\n";

@@ -34,7 +34,6 @@
 #include <fty_proto.h>
 
 #include <sys/types.h>
-#include <sys/syscall.h>
 
 #include "assetcrud.h"
 #include "data.h"

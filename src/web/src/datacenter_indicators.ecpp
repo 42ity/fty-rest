@@ -26,7 +26,6 @@
  * \brief  returns Current values of some metrics for datacenters
  */
  #><%pre>
-#include <sys/syscall.h>
 #include <stdexcept>
 #include <cxxtools/split.h>
 #include <malamute.h>
@@ -304,7 +303,7 @@ bool database_ready;
     std::string agent_name("web.dc_indicators.");
     agent_name.append (std::to_string ( static_cast<int> (getpid ()) ))
               .append (".")
-              .append (std::to_string ( syscall(SYS_gettid) ));
+              .append (std::to_string ( get_current_thread_id() ));
 
     int rv = mlm_client_connect (client, MLM_ENDPOINT, 1000, agent_name.c_str());
     if ( rv != 0 ) {

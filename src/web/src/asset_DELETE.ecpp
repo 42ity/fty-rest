@@ -23,7 +23,6 @@
  * \brief Implementation of DELETE operation on any asset
  */
  #><%pre>
-#include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -98,7 +97,7 @@ bool database_ready;
     std::string agent_name("web.asset_delete.");
     agent_name.append (std::to_string ( static_cast<int> (getpid ()) ))
         .append (".")
-        .append (std::to_string ( syscall(SYS_gettid) ));
+        .append (std::to_string ( get_current_thread_id() ));
     try {
         send_configure (row, persist::asset_operation::DELETE, agent_name);
 </%cpp>

@@ -28,7 +28,6 @@
 #include "defs.h"
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/syscall.h>
 
 // encode GET message for smtp agent
 static zmsg_t*

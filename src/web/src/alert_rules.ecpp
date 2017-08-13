@@ -31,7 +31,6 @@
 #include <malamute.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <sys/syscall.h>
 
 #include "log.h"
 #include "utils_web.h"
@@ -85,7 +84,7 @@ if (!client) {
 }
 
 std::string client_name ("web.alert_rules.");
-client_name.append (std::to_string (getpid ())).append (".").append (std::to_string (syscall (SYS_gettid)));
+client_name.append (std::to_string (getpid ())).append (".").append (std::to_string (get_current_thread_id()));
 log_debug ("malamute client name = '%s'.", client_name.c_str ());
 
 int rv = mlm_client_connect (client, MLM_ENDPOINT, 1000, client_name.c_str ());
