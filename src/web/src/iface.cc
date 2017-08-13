@@ -29,6 +29,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#ifdef HAVE_SYS_SOCKIO_H
+#include <sys/sockio.h>
+#endif
 #include <netinet/in.h>
 #ifdef HAVE_LINUX_ETHTOOL_H
 #include <linux/ethtool.h>
@@ -106,7 +109,14 @@ iface get_iface(std::string iface) {
         ret.cable = "N/A";
 #endif
          if((it->ifa_flags & IFF_UP) == 0) {
+#ifdef HAVE_LINUX_ETHTOOL_H
+// TODO: Not very correct comparison, but we want to differentiate systems
+// where ifr_data is a pointer vs. a number or char[] type. If this ever
+// bites someone, a configure.ac check for access semantics would be right.
             ifr.ifr_data = NULL;
+#else
+            ifr.ifr_data[0] = 0;
+#endif
             ifr.ifr_flags = it->ifa_flags;
             ioctl(fd, SIOCSIFFLAGS, &ifr);
          }

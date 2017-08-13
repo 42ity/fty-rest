@@ -566,7 +566,7 @@ dnl FIXME: Replace `main' with a function in `-lzmq':
 dnl AC_CHECK_LIB([zmq], [main])
 
 
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netinet/in.h stdint.h stdlib.h sys/socket.h sys/time.h unistd.h linux/ethtool.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netinet/in.h stdint.h stdlib.h sys/socket.h sys/sockio.h sys/time.h unistd.h linux/ethtool.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
