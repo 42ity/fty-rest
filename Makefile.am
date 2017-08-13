@@ -93,12 +93,12 @@ $(RUN_TNTNET_ENVFILE): $(abs_top_builddir)/Makefile
 	     echo 'export DATADIR="$$DATADIR_BASE/fty"'; \
 	} > $@
 
-RUN_TNTNET = cat "$(RUN_TNTNET_ENVFILE)" || exit; \
+RUN_TNTNET = ( cat "$(RUN_TNTNET_ENVFILE)" || exit; \
 	     . "$(RUN_TNTNET_ENVFILE)" || exit; \
 	     [ "x${KEEP_LICENSE}" = "xyes" ] || rm -rf "$$DATADIR_BASE"; id; \
 	     mkdir -p "$$DATADIR" && ls -la "$$DATADIR" && \
 	     [ -d "$$DATADIR" ] && [ -w "$$DATADIR" ] && \
-	     ${TNTNET} $(abs_top_builddir)/tntnet.xml
+	     ${TNTNET} $(abs_top_builddir)/tntnet.xml )
 
 # ----------------------------------------------------------------------
 # List of header files. The purpose of this list is not dependency
