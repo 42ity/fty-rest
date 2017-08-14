@@ -44,7 +44,7 @@ static std::vector<std::string> ASSET_ELEMENT_KEYTAGS{
 // get all keytags available in the system and update the s argument
 // + remove the duplicate names from v_web_asset_element/t_bios_asset_element table
 //   so you can't export ext/name even if it's in the database
-static void
+static int
 s_update_keytags(
         tntdb::Connection& conn,
         const std::vector<std::string>& aek,
@@ -61,9 +61,10 @@ s_update_keytags(
                 s.push_back(keytag);
         };
 
-    select_ext_rw_attributes_keytags(
+    int rv = select_ext_rw_attributes_keytags(
             conn,
             foo);
+    return rv;	
 }
 
 // using callbacks in cycle with maximum possible items might be difficult, so simply generate vector
@@ -133,13 +134,13 @@ void
         )
 {
     // 0.) tntdb connection
+    std::string msg{"no connection to database"};
     tntdb::Connection conn;
     try{
         conn = tntdb::connectCached(url);
     }
     catch(...)
     {
-        std::string msg{"no connection to database"};
         log_error("%s", msg.c_str());
         LOG_END;
         throw std::runtime_error(msg.c_str());
@@ -168,7 +169,9 @@ void
         max_groups = 1;
 
     // put all remaining keys from the database
-    s_update_keytags(conn, ASSET_ELEMENT_KEYTAGS, KEYTAGS);
+    int rv = s_update_keytags(conn, ASSET_ELEMENT_KEYTAGS, KEYTAGS);
+    if (rv != 0)
+        throw std::runtime_error(msg.c_str());
 
     // 1 print the first row with names
     // 1.1      names from asset element table itself
@@ -203,38 +206,47 @@ void
     // 2. FOR EACH ROW from v_web_asset_element / t_bios_asset_element do ...
     std::function<void(const tntdb::Row&)>
         process_v_web_asset_element_row \
-        = [&conn, &lcs, &KEYTAGS, max_power_links, max_groups](const tntdb::Row& r)
+        = [&conn, &lcs, &KEYTAGS, max_power_links, max_groups, &msg](const tntdb::Row& r)
     {
         a_elmnt_id_t id_num = 0;
         std::string id;
         r["id"].get(id_num);
-        id = persist::id_to_name_ext_name (id_num).first;
+        std::pair<std::string,std::string> asset_names = persist::id_to_name_ext_name (id_num);
+        if (asset_names.first.empty () && asset_names.second.empty ())
+            throw std::runtime_error(msg.c_str());
+	id = asset_names.first;
 
         a_elmnt_id_t id_parent_num = 0;
         std::string id_parent;
         std::string location;
         r["id_parent"].get(id_parent_num);
-        location = persist::id_to_name_ext_name (id_parent_num).second;
+        std::pair<std::string,std::string> location_names = persist::id_to_name_ext_name (id_parent_num);
+	if (location_names.first.empty () && location_names.second.empty ())
+            throw std::runtime_error(msg.c_str());
+	location = location_names.second;
 
         // 2.1      select all extended attributes
         std::map <std::string, std::pair<std::string, bool> > ext_attrs;
-        select_ext_attributes(conn, id_num, ext_attrs);
+        int rv = select_ext_attributes(conn, id_num, ext_attrs);
+        if (rv != 0)
+            throw std::runtime_error(msg.c_str());
 
         // 2.3 links
         power_links_t power_links;
-        s_power_links(conn, id_num, power_links);
-
+        rv = s_power_links(conn, id_num, power_links);
+        if (rv != 0)
+            throw std::runtime_error(msg.c_str());
         // 3.4 groups
         std::vector<std::string> groups;
-        select_group_names(conn, id_num, groups);
-
+        rv = select_group_names(conn, id_num, groups);
+        if (rv != 0)
+            throw std::runtime_error(msg.c_str());
         // 2.5      PRINT IT
         // 2.5.1    things from asset element table itself
         // ORDER of fields added to the lcs IS SIGNIFICANT
         std::string type_name;
         {
-        std::string name = persist::id_to_name_ext_name (id_num).second;
-        lcs.add(name);
+        lcs.add(asset_names.second);
 
         r["type_name"].get(type_name);
         lcs.add(type_name);
@@ -280,6 +292,8 @@ void
             }
             else {
                 int rv = persist::name_to_extname (std::get<0>(power_links[i]), source);
+                if (rv != 0)
+                    throw std::runtime_error(msg.c_str());
                 plug_src = std::get<1>(power_links[i]);
                 input    = std::get<2>(power_links[i]);
             }
@@ -294,6 +308,8 @@ void
             if (it != ext_attrs.end ()) {
                 std::string extname;
                 int rv = persist::name_to_extname (it->second.first, extname);
+                if (rv != 0)
+                    throw std::runtime_error(msg.c_str());
                 ext_attrs ["logical_asset"] = make_pair (extname, it->second.second);
             }
         }
@@ -314,6 +330,8 @@ void
             else {
                 std::string extname;
                 int rv = persist::name_to_extname (groups[i], extname);
+        if (rv != 0)
+            throw std::runtime_error(msg.c_str());
                 lcs.add(extname);
             }
         }
@@ -323,9 +341,11 @@ void
 
     };
 
-    select_asset_element_all(
+    rv = select_asset_element_all(
             conn,
             process_v_web_asset_element_row);
+    if (rv != 0)
+        throw std::runtime_error(msg.c_str());
     transaction.commit();
 }
 

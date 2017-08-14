@@ -297,13 +297,15 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
         if ( ret.status == 1 )
             parent_id = ret.item.id;
         else {
-            bios_throw("request-param-bad", "location", location.c_str(), "<existing asset name>");
+            if (ret.errsubtype == DB_ERROR_NOTFOUND) {
+                bios_throw("request-param-bad", "location", location.c_str(), "<existing asset name>");
+	    }	    
+	    else {
+                bios_throw("internal-error", "Database failure");
+	    }
         }
     }
     unused_columns.erase("location");
-
-
-
 
     // Business requirement: be able to write 'rack controller', 'RC', 'rc' as subtype == 'rack controller'
     std::map<std::string,int> local_SUBTYPES = SUBTYPES;
@@ -345,7 +347,12 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
         db_reply <db_web_basic_element_t> element_in_db = select_asset_element_web_byId
                                                         (conn, id);
         if ( element_in_db.status == 0 ) {
-            bios_throw("element-not-found", id_str.c_str());
+            if (element_in_db.errsubtype == DB_ERROR_NOTFOUND) {
+                bios_throw("element-not-found", id_str.c_str());
+	    }
+            else {
+                bios_throw("internal-error", "Database failure");
+	    }
         }
         else
         {
@@ -391,8 +398,12 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
                 groups.insert(ret.item.id);  // if OK, then take ID
             else
             {
-                log_error ("group '%s' is not present in DB, rejected", group.c_str());
-                bios_throw("element-not-found", group.c_str());
+                if (ret.errsubtype == DB_ERROR_NOTFOUND) {
+                    log_error ("group '%s' is not present in DB, rejected", group.c_str());
+                    bios_throw("element-not-found", group.c_str());
+                }
+                else
+                    bios_throw("internal-error", "Database failure");
             }
         }
     }
@@ -430,9 +441,13 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
                 one_link.src = ret.item.id;  // if OK, then take ID
             else
             {
-                log_warning ("power source '%s' is not present in DB, rejected",
-                    link_source.c_str());
-                bios_throw("element-not-found", link_source.c_str());
+                if (ret.errsubtype == DB_ERROR_NOTFOUND) {
+                    log_warning ("power source '%s' is not present in DB, rejected",
+                        link_source.c_str());
+                    bios_throw("element-not-found", link_source.c_str());
+                }
+                else
+                    bios_throw("internal-error", "Database failure");
             }
         }
 
@@ -513,9 +528,13 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
             auto ret = select_asset_element_by_name
                 (conn, value.c_str());
             if ( ret.status == 0 ) {
-                log_info ("logical_asset '%s' does not present in DB, rejected",
-                    value.c_str());
-                bios_throw("element-not-found", value.c_str());
+                if (ret.errsubtype == DB_ERROR_NOTFOUND) {
+                    log_info ("logical_asset '%s' does not present in DB, rejected",
+                        value.c_str());
+                    bios_throw("element-not-found", value.c_str());
+                }
+                else
+                    bios_throw("internal-error", "Database failure");
             }
         }
         else
@@ -752,20 +771,24 @@ std::pair<db_a_elmnt_t, persist::asset_operation>
     }
 
     tntdb::Connection conn;
+    std::string msg{"No connection to database"};
     try{
         conn = tntdb::connectCached(url);
     }
     catch(...)
     {
-        std::string msg{"No connection to database"};
         log_error("%s", msg.c_str());
         LOG_END;
         bios_throw("internal-error", msg.c_str());
     }
 
     auto TYPES = read_element_types (conn);
+    if (TYPES.empty ())
+        bios_throw("internal-error", msg.c_str());
 
     auto SUBTYPES = read_device_types (conn);
+    if (SUBTYPES.empty ())
+        bios_throw("internal-error", msg.c_str());
 
     std::set<a_elmnt_id_t> ids{};
     auto ret = process_row(conn, cm, 1, TYPES, SUBTYPES, ids, false);
@@ -794,20 +817,24 @@ void
     }
 
     tntdb::Connection conn;
+    std::string msg{"No connection to database"};
     try{
         conn = tntdb::connectCached(url);
     }
     catch(...)
     {
-        std::string msg{"No connection to database"};
         log_error("%s", msg.c_str());
         LOG_END;
         bios_throw("internal-error", msg.c_str());
     }
 
     auto TYPES = read_element_types (conn);
+    if (TYPES.empty ())
+        bios_throw("internal-error", msg.c_str());
 
     auto SUBTYPES = read_device_types (conn);
+    if (SUBTYPES.empty ())
+        bios_throw("internal-error", msg.c_str());
 
     // BIOS-2506
     std::set<a_elmnt_id_t> ids{};
