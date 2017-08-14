@@ -251,6 +251,8 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
     }
 
     auto ename = cm.get(row_i, "name");
+    if (ename.empty ())
+        bios_throw("request-param-bad", "name", "<empty>", "<unique, non empty value>");
     std::string iname;
     int rv = extname_to_asset_name (ename, iname);
     log_debug ("name = '%s/%s'", ename.c_str(), iname.c_str());
