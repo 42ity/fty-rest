@@ -763,6 +763,7 @@ BUILT_SOURCES_bios_web_la = \
 		      src/web/src/email_feedback.cpp \
 	              src/web/src/email_vote.cpp \
 		      src/web/src/info.cpp \
+		      src/web/src/conf_scan.cpp \
 		      src/web/src/scan_run.cpp \
 		      src/web/src/scan_progress.cpp \
 		      src/web/src/list_gpio.cpp \

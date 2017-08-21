@@ -443,7 +443,7 @@
         <url>^/api/v1/admin/config.*$</url>
     </mapping>
 
-        <!-- POST admin/scan -->
+    <!-- POST admin/scan -->
     <mapping>
       <target>scan_run@bios_web</target>
       <url>^/api/v1/admin/scan.*$</url>
@@ -463,6 +463,20 @@
         <url>^/api/v1/admin/scan.*$</url>
         <method>DELETE</method>
     </mapping>
+
+    <!-- POST admin/confscan -->
+    <mapping>
+      <target>conf_scan@bios_web</target>
+      <url>^/api/v1/admin/confscan.*$</url>
+      <method>POST</method>
+    </mapping>
+     
+    <!-- GET admin/confscan -->
+    <mapping>
+      <target>conf_scan@bios_web</target>
+      <url>^/api/v1/admin/confscan.*$</url>
+      <method>GET</method>
+    </mapping>   
 
     <!-- GET admin/gpio -->
     <mapping>
