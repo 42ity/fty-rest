@@ -152,6 +152,7 @@ sanitize_value_double(
  */
 size_t
 promote_rc0(
+        MlmClient &client,
          const CsvMap& cm,
          touch_cb_t touch_fn) {
     touch_fn(); // renew request watchdog timer
@@ -168,7 +169,6 @@ promote_rc0(
     }
     touch_fn(); // renew request watchdog timer
 
-    MlmClient client;
     // ask for data about myself
     zuuid_t *uuid = zuuid_new ();
     zmsg_t *msg = zmsg_new ();
@@ -186,8 +186,12 @@ promote_rc0(
         zuuid_destroy (&uuid);
         throw std::runtime_error("Response on INFO message from fty-info is empty");
     }
-    char *command = zmsg_popstr (resp); // we don't really need those, but we need to popstr them
-    char *srv_name  = zmsg_popstr (resp);
+    char *command = zmsg_popstr (resp);
+    if (0 == strcmp("ERROR", command)) {
+        zuuid_destroy (&uuid);
+        throw std::runtime_error("Response on INFO message from fty-info is ERROR");
+    }
+    char *srv_name  = zmsg_popstr (resp); // we don't really need those, but we need to popstr them
     char *srv_type  = zmsg_popstr (resp);
     char *srv_stype = zmsg_popstr (resp);
     char *srv_port  = zmsg_popstr (resp);
@@ -205,6 +209,7 @@ promote_rc0(
     char *ip3 = (char *)zhash_lookup(info, "ip.3");
     char *serial = (char *)zhash_lookup(info, "serial");
     char *hostname = (char *)zhash_lookup(info, "hostname");
+    zmsg_destroy (&resp);
 
     touch_fn(); // renew request watchdog timer
     // get list of rackcontrollers already in database
@@ -219,6 +224,12 @@ promote_rc0(
     }
     resp = client.recv (zuuid_str_canonical (uuid), 5);
     touch_fn(); // renew request watchdog timer
+    command = zmsg_popstr (resp);
+    if (0 == strcmp("ERROR", command)) {
+        zuuid_destroy (&uuid);
+        throw std::runtime_error("Response for rackcontroller from fty-asset is ERROR");
+    }
+    zstr_free (&command);
     char *asset = zmsg_popstr(resp);
     std::vector<char *> rackcontrollers;
     while (asset) {
@@ -1044,7 +1055,8 @@ void
     std::set<a_elmnt_id_t> ids{};
 
     // if there are rackcontroller in the import, promote one of it to rackcontroller-0 if not done already
-    size_t rc0 = promote_rc0(cm, touch_fn);
+    MlmClient client;
+    size_t rc0 = promote_rc0(client, cm, touch_fn);
 
     std::set<size_t> processedRows;
     bool somethingProcessed;
