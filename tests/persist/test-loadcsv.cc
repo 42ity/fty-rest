@@ -36,6 +36,7 @@
 #include "db/inout.h"
 #include "assetcrud.h"
 #include "dbpath.h"
+#include "tntmlm.h"
 
 using namespace persist;
 
@@ -65,6 +66,37 @@ std::string get_dc_lab_description() {
 
 inline std::string to_utf8(const cxxtools::String& ws) {
     return cxxtools::Utf8Codec::encode(ws);
+}
+
+const shared::CsvMap& file_to_csvmap(std::istream& input, std::string user = "") {
+    std::vector <std::vector<cxxtools::String> > data;
+    cxxtools::CsvDeserializer deserializer(input);
+    if ( shared::hasApostrof(input) ) {
+        std::string msg = "CSV file contains ' (apostrof), please remove it";
+        log_error("%s\n", msg.c_str());
+        throw std::runtime_error(msg.c_str());
+    }
+    char delimiter = shared::findDelimiter(input);
+    if (delimiter == '\x0') {
+        std::string msg{"Cannot detect the delimiter, use comma (,) semicolon (;) or tabulator"};
+        log_error("%s", msg.c_str());
+        throw std::runtime_error(msg.c_str());
+    }
+    log_debug("Using delimiter '%c'", delimiter);
+    deserializer.delimiter(delimiter);
+    deserializer.readTitle(false);
+    deserializer.deserialize(data);
+    shared::CsvMap cm{data};
+    cm.deserialize();
+    cm.setCreateMode(CREATE_MODE_CSV);
+    cm.setCreateUser(user);
+    cm.setUpdateUser(user);
+    std::time_t timestamp = std::time(NULL);
+    char mbstr[100];
+    if (std::strftime(mbstr, sizeof (mbstr), "%FT%T%z", std::localtime(&timestamp))) {
+        cm.setUpdateTs(std::string(mbstr));
+    }
+    return std::move(cm);
 }
 
 TEST_CASE("CSV multiple field names", "[csv]") {
@@ -136,7 +168,7 @@ TEST_CASE("CSV bug 661 - segfault ...", "[csv]") {
     REQUIRE_NOTHROW(load_asset_csv(csv_buf, okRows, failRows, void_fn));
 }
 
-class MlmClientTest : MlmClient {
+class MlmClientTest: public MlmClient {
     public:
         MlmClientTest(int s1, int s2, int srv) {
             s1_state = s1;
@@ -148,60 +180,74 @@ class MlmClientTest : MlmClient {
         zmsg_t* recv (const std::string& uuid, uint32_t timeout) {
             switch (request) {
                 case 1:
+                    {
                     zmsg_t *resp = zmsg_new ();
                     switch (s2_state) {
                         case 0:
+                            {
                             zmsg_pushstr (resp, "OK");      // we don't really need those, but we need to pushstr them
                             zmsg_pushstr (resp, "useless"); // to conform to original message
                             zmsg_pushstr (resp, "useless");
                             zmsg_pushstr (resp, "useless");
                             zmsg_pushstr (resp, "useless");
                             zhash_t *map = zhash_new();
-                            zhash_insert(map, "serial", "S3R1ALN0");
-                            zhash_insert(map, "hostname", "myhname");
-                            zhash_insert(map, "ip.1", "98.76.54.30");
-                            zhash_insert(map, "ip.2", "98.76.54.31");
-                            //zhash_insert(map, "ip.3", "98.76.54.32");
+                            zhash_insert(map, "serial", (char *)"S3R1ALN0");
+                            zhash_insert(map, "hostname", (char *)"myhname");
+                            zhash_insert(map, "ip.1", (char *)"98.76.54.30");
+                            zhash_insert(map, "ip.2", (char *)"98.76.54.31");
+                            //zhash_insert(map, "ip.3", (char *)"98.76.54.32");
                             zframe_t * frame_infos = zhash_pack(map);
                             zmsg_append (resp, &frame_infos);
-                            break;
+                            } break;
                         default:
+                            {
                             zmsg_pushstr (resp, "ERROR");
                             zmsg_pushstr (resp, "just error");
-                            break;
+                            } break;
                     }
+                    zmsg_pushstr (resp, uuid.c_str());
                     return resp;
-                    break;
+                    } break;
                 case 2:
+                    {
                     zmsg_t *reply = zmsg_new ();
                     switch (s2_state) {
                         case 0:
+                            {
                             zmsg_addstr (reply, "OK");
-                            break;
+                            } break;
                         case 1:
+                            {
                             zmsg_addstr (reply, "OK");
                             zmsg_addstr (reply, "rackcontroller-0");
-                            break;
+                            } break;
                         case 2:
+                            {
                             zmsg_addstr (reply, "OK");
                             zmsg_addstr (reply, "rackcontroller-0");
                             zmsg_addstr (reply, "rackcontroller-10");
                             zmsg_addstr (reply, "rackcontroller-99");
-                            break;
+                            } break;
                         default:
+                            {
                             zmsg_addstr (reply, "ERROR");
                             zmsg_addstr (reply, "just error");
-                            break;
+                            } break;
                     }
+                    zmsg_pushstr (reply, uuid.c_str());
                     return reply;
-                    break;
+                    } break;
                 default:
-                    break;
-                    zsys_error("MlmClientTest-recv:Receieved invalid request %d", request);
+                    {
+                    zsys_error("MlmClientTest-recv:Receieved invalid request %d, uuid='%s', timeout='%u'", request, uuid.c_str(), timeout);
                     return NULL;
+                    } break;
             }
         }
         int sendto (const std::string& address, const std::string& subject, uint32_t timeout, zmsg_t **content_p) {
+            if (subject.empty()) {
+                zsys_error("Error occured when address='%s', subject='%s', timeout='%u'", address.c_str(), subject.c_str(), timeout);
+            }
             if ("info" == subject && "fty-info" == address) {
                 request = 1;
             }
@@ -219,7 +265,7 @@ class MlmClientTest : MlmClient {
             s2_state = s;
         }
         void set_sendto_rv(int s) {
-            sendto_rv = e;
+            sendto_rv = s;
         }
     private:
         int s1_state;
@@ -239,7 +285,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     std::string base_path{__FILE__};
     std::string csv = base_path + "rc0_1.csv";
     std::fstream csv_buf(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // empty database, 1 RC in csv - promote it - was on row number:
@@ -248,7 +294,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // empty database, 3 RC in csv - promote one of it - was on row number:
@@ -257,7 +303,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     mct.set_s2_state(1);
@@ -267,7 +313,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(SIZE_MAX == rv);
 
     // 1 RC in database, 1 RC in csv - promote it - was on row number:
@@ -276,7 +322,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // 1 RC in database, 3 RC in csv - promote one of it - was on row number:
@@ -285,7 +331,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // 1 RC in database, 3 RC in csv - was none of it
@@ -294,7 +340,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // 1 RC in database, 3 RC in csv - was different than rackcontroller-0
@@ -303,7 +349,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     mct.set_s2_state(2);
@@ -313,7 +359,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(SIZE_MAX == rv);
 
     // 3 RC in database, 1 RC in csv - promote it - was on row number:
@@ -322,7 +368,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // 3 RC in database, 3 RC in csv - promote one of it - was on row number:
@@ -331,7 +377,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // 3 RC in database, 3 RC in csv - was none of it
@@ -340,7 +386,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // 3 RC in database, 3 RC in csv - was different than rackcontroller-0
@@ -349,7 +395,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     // 3 RC in database, 3 RC in csv - with missing ids
@@ -358,18 +404,18 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, csv_buf, void_fn));
+    REQUIRE_NOTHROW(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
     mct.set_s2_state(99);
     // getting assets from fty_assets fails
-    REQUIRE_THROWS_AS(rv = promote_rc0(mct, csv_buf, void_fn), std::runtime_error);
+    REQUIRE_THROWS_AS(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn), std::runtime_error);
 
     mct.set_s1_state(99);
     // getting info from fty_info fails
-    REQUIRE_THROWS_AS(rv = promote_rc0(mct, csv_buf, void_fn), std::runtime_error);
+    REQUIRE_THROWS_AS(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn), std::runtime_error);
 
     mct.set_sendto_rv(-1);
     // sendto fails fails
-    REQUIRE_THROWS_AS(rv = promote_rc0(mct, csv_buf, void_fn), std::runtime_error);
+    REQUIRE_THROWS_AS(rv = promote_rc0(mct, file_to_csvmap(csv_buf), void_fn), std::runtime_error);
 }

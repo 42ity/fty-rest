@@ -38,6 +38,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #define CREATE_MODE_ONE_ASSET   1
 #define CREATE_MODE_CSV         2
 
+// forward declaration
+class MlmClient;
+
 namespace persist {
 
 typedef std::function<void(void)> touch_cb_t;
@@ -115,5 +118,20 @@ void
         (std::ostream& out,
          bool generate_bom = true
         );
+
+/*
+ * \brief Identify id of row with rackcontroller-0
+ * \return SIZE_MAX when RC-0 not found
+ * \return size_t number of RC-0 row
+ * \throw runtime_error on failure
+ * \param[in]   client      Mlm client to send and receieve messages to/from other agents
+ * \param[in]   cm          An input CSV map
+ * \param[in]   touch_fn    Function to be called after time consuming operation so tntnet request won't time-out
+ */
+size_t
+    promote_rc0(
+        MlmClient &client,
+        const shared::CsvMap& cm,
+        touch_cb_t touch_fn);
 }
 #endif
