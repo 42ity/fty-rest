@@ -386,7 +386,7 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     std::string csv = base_path + ".rc0_1.csv";
     zsys_debug("Using file %s for this test", csv.c_str());
     zsys_debug ("Loading files from %s", csv.c_str());
-    std::fstream csv_buf(csv);
+    std::ifstream csv_buf(csv);
     REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
