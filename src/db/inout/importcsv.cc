@@ -152,19 +152,27 @@ sanitize_value_double(
  */
 size_t
 promote_rc0(
-        MlmClient &client,
+        MlmClient *client,
          const CsvMap& cm,
          touch_cb_t touch_fn) {
+    zsys_debug("Function called: promote_rc0");
     touch_fn(); // renew request watchdog timer
     // first find all rows with rackcontrollers
     std::vector<size_t> rc_rows;
+    auto unused_columns = cm.getTitles();
+    if (unused_columns.empty()) {
+        bios_throw("bad-request-document", "Cannot import empty document.");
+    }
     for (size_t row_i = 1; row_i != cm.rows(); row_i++) {
-        auto iname = cm.get(row_i, "id");
-        if (iname.compare(0, strlen("rackcontroller-"), "rackcontroller-")) {
+        std::string type = unused_columns.count("type") ? cm.get(row_i, "type") : "notype";
+        std::string subtype = unused_columns.count("sub_type") ? cm.get(row_i, "sub_type") : "nosubtype";
+        if (0 == type.compare(0, strlen("device"), "device") && 0 == subtype.compare(0, strlen("rackcontroller"), "rackcontroller")) {
+            zsys_debug("CSV contains RC on row %u", row_i);
             rc_rows.push_back(row_i);
         }
     }
     if (0 == rc_rows.size()) {
+        zsys_debug("There are no RCs in CSV");
         return SIZE_MAX;
     }
     touch_fn(); // renew request watchdog timer
@@ -174,13 +182,13 @@ promote_rc0(
     zmsg_t *msg = zmsg_new ();
     zmsg_addstr (msg, "INFO");
     zmsg_addstr (msg, zuuid_str_canonical (uuid));
-    if (-1 == client.sendto ("fty-info", "info", 1000, &msg)) {
+    if (-1 == client->sendto ("fty-info", "info", 1000, &msg)) {
         zuuid_destroy (&uuid);
         throw std::runtime_error("Sending INFO message to fty-info failed");
     }
     touch_fn(); // renew request watchdog timer
     // parse receieved data
-    zmsg_t *resp = client.recv (zuuid_str_canonical (uuid), 5);
+    zmsg_t *resp = client->recv (zuuid_str_canonical (uuid), 5);
     touch_fn(); // renew request watchdog timer
     if (NULL == resp) {
         zuuid_destroy (&uuid);
@@ -195,20 +203,28 @@ promote_rc0(
     char *srv_type  = zmsg_popstr (resp);
     char *srv_stype = zmsg_popstr (resp);
     char *srv_port  = zmsg_popstr (resp);
+    zsys_debug("Receieved message from info: %s %s %s %s %s", command, srv_name, srv_type, srv_stype, srv_port);
     zframe_t *frame_infos = zmsg_next (resp);
+    if (NULL == frame_infos) {
+        zuuid_destroy (&uuid);
+        throw std::runtime_error("Response on INFO message from fty-info miss zhash frame");
+    }
     zhash_t *info = zhash_unpack(frame_infos); // serial, hostname, ip.[1-3]
+    char * item = (char *)zhash_first(info);
+    while (NULL != item) {
+        item = (char *)zhash_next(info);
+    }
     zstr_free (&command);
     zstr_free(&srv_name);
     zstr_free(&srv_type);
     zstr_free(&srv_stype);
     zstr_free(&srv_port);
-    //zhash_destroy(&info);
-    zmsg_destroy(&resp);
     char *ip1 = (char *)zhash_lookup(info, "ip.1");
     char *ip2 = (char *)zhash_lookup(info, "ip.2");
     char *ip3 = (char *)zhash_lookup(info, "ip.3");
     char *serial = (char *)zhash_lookup(info, "serial");
     char *hostname = (char *)zhash_lookup(info, "hostname");
+    zsys_debug("Receieved message from info: ip1=%s, ip2=%s, ip3=%s, serial=%s, hostname=%s", ip1, ip2, ip3, serial, hostname);
     zmsg_destroy (&resp);
 
     touch_fn(); // renew request watchdog timer
@@ -216,24 +232,26 @@ promote_rc0(
     msg = zmsg_new ();
     zmsg_addstr (msg, "GET");
     zmsg_addstr (msg, "rackcontroller");
-    int rv = client.sendto ("asset-agent", "ASSETS", 5000, &msg);
+    int rv = client->sendto ("asset-agent", "ASSETS", 5000, &msg);
     touch_fn(); // renew request watchdog timer
     if (rv != 0) {
         zhash_destroy(&info);
         throw std::runtime_error("Request for rackcontroller list failed");
     }
-    resp = client.recv (zuuid_str_canonical (uuid), 5);
+    resp = client->recv (zuuid_str_canonical (uuid), 5);
     touch_fn(); // renew request watchdog timer
     command = zmsg_popstr (resp);
     if (0 == strcmp("ERROR", command)) {
         zuuid_destroy (&uuid);
-        throw std::runtime_error("Response for rackcontroller from fty-asset is ERROR");
+        zhash_destroy(&info);
+        throw std::runtime_error("Response on INFO message from fty-info is ERROR");
     }
     zstr_free (&command);
-    char *asset = zmsg_popstr(resp);
     std::vector<char *> rackcontrollers;
+    char *asset = zmsg_popstr(resp);
     while (asset) {
         rackcontrollers.push_back(asset);
+        zsys_debug("From database came rackcontroller: %s", asset);
         asset = zmsg_popstr(resp);
     }
     zmsg_destroy (&resp);
@@ -241,75 +259,82 @@ promote_rc0(
     touch_fn(); // renew request watchdog timer
     // check how many RCs we already have in database
     if (0 == rackcontrollers.size()) {
+        zsys_debug("0RCs in database");
         // as discussed with Arno, there are no options, one must be picked
         // nothing to do, promote first RC suitable to RC-0
         if (1 == rc_rows.size()) {
+            zsys_debug("Get the only one");
             zhash_destroy(&info);
             return rc_rows[0];
         }
         // check for rackcontroller-0 first
         for (size_t row_i : rc_rows) {
-            auto iname = cm.get(row_i, "id");
+            std::string iname = unused_columns.count("id") ? cm.get(row_i, "id") : "noid";
             if ("rackcontroller-0" == iname) {
                 zhash_destroy(&info);
+                zsys_debug("Pick one marked as RC-0");
                 return row_i;
             }
         }
         // then check ip address
         for (size_t row_i : rc_rows) {
-            auto ip = cm.get(row_i, "ip.1");
-            if (ip == ip1 || ip == ip2 || ip == ip3) {
+            auto ip = unused_columns.count("ip.1") ? cm.get(row_i, "ip.1") : "noip1";
+            if ((NULL != ip1 && ip == ip1) ||
+                    (NULL != ip2 && ip == ip2) ||
+                    (NULL != ip3 && ip == ip3)) {
                 zhash_destroy(&info);
+                zsys_debug("Picked by IP");
                 return row_i;
             }
         }
         // sadly uuid isn't part of import csv
         // then check serial number
         for (size_t row_i : rc_rows) {
-            auto s_no = cm.get(row_i, "serial_no");
-            if (serial == s_no ) {
+            auto s_no = unused_columns.count("serial_no") ? cm.get(row_i, "serial_no") : "noserialno";
+            if (NULL != serial && serial == s_no ) {
                 zhash_destroy(&info);
+                zsys_debug("Picked by SN");
                 return row_i;
             }
         }
         // then check hostname
         for (size_t row_i : rc_rows) {
-            auto hname = cm.get(row_i, "hostname.1");
-            if (hostname == hname ) {
+            auto hname = unused_columns.count("hostname.1") ? cm.get(row_i, "hostname.1") : "nohostname1";
+            if (NULL != hostname && hostname == hname ) {
                 zhash_destroy(&info);
-                return row_i;
-            }
-        }
-        // then check hostname
-        for (size_t row_i : rc_rows) {
-            auto hname = cm.get(row_i, "hostname.1");
-            if (hostname == hname ) {
-                zhash_destroy(&info);
+                zsys_debug("Picked by hostname");
                 return row_i;
             }
         }
         // we're out of options, take first available
         zhash_destroy(&info);
+        zsys_debug("Picked first available");
         return rc_rows[0];
     }
     else {
+        zsys_debug("1+ RCs in database");
         // as discussed with Arno, if IP match my IP, this is probably replacement, otherwise it's import
         for (size_t row_i : rc_rows) {
-            auto ip = cm.get(row_i, "ip.1");
-            if (ip == ip1 || ip == ip2 || ip == ip3) {
+            auto ip = unused_columns.count("ip.1") ? cm.get(row_i, "ip.1") : "noip1";
+            if ((NULL != ip1 && ip == ip1) ||
+                    (NULL != ip2 && ip == ip2) ||
+                    (NULL != ip3 && ip == ip3)) {
                 zhash_destroy(&info);
+                zsys_debug("Picked by IP");
                 return row_i;
             }
         }
         for (size_t row_i : rc_rows) {
-            auto iname = cm.get(row_i, "id");
-            auto s_no = cm.get(row_i, "serial_no");
-            if ("rackcontroller-0" == iname && serial == s_no ) {
+            std::string iname = unused_columns.count("id") ? cm.get(row_i, "id") : "noid";
+            auto s_no = unused_columns.count("serial_no") ? cm.get(row_i, "serial_no") : "noserialno";
+            if ("rackcontroller-0" == iname && NULL != serial && serial == s_no ) {
                 zhash_destroy(&info);
+                zsys_debug("Picked RC-0 with matching SN");
                 return row_i;
             }
         }
         zhash_destroy(&info);
+        zsys_debug("Failed to pick any");
         return SIZE_MAX;
     }
 }
@@ -1056,7 +1081,7 @@ void
 
     // if there are rackcontroller in the import, promote one of it to rackcontroller-0 if not done already
     MlmClient client;
-    size_t rc0 = promote_rc0(client, cm, touch_fn);
+    size_t rc0 = promote_rc0(&client, cm, touch_fn);
 
     std::set<size_t> processedRows;
     bool somethingProcessed;

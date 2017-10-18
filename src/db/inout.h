@@ -130,7 +130,7 @@ void
  */
 size_t
     promote_rc0(
-        MlmClient &client,
+        MlmClient *client,
         const shared::CsvMap& cm,
         touch_cb_t touch_fn);
 }

@@ -6,6 +6,6 @@ Rack1,rack,,Row1,active,P1,,,,,,,,,,,,,,,42,,,,,,,,,,,,,,1,,,,,,rack-4
 NewsFeed,device,feed,Washington DC,active,P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,feed-5
 RaCek1,device,rackcontroller,Rack1,active,P1,,NewsFeed,1,,,,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-6
 Rack2,rack,,Row1,active,P1,,,,,,,,,,,,,,,42,,,,,,,,,,,,,,1,,,,,,rack-7
-RaCek2,device,rackcontroller,Rack2,active,P1,,NewsFeed,1,,,,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-8
+RaCek2,device,rackcontroller,Rack2,active,P1,,NewsFeed,1,,description,98.76.54.31,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-8
 Rack3,rack,,Row1,active,P1,,,,,,,,,,,,,,,42,,,,,,,,,,,,,,1,,,,,,rack-9
-RaCek3,device,rackcontroller,Rack3,active,P1,,NewsFeed,1,,,,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-10
+RaCek3,device,rackcontroller,Rack3,active,P1,,NewsFeed,1,,description,,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-10

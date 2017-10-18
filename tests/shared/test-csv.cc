@@ -36,6 +36,7 @@
 #include <stdexcept>
 
 #include "csv.h"
+#include "db/inout.h"
 #include "tntmlm.h"
 using namespace shared;
 
@@ -266,26 +267,27 @@ TEST_CASE("CSV map apostrof2", "[csv]") {
 
 class MlmClientTest: public MlmClient {
     public:
-        MlmClientTest(int s1, int s2, int srv) {
+        MlmClientTest(int s1, int s2, int srv) : MlmClient(NULL) {
             s1_state = s1;
             s2_state = s2;
             sendto_rv = srv;
             request = 0;
         };
-        ~MlmClientTest() {};
-        zmsg_t* recv (const std::string& uuid, uint32_t timeout) {
+        ~MlmClientTest() = default;
+        virtual zmsg_t* recv (const std::string& uuid, uint32_t timeout) {
+            zsys_debug("Running mocked recv");
             switch (request) {
                 case 1:
                     {
                     zmsg_t *resp = zmsg_new ();
-                    switch (s2_state) {
+                    switch (s1_state) {
                         case 0:
                             {
-                            zmsg_pushstr (resp, "OK");      // we don't really need those, but we need to pushstr them
-                            zmsg_pushstr (resp, "useless"); // to conform to original message
-                            zmsg_pushstr (resp, "useless");
-                            zmsg_pushstr (resp, "useless");
-                            zmsg_pushstr (resp, "useless");
+                            zmsg_addstr (resp, "OK");      // we don't really need those, but we need to pushstr them
+                            zmsg_addstr (resp, "useless1"); // to conform to original message
+                            zmsg_addstr (resp, "useless2");
+                            zmsg_addstr (resp, "useless3");
+                            zmsg_addstr (resp, "useless4");
                             zhash_t *map = zhash_new();
                             zhash_insert(map, "serial", (char *)"S3R1ALN0");
                             zhash_insert(map, "hostname", (char *)"myhname");
@@ -294,14 +296,14 @@ class MlmClientTest: public MlmClient {
                             //zhash_insert(map, "ip.3", (char *)"98.76.54.32");
                             zframe_t * frame_infos = zhash_pack(map);
                             zmsg_append (resp, &frame_infos);
+                            zframe_destroy(&frame_infos);
                             } break;
                         default:
                             {
-                            zmsg_pushstr (resp, "ERROR");
-                            zmsg_pushstr (resp, "just error");
+                            zmsg_addstr (resp, "ERROR");
+                            zmsg_addstr (resp, "just error");
                             } break;
                     }
-                    zmsg_pushstr (resp, uuid.c_str());
                     return resp;
                     } break;
                 case 2:
@@ -330,7 +332,6 @@ class MlmClientTest: public MlmClient {
                             zmsg_addstr (reply, "just error");
                             } break;
                     }
-                    zmsg_pushstr (reply, uuid.c_str());
                     return reply;
                     } break;
                 default:
@@ -340,7 +341,8 @@ class MlmClientTest: public MlmClient {
                     } break;
             }
         }
-        int sendto (const std::string& address, const std::string& subject, uint32_t timeout, zmsg_t **content_p) {
+        virtual int sendto (const std::string& address, const std::string& subject, uint32_t timeout, zmsg_t **content_p) {
+            zsys_debug("Running mocked sendto");
             if (subject.empty()) {
                 zsys_error("Error occured when address='%s', subject='%s', timeout='%u'", address.c_str(), subject.c_str(), timeout);
             }
@@ -379,141 +381,172 @@ TEST_CASE("test for rackcontroller-0 detection", "[csv]") {
     
     // empty database, 0 RCs in csv - detect none
     row_number = SIZE_MAX;
-    MlmClientTest mct(0, 0, 0);
+    MlmClientTest *mct = new MlmClientTest(0, 0, 0);
     std::string base_path{__FILE__};
-    std::string csv = base_path + "rc0_1.csv";
+    std::string csv = base_path + ".rc0_1.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
+    zsys_debug ("Loading files from %s", csv.c_str());
     std::fstream csv_buf(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
-    // empty database, 1 RC in csv - promote it - was on row number:
-    row_number = 7;
-    csv = base_path + "rc0_2.csv";
+    zsys_debug("\tTesting: empty database, 1 rc in csv - promote it - was on row number 7");
+    // empty database, 1 rc in csv - promote it - was on row number:
+    row_number = 6;
+    csv = base_path + ".rc0_2.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: empty database, 3 RC in csv - promote one of it - was on row number 9");
     // empty database, 3 RC in csv - promote one of it - was on row number:
-    row_number = 9;
-    csv = base_path + "rc0_3.csv";
+    row_number = 8;
+    csv = base_path + ".rc0_3.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
-    mct.set_s2_state(1);
+    mct->set_s2_state(1);
+    zsys_debug("\tTesting: 1 RC in database, 0 RCs in csv - detect none");
     // 1 RC in database, 0 RCs in csv - detect none
     row_number = SIZE_MAX;
-    csv = base_path + "rc0_1.csv";
+    csv = base_path + ".rc0_1.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(SIZE_MAX == rv);
 
+    zsys_debug("\tTesting: 1 RC in database, 1 RC in csv - promote it - was on row number 7");
     // 1 RC in database, 1 RC in csv - promote it - was on row number:
-    row_number = 7;
-    csv = base_path + "rc0_2.csv";
+    row_number = 6;
+    csv = base_path + ".rc0_2a.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: 1 RC in database, 3 RC in csv - promote one of it - was on row number 9");
     // 1 RC in database, 3 RC in csv - promote one of it - was on row number:
-    row_number = 9;
-    csv = base_path + "rc0_3.csv";
+    row_number = 8;
+    csv = base_path + ".rc0_3.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: 1 RC in database, 3 RC in csv - was none of it");
     // 1 RC in database, 3 RC in csv - was none of it
     row_number = SIZE_MAX;
-    csv = base_path + "rc0_4.csv";
+    csv = base_path + ".rc0_4.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: 1 RC in database, 3 RC in csv - was different than rackcontroller-0");
     // 1 RC in database, 3 RC in csv - was different than rackcontroller-0
     row_number = SIZE_MAX;
-    csv = base_path + "rc0_5.csv";
+    csv = base_path + ".rc0_5.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
-    mct.set_s2_state(2);
+    mct->set_s2_state(2);
+    zsys_debug("\tTesting: 3 RC in database, 0 RCs in csv - detect none");
     // 3 RC in database, 0 RCs in csv - detect none
     row_number = SIZE_MAX;
-    csv = base_path + "rc0_1.csv";
+    csv = base_path + ".rc0_1.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(SIZE_MAX == rv);
 
+    zsys_debug("\tTesting: 3 RC in database, 1 RC in csv - promote it - was on row number 7");
     // 3 RC in database, 1 RC in csv - promote it - was on row number:
-    row_number = 7;
-    csv = base_path + "rc0_2.csv";
+    row_number = 6;
+    csv = base_path + ".rc0_2a.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: 3 RC in database, 3 RC in csv - promote one of it - was on row number 9");
     // 3 RC in database, 3 RC in csv - promote one of it - was on row number:
-    row_number = 9;
-    csv = base_path + "rc0_3.csv";
+    row_number = 8;
+    csv = base_path + ".rc0_3.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: 3 RC in database, 3 RC in csv - was none of it");
     // 3 RC in database, 3 RC in csv - was none of it
     row_number = SIZE_MAX;
-    csv = base_path + "rc0_4.csv";
+    csv = base_path + ".rc0_4.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: 3 RC in database, 3 RC in csv - was different than rackcontroller-0");
     // 3 RC in database, 3 RC in csv - was different than rackcontroller-0
     row_number = SIZE_MAX;
-    csv = base_path + "rc0_5.csv";
+    csv = base_path + ".rc0_5.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
+    zsys_debug("\tTesting: 3 RC in database, 3 RC in csv - with missing ids");
     // 3 RC in database, 3 RC in csv - with missing ids
-    row_number = 9;
-    csv = base_path + "rc0_6.csv";
+    row_number = 8;
+    csv = base_path + ".rc0_6.csv";
+    zsys_debug("Using file %s for this test", csv.c_str());
     csv_buf.close();
     csv_buf.clear();
     csv_buf.open(csv);
-    REQUIRE_NOTHROW(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
+    REQUIRE_NOTHROW(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn));
     REQUIRE(row_number == rv);
 
-    mct.set_s2_state(99);
+    mct->set_s2_state(99);
+    zsys_debug("\tTesting: getting assets from fty_assets fails");
     // getting assets from fty_assets fails
-    REQUIRE_THROWS_AS(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn), std::runtime_error);
+    REQUIRE_THROWS_AS(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn), std::runtime_error);
 
-    mct.set_s1_state(99);
+    mct->set_s1_state(99);
+    zsys_debug("\tTesting: getting info from fty_info fails");
     // getting info from fty_info fails
-    REQUIRE_THROWS_AS(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn), std::runtime_error);
+    REQUIRE_THROWS_AS(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn), std::runtime_error);
 
-    mct.set_sendto_rv(-1);
+    mct->set_sendto_rv(-1);
+    zsys_debug("\tTesting: sendto fails fails");
     // sendto fails fails
-    REQUIRE_THROWS_AS(rv = promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn), std::runtime_error);
+    REQUIRE_THROWS_AS(rv = persist::promote_rc0(mct, shared::CsvMap_from_istream(csv_buf), void_fn), std::runtime_error);
 }
