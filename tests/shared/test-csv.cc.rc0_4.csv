@@ -1,0 +1,11 @@
+name,type,sub_type,location,status,priority,asset_tag,power_source.1,power_plug_src.1,power_input.1,description,ip.1,company,site_name,region,country,address,contact_name,contact_email,contact_phone,u_size,manufacturer,model,serial_no,runtime,installation_date,maintenance_date,maintenance_due,location_u_pos,location_w_pos,end_warranty_date,hostname.1,http_link.1,accordion_is_open,asset_order,logical_asset,max_power,phases.output,port,group.1,id
+Washington DC,datacenter,,,active,P1,ACDC007,,,,,,,,,,"Washington, Washington, USA, Earth, Orion galaxy",,,,,,,,,,,,,,,,,,,,1000,,,,datacenter-1
+Room1,room,,Washington DC,active,P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,true,1,,,,,,room-2
+Row1,row,,Room1,active,P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,row-3
+Rack1,rack,,Row1,active,P1,,,,,,,,,,,,,,,42,,,,,,,,,,,,,,1,,,,,,rack-4
+NewsFeed,device,feed,Washington DC,active,P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,feed-5
+RaCek1,device,rackcontroller,Rack1,active,P1,,NewsFeed,1,,,,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-6
+Rack2,rack,,Row1,active,P1,,,,,,,,,,,,,,,42,,,,,,,,,,,,,,1,,,,,,rack-7
+RaCek2,device,rackcontroller,Rack2,active,P1,,NewsFeed,1,,,,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-8
+Rack3,rack,,Row1,active,P1,,,,,,,,,,,,,,,42,,,,,,,,,,,,,,1,,,,,,rack-9
+RaCek3,device,rackcontroller,Rack3,active,P1,,NewsFeed,1,,,,,,,,,,,,1,,,,,,,,1,,,,,,,,,,,,rackcontroller-10

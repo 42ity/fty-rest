@@ -35,15 +35,16 @@ class MlmClient {
         static const std::string ENDPOINT;
 
         MlmClient ();
+        MlmClient (void * p) {_client = NULL; _uuid = NULL; _poller = NULL; if (NULL == p) return;};
         ~MlmClient ();
 
         // timeout <0, 300> seconds, greater number trimmed
         // based on specified uuid returns expected message or NULL on expire/interrupt
-        zmsg_t*     recv (const std::string& uuid, uint32_t timeout);
-        int         sendto (const std::string& address,
-                            const std::string& subject,
-                            uint32_t timeout,
-                            zmsg_t **content_p);
+        virtual zmsg_t*     recv (const std::string& uuid, uint32_t timeout);
+        virtual int         sendto (const std::string& address,
+                                    const std::string& subject,
+                                    uint32_t timeout,
+                                    zmsg_t **content_p);
         bool        connected () { return mlm_client_connected (_client); }
         const char* subject () { return mlm_client_subject (_client); }
         const char* sender () { return mlm_client_sender (_client); }

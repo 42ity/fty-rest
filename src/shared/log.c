@@ -59,7 +59,7 @@ static FILE* log_file = NULL;
 extern int errno;
 
 /*XXX: gcc-specific!, see http://stackoverflow.com/questions/7623735/error-initializer-element-is-not-constant */
-static void init_log_file(void) __attribute__((constructor));
+static void init_log_file(void) __attribute__((constructor(105)));
 static void init_log_file(void) {
     log_file = stderr;
 }
@@ -124,7 +124,7 @@ asprintf_thread_id(void) {
     char *buf2 = NULL;
 
     if (pthread_id != thread_id) {
-        if ( 0 > asprintf(&buf, ".%ju", thread_id) ) {
+        if ( 0 > asprintf(&buf2, ".%ju", thread_id) ) {
             if (buf2) {
                 free (buf2);
                 buf2 = NULL;
@@ -208,6 +208,12 @@ static int do_logv(
         return r;
     }
 
+    if (buffer == NULL) {
+        fprintf(stderr, "Buffer == NULL\n");
+    }
+    if (log_file == NULL) {
+        fprintf(stderr, "Log_file == NULL\n");
+    }
     if (level <= log_stderr_level) {
         fputs(buffer, log_file);
         fputc('\n', log_file);
