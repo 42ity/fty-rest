@@ -57,20 +57,16 @@
 	//      and states, consider setting the content-type for response in each ecpp file
 	//      instead
 
-	static cxxtools::Regex rex_GET_text_plain("^/api/v1/admin/license$");
-	static cxxtools::Regex rex_GET_text_csv ("^/api/v1/asset/export$");
-	static cxxtools::Regex rex_GET_undecided("^/api/v1/admin/getlog/.*$");
+	static cxxtools::Regex rex_license("^/api/v1/admin/license$");
+	static cxxtools::Regex rex_export ("^/api/v1/asset/export.*$");
+	static cxxtools::Regex rex_licensing ("^/api/v1/admin/licensing$");
+	static cxxtools::Regex rex_getlog ("^/api/v1/admin/getlog/.*$");
 
 	if(request.getMethod() == "GET") {
 		log_debug("%s", ("GetURL==" + request.getUrl()).c_str() );
+        std::string url = request.getUrl ();
 
-		if(rex_GET_text_plain.match(request.getUrl()))
-			reply.setContentType("text/plain;charset=UTF-8");
-		else
-        if (rex_GET_text_csv.match (request.getUrl ()))
-			reply.setContentType("text/csv;charset=UTF-8");
-		else
-		if(rex_GET_undecided.match(request.getUrl()))
+		if (rex_license.match(url) || rex_export.match (url) || rex_licensing.match (url) || rex_getlog.match (url))
 			log_debug("Will decide on Content-Type later");
 		else
 			reply.setContentType("application/json;charset=UTF-8");

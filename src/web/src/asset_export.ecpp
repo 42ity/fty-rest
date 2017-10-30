@@ -77,5 +77,6 @@ bool database_ready;
         LOG_END_ABNORMAL(e);
         http_die("internal-error");
     }
+    reply.setContentType ("text/csv;charset=UTF-8");
 }
 </%cpp>

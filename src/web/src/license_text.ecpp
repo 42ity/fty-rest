@@ -54,6 +54,7 @@ UserInfo user;
         free (license_file); license_file = NULL;
         http_die("internal-error", "Error reading license file, check integrity of storage.");
     }
+    reply.setContentType("text/plain;charset=UTF-8");
     reply.out() << source.rdbuf();
     free (license_file); license_file = NULL;
 }
