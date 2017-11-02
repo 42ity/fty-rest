@@ -25,10 +25,13 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <string>
 #include <algorithm>
 #include <ctype.h>
+#include <unordered_set>
 
 #include <tntdb/connect.h>
 #include <cxxtools/regex.h>
 #include <cxxtools/join.h>
+
+#include <fty_proto.h>
 
 #include "db/inout.h"
 
@@ -145,39 +148,137 @@ sanitize_value_double(
 
 
 /*
+ * \brief Case insensitive comparison
+ */
+bool findStringIC(const std::string &strHaystack, const std::string &strNeedle)
+{
+    auto it = std::search (strHaystack.begin(), strHaystack.end(), strNeedle.begin(), strNeedle.end(),
+            [](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); } );
+  return (it != strHaystack.end() );
+}
+
+
+/*
+ * \brief Verify if column named column_name contains specified to_check value.
+ * \return 0 on failure, all values in such column are empty (so other columns may match)
+ * \return -1 on failure, but column has valid content (therefore match is impossible)
+ * \return >0 on successfull match
+ */
+int check_column_match(
+        const std::string &column_name,
+        std::unordered_set<std::string> &to_check,
+        std::set<std::string> &unused_columns,
+        std::vector<size_t> &rcs_in_csv,
+        const CsvMap &cm,
+        bool match_mode,
+        bool fail_on_not_found = true) {
+    if (to_check.empty()) {
+        return 0;
+    }
+    if (unused_columns.count(column_name)) {
+        char check = 0;
+        if (!to_check.empty()) {
+            for (size_t row_i : rcs_in_csv) {
+                std::string verify = cm.get(row_i, column_name);
+                if (match_mode) {
+                    //optimized for find
+                    auto found = to_check.find(verify);
+                    if (found != to_check.end()) {
+                        zsys_debug("Picked by %s matching '%s'='%s'", column_name.c_str(), verify.c_str(), found->c_str());
+                        return row_i;
+                    }
+                } else {
+                    //less optimal for iteration
+                    for (auto to_check_element : to_check) {
+                        if (findStringIC(verify, to_check_element)) {
+                            zsys_debug("Picked by %s partial match", column_name.c_str());
+                            return row_i;
+                        }
+                    }
+                }
+                if (!check && !verify.empty()) {
+                    check = 1;
+                }
+            }
+        }
+        if (check && fail_on_not_found) {
+            zsys_debug("Failed to pick by %s", column_name.c_str());
+            return -1;
+        }
+    }
+    return 0;
+}
+
+
+/*
+ * \brief Overloading of check_column_match for easier usage
+ */
+int check_column_match(
+        const std::string &column_name_str,
+        char *to_check,
+        std::set<std::string> &unused_columns,
+        std::vector<size_t> &rcs_in_csv,
+        const CsvMap &cm,
+        bool match_mode = true,
+        bool fail_on_not_found = true) {
+    std::unordered_set<std::string> to_check_set;
+    if (NULL != to_check) {
+        to_check_set.emplace(to_check);
+    }
+    return check_column_match(column_name_str, to_check_set,
+            unused_columns, rcs_in_csv, cm, match_mode, fail_on_not_found);
+}
+
+
+/*
  * \brief Identify id of row with rackcontroller-0
- * \return SIZE_MAX when RC-0 not found
- * \return size_t number of RC-0 row
+ * \return -1 when RC-0 not found
+ * \return int number of RC-0 row
  * \throw runtime_error on failure
  */
-size_t
+int
 promote_rc0(
         MlmClient *client,
          const CsvMap& cm,
          touch_cb_t touch_fn) {
+    char have_ids = 0;
+    int rc0_row = -1;
+    char *info_ip1 = NULL;
+    char *info_ip2 = NULL;
+    char *info_ip3 = NULL;
+    char *info_serial = NULL;
+    char *info_hostname = NULL;
+    zhash_t *myself_db_ext = NULL;
+    std::vector<char *> rcs_in_db;
+    std::vector<size_t> rcs_in_csv;
+
     zsys_debug("Function called: promote_rc0");
     touch_fn(); // renew request watchdog timer
-    // first find all rows with rackcontrollers
-    std::vector<size_t> rc_rows;
+    // first find all rows with rcs_in_db
     auto unused_columns = cm.getTitles();
     if (unused_columns.empty()) {
         bios_throw("bad-request-document", "Cannot import empty document.");
     }
+    have_ids = unused_columns.count("id");
     for (size_t row_i = 1; row_i != cm.rows(); row_i++) {
         std::string type = unused_columns.count("type") ? cm.get(row_i, "type") : "notype";
         std::string subtype = unused_columns.count("sub_type") ? cm.get(row_i, "sub_type") : "nosubtype";
         if (0 == type.compare(0, strlen("device"), "device") && 0 == subtype.compare(0, strlen("rackcontroller"), "rackcontroller")) {
             zsys_debug("CSV contains RC on row %u", row_i);
-            rc_rows.push_back(row_i);
+            rcs_in_csv.push_back(row_i);
+            if (have_ids && 0 == cm.get(row_i, "id").compare("rackcontroller-0")) {
+                rc0_row = rcs_in_csv.size() - 1;
+                zsys_debug("identified RC-0 as %d item of RCs list", row_i);
+            }
         }
     }
-    if (0 == rc_rows.size()) {
-        zsys_debug("There are no RCs in CSV");
-        return SIZE_MAX;
+    if (0 == rcs_in_csv.size()) {
+        zsys_debug("There are no RCs in CSV, returning -1");
+        return -1;
     }
     touch_fn(); // renew request watchdog timer
 
-    // ask for data about myself
+    // ask for data about myself - info first
     zuuid_t *uuid = zuuid_new ();
     zmsg_t *msg = zmsg_new ();
     zmsg_addstr (msg, "INFO");
@@ -219,16 +320,54 @@ promote_rc0(
     zstr_free(&srv_type);
     zstr_free(&srv_stype);
     zstr_free(&srv_port);
-    char *ip1 = (char *)zhash_lookup(info, "ip.1");
-    char *ip2 = (char *)zhash_lookup(info, "ip.2");
-    char *ip3 = (char *)zhash_lookup(info, "ip.3");
-    char *serial = (char *)zhash_lookup(info, "serial");
-    char *hostname = (char *)zhash_lookup(info, "hostname");
-    zsys_debug("Receieved message from info: ip1=%s, ip2=%s, ip3=%s, serial=%s, hostname=%s", ip1, ip2, ip3, serial, hostname);
+    info_ip1 = (char *)zhash_lookup(info, "ip.1");
+    info_ip2 = (char *)zhash_lookup(info, "ip.2");
+    info_ip3 = (char *)zhash_lookup(info, "ip.3");
+    info_serial = (char *)zhash_lookup(info, "serial");
+    info_hostname = (char *)zhash_lookup(info, "hostname");
+    zsys_debug("Receieved message from info: ip1=%s, ip2=%s, ip3=%s, serial=%s, hostname=%s",
+            info_ip1, info_ip2, info_ip3, info_serial, info_hostname);
     zmsg_destroy (&resp);
-
     touch_fn(); // renew request watchdog timer
-    // get list of rackcontrollers already in database
+
+    // ask for data about myself - asset next
+    msg = zmsg_new ();
+    zmsg_addstr (msg, "ASSET_DETAIL");
+    zmsg_addstr (msg, zuuid_str_canonical (uuid));
+    zmsg_addstr (msg, "rackcontroller-0");
+    if (-1 == client->sendto ("asset-agent", "ASSET_DETAIL", 1000, &msg)) {
+        zuuid_destroy (&uuid);
+        throw std::runtime_error("Sending ASSET_DETAIL message to fty-asset failed");
+    }
+    touch_fn(); // renew request watchdog timer
+    // parse receieved data
+    resp = client->recv (zuuid_str_canonical (uuid), 5);
+    touch_fn(); // renew request watchdog timer
+    if (NULL == resp) {
+        zuuid_destroy (&uuid);
+        throw std::runtime_error("Response on ASSET_DETAIL message from fty-asset is empty");
+    }
+    fty_proto_t *myself_db = NULL;
+    if (fty_proto_is (resp)) {
+        myself_db = fty_proto_decode (&resp);
+        if (NULL == myself_db) {
+            myself_db_ext = NULL;
+        } else {
+            myself_db_ext = fty_proto_get_ext(myself_db);
+        }
+    } else {
+        zsys_debug("Receieved message that is not fty_proto");
+        myself_db_ext = NULL;
+    }
+    if (NULL == myself_db_ext) {
+        zsys_debug("Receieved message from asset: no data about RC-0");
+        myself_db_ext = zhash_new();
+    } else {
+        zsys_debug("Receieved message from asset: RC-0 data gained successfully");
+    }
+    fty_proto_destroy (&myself_db);
+    touch_fn(); // renew request watchdog timer
+    // get list of rcs_in_db already in database
     msg = zmsg_new ();
     zmsg_addstr (msg, "GET");
     zmsg_addstr (msg, zuuid_str_canonical (uuid));
@@ -239,105 +378,125 @@ promote_rc0(
         zhash_destroy(&info);
         throw std::runtime_error("Request for rackcontroller list failed");
     }
+    touch_fn(); // renew request watchdog timer
     resp = client->recv (zuuid_str_canonical (uuid), 5);
     touch_fn(); // renew request watchdog timer
     command = zmsg_popstr (resp);
     if (0 == strcmp("ERROR", command)) {
         zuuid_destroy (&uuid);
         zhash_destroy(&info);
-        throw std::runtime_error("Response on INFO message from fty-info is ERROR");
+        throw std::runtime_error("Response on GET message from fty-asset is ERROR");
     }
     zstr_free (&command);
-    std::vector<char *> rackcontrollers;
     char *asset = zmsg_popstr(resp);
     while (asset) {
-        rackcontrollers.push_back(asset);
+        rcs_in_db.push_back(asset);
         zsys_debug("From database came rackcontroller: %s", asset);
         asset = zmsg_popstr(resp);
     }
     zmsg_destroy (&resp);
-
+    zuuid_destroy (&uuid);
     touch_fn(); // renew request watchdog timer
-    // check how many RCs we already have in database
-    if (0 == rackcontrollers.size()) {
-        zsys_debug("0RCs in database");
-        // as discussed with Arno, there are no options, one must be picked
-        // nothing to do, promote first RC suitable to RC-0
-        if (1 == rc_rows.size()) {
-            zsys_debug("Get the only one");
-            zhash_destroy(&info);
-            return rc_rows[0];
-        }
-        // check for rackcontroller-0 first
-        for (size_t row_i : rc_rows) {
-            std::string iname = unused_columns.count("id") ? cm.get(row_i, "id") : "noid";
-            if ("rackcontroller-0" == iname) {
-                zhash_destroy(&info);
+
+    int retval = -1;
+    do { // easier memory freeing
+        // check how many RCs we already have in database
+        if (0 == rcs_in_db.size()) {
+            zsys_debug("0 RCs in database");
+            // promote the only one RC to RC-0
+            if (1 == rcs_in_csv.size()) {
+                zsys_debug("Get the only one");
+                retval = rcs_in_csv[0];
+                break;
+            }
+            // multiple RCs, check for RC-0 for promotion
+            if (-1 != rc0_row) {
                 zsys_debug("Pick one marked as RC-0");
-                return row_i;
+                retval = rcs_in_csv[rc0_row];
+                break;
             }
+        } else {
+            zsys_debug("1+ RCs in database");
         }
+        // check for special case = 1 RC in DB, 1 RC in CSV, internal id not set
+        if (1 == rcs_in_db.size() && 1 == rcs_in_csv.size() && 0 == unused_columns.count("id")) {
+            retval = rcs_in_csv[0];
+            break;
+        }
+        // check for uuid match
+        char *my_uuid = (char *)zhash_lookup (myself_db_ext, "uuid");
+        retval = check_column_match("uuid", my_uuid, unused_columns, rcs_in_csv, cm);
+        if (0 != retval) break;
+        // check for serial number match
+        char *checked_sn = (char *)zhash_lookup (myself_db_ext, "serial_no");
+        if (NULL == checked_sn || 0 == strcmp(checked_sn, "")) {
+            checked_sn = info_serial;
+        }
+        retval = check_column_match("serial_no", checked_sn, unused_columns, rcs_in_csv, cm);
+        if (0 != retval) break;
+        // check hostname match
+        char *checked_hname = (char *)zhash_lookup (myself_db_ext, "hostname.1");
+        if (NULL == checked_hname || 0 == strcmp(checked_hname, "")) {
+            checked_hname = info_hostname;
+        }
+        retval = check_column_match("hostname.1", checked_hname, unused_columns, rcs_in_csv, cm);
+        if (0 != retval) break;
+        // check for fqdn match
+        char *my_fqdn = (char *)zhash_lookup (myself_db_ext, "fqdn.1");
+        retval = check_column_match("fqdn.1", my_fqdn, unused_columns, rcs_in_csv, cm);
+        if (0 != retval) break;
+        // check name contains hostname
+        retval = check_column_match("name", checked_hname, unused_columns, rcs_in_csv, cm, false, false);
+        if (0 != retval) break;
+        // check name contains fqdn
+        retval = check_column_match("name", my_fqdn, unused_columns, rcs_in_csv, cm, false, false);
+        if (0 != retval) break;
         // then check ip address
-        for (size_t row_i : rc_rows) {
-            auto ip = unused_columns.count("ip.1") ? cm.get(row_i, "ip.1") : "noip1";
-            if ((NULL != ip1 && ip == ip1) ||
-                    (NULL != ip2 && ip == ip2) ||
-                    (NULL != ip3 && ip == ip3)) {
-                zhash_destroy(&info);
-                zsys_debug("Picked by IP");
-                return row_i;
+        char *my_ip1 = (char *)zhash_lookup (myself_db_ext, "ip.1");
+        if (NULL != my_ip1 && 0 != strcmp(my_ip1, "") &&
+                0 != strcmp(my_ip1, "127.0.0.1") && 0 != strcmp(my_ip1, "::1")) {
+            retval = check_column_match("ip.1", my_ip1, unused_columns, rcs_in_csv, cm);
+            if (0 != retval) break;
+        } else {
+            std::unordered_set<std::string> ip_set;
+            if (NULL != info_ip1 && 0 != strcmp(info_ip1, "") &&
+                    0 != strcmp(info_ip1, "127.0.0.1") && 0 != strcmp(info_ip1, "::1")) {
+                ip_set.emplace(info_ip1);
+            }
+            if (NULL != info_ip2 && 0 != strcmp(info_ip2, "") &&
+                    0 != strcmp(info_ip2, "127.0.0.1") && 0 != strcmp(info_ip2, "::1")) {
+                ip_set.emplace(info_ip2);
+            }
+            if (NULL != info_ip3 && 0 != strcmp(info_ip3, "") &&
+                    0 != strcmp(info_ip3, "127.0.0.1") && 0 != strcmp(info_ip3, "::1")) {
+                ip_set.emplace(info_ip3);
+            }
+            if (!ip_set.empty()) {
+                retval = check_column_match("ip.1", info_ip1, unused_columns, rcs_in_csv, cm);
+                if (0 != retval) break;
             }
         }
-        // sadly uuid isn't part of import csv
-        // then check serial number
-        for (size_t row_i : rc_rows) {
-            auto s_no = unused_columns.count("serial_no") ? cm.get(row_i, "serial_no") : "noserialno";
-            if (NULL != serial && serial == s_no ) {
-                zhash_destroy(&info);
-                zsys_debug("Picked by SN");
-                return row_i;
+        // database is empty, or this is considered initial import, take first available
+        if (0 == rcs_in_db.size() || 0 == unused_columns.count("id")) {
+            if (-1 != rc0_row) {
+                zsys_debug("Pick one marked as RC-0");
+                retval = rcs_in_csv[rc0_row];
+                break;
             }
+            zsys_debug("Picked first available");
+            retval = rcs_in_csv[0];
+            break;
         }
-        // then check hostname
-        for (size_t row_i : rc_rows) {
-            auto hname = unused_columns.count("hostname.1") ? cm.get(row_i, "hostname.1") : "nohostname1";
-            if (NULL != hostname && hostname == hname ) {
-                zhash_destroy(&info);
-                zsys_debug("Picked by hostname");
-                return row_i;
-            }
-        }
-        // we're out of options, take first available
-        zhash_destroy(&info);
-        zsys_debug("Picked first available");
-        return rc_rows[0];
+    } while (0);
+    zhash_destroy(&info);
+    if (unused_columns.count("name") && 0 < retval) {
+        zsys_debug("Resulting RC-0 output is %d, matching RC named '%s'", retval, cm.get(retval, "name").c_str());
+    } else {
+        retval = -1;
+        zsys_debug("Resulting RC-0 output is %d, having no name", retval);
     }
-    else {
-        zsys_debug("1+ RCs in database");
-        // as discussed with Arno, if IP match my IP, this is probably replacement, otherwise it's import
-        for (size_t row_i : rc_rows) {
-            auto ip = unused_columns.count("ip.1") ? cm.get(row_i, "ip.1") : "noip1";
-            if ((NULL != ip1 && ip == ip1) ||
-                    (NULL != ip2 && ip == ip2) ||
-                    (NULL != ip3 && ip == ip3)) {
-                zhash_destroy(&info);
-                zsys_debug("Picked by IP");
-                return row_i;
-            }
-        }
-        for (size_t row_i : rc_rows) {
-            std::string iname = unused_columns.count("id") ? cm.get(row_i, "id") : "noid";
-            auto s_no = unused_columns.count("serial_no") ? cm.get(row_i, "serial_no") : "noserialno";
-            if ("rackcontroller-0" == iname && NULL != serial && serial == s_no ) {
-                zhash_destroy(&info);
-                zsys_debug("Picked RC-0 with matching SN");
-                return row_i;
-            }
-        }
-        zhash_destroy(&info);
-        zsys_debug("Failed to pick any");
-        return SIZE_MAX;
-    }
+    touch_fn(); // renew request watchdog timer
+    return retval;
 }
 
 
@@ -431,7 +590,7 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
 
     // because id is definitely not an external attribute
     auto id_str = unused_columns.count("id") ? cm.get(row_i, "id") : "";
-    if ("rackcontroller-0" == id_str && rc_0 == SIZE_MAX ) {
+    if ("rackcontroller-0" == id_str && rc_0 == -1 ) {
         // we got RC-0 but it don't match "myself", change it to something else ("")
         id_str = "";
     } else if (rc_0 == row_i && id_str != "rackcontroller-0") {
@@ -1026,7 +1185,7 @@ std::pair<db_a_elmnt_t, persist::asset_operation>
         bios_throw("internal-error", msg.c_str());
 
     std::set<a_elmnt_id_t> ids{};
-    size_t rc_0 = SIZE_MAX;
+    int rc_0 = -1;
     auto unused_columns = cm.getTitles();
     if (unused_columns.empty()) {
         bios_throw("bad-request-document", "Cannot import empty document.");
@@ -1035,7 +1194,7 @@ std::pair<db_a_elmnt_t, persist::asset_operation>
     if ("rackcontroller-0" == iname) {
         rc_0 = 1;
     } else {
-        rc_0 = SIZE_MAX;
+        rc_0 = -1;
     }
     auto ret = process_row(conn, cm, 1, TYPES, SUBTYPES, ids, true, rc_0);
     LOG_END;
@@ -1088,7 +1247,7 @@ void
 
     // if there are rackcontroller in the import, promote one of it to rackcontroller-0 if not done already
     MlmClient client;
-    size_t rc0 = promote_rc0(&client, cm, touch_fn);
+    int rc0 = promote_rc0(&client, cm, touch_fn);
 
     std::set<size_t> processedRows;
     bool somethingProcessed;

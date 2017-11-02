@@ -121,14 +121,15 @@ void
 
 /*
  * \brief Identify id of row with rackcontroller-0
- * \return SIZE_MAX when RC-0 not found
- * \return size_t number of RC-0 row
+ * \return 0 on failure, all values in such column are empty (so other columns may match)
+ * \return -1 on failure, but column has valid content (therefore match is impossible)
+ * \return >0 on successfull match
  * \throw runtime_error on failure
  * \param[in]   client      Mlm client to send and receieve messages to/from other agents
  * \param[in]   cm          An input CSV map
  * \param[in]   touch_fn    Function to be called after time consuming operation so tntnet request won't time-out
  */
-size_t
+int
     promote_rc0(
         MlmClient *client,
         const shared::CsvMap& cm,

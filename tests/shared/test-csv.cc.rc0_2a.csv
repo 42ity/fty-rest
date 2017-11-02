@@ -4,4 +4,4 @@ Room1,room,,Washington DC,active,P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,true,1,,,,,,room-
 Row1,row,,Room1,active,P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,,,,row-3
 Rack1,rack,,Row1,active,P1,,,,,,,,,,,,,,,42,,,,,,,,,,,,,,1,,,,,,rack-4
 NewsFeed,device,feed,Washington DC,active,P1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,1,,,feed-5
-RaCek,device,rackcontroller,Rack1,active,P1,,NewsFeed,1,,,description,98.76.54.32,,,,,,,,1,,,S3R1ALN0,,,,,1,,,,,,,,,,,,rackcontroller-0
+RaCek,device,rackcontroller,Rack1,active,P1,,NewsFeed,1,,,description,98.76.54.32,,,,,,,,1,,,S3R1ALN01,,,,,1,,,,,,,,,,,,rackcontroller-0
