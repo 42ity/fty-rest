@@ -660,6 +660,7 @@ topology2_from_json_recursive (
                 it2.name = s_get (row, NAME),
                 it2.subtype =  from_subtype;
                 it2.type =  from_type;
+                it2.asset_order = 0;
             }
 
             // feed_by filtering - for devices only
