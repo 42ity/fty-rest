@@ -190,7 +190,9 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo ""
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'sodium' from Git repository..." >&2
-        $CI_TIME git clone --quiet --depth 1 -b 1.0.5-FTY-master https://github.com/42ity/libsodium sodium
+        # $CI_TIME git clone --quiet --depth 1 -b stable https://github.com/jedisct1/libsodium sodium
+        # $CI_TIME git clone --quiet --depth 1 -b 1.0.5-FTY-master https://github.com/42ity/libsodium sodium
+        $CI_TIME git clone --quiet --depth 1 -b release/IPM_Infra-1.3 https://github.com/42ity/libsodium sodium
         cd sodium
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -222,8 +224,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo ""
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'libzmq' from Git repository..." >&2
-        $CI_TIME git clone --quiet --depth 1 -b 4.2.0-FTY-master https://github.com/42ity/libzmq.git libzmq
-        #$CI_TIME git clone --quiet --depth 1 https://github.com/zeromq/libzmq.git libzmq
+        $CI_TIME git clone --quiet --depth 1 -b release/IPM_Infra-1.3 https://github.com/42ity/libzmq.git libzmq
         #$CI_TIME git clone --quiet --depth 1 https://github.com/42ity/libzmq libzmq
         cd libzmq
         CCACHE_BASEDIR=${PWD}
@@ -258,7 +259,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo "`date`: INFO: Building prerequisite 'czmq' from Git repository..." >&2
         # $CI_TIME git clone --quiet --depth 1 -b v3.0.2 https://github.com/zeromq/czmq.git czmq
         # $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/czmq czmq
-        $CI_TIME git clone --quiet --depth 1 -b v3.0.2-FTY-master https://github.com/42ity/czmq czmq
+        # $CI_TIME git clone --quiet --depth 1 -b v3.0.2 https://github.com/42ity/czmq czmq
+        $CI_TIME git clone --quiet --depth 1 -b release/IPM_Infra-1.3 https://github.com/42ity/czmq czmq
         cd czmq
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -292,7 +294,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo "`date`: INFO: Building prerequisite 'malamute' from Git repository..." >&2
         # $CI_TIME git clone --quiet --depth 1 https://github.com/zeromq/malamute.git malamute
         # $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/malamute malamute
-        $CI_TIME git clone --quiet --depth 1 -b 1.0-FTY-master https://github.com/42ity/malamute malamute
+        $CI_TIME git clone --quiet -b release/IPM_Infra-1.3 --depth 1 https://github.com/42ity/malamute malamute
         cd malamute
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -325,7 +327,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'magic' from Git repository..." >&2
         # $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/libmagic magic
-        $CI_TIME git clone --quiet --depth 1 -b 5.18-FTY-master https://github.com/42ity/libmagic magic
+        $CI_TIME git clone --quiet -b release/IPM_Infra-1.3 --depth 1 https://github.com/42ity/libmagic magic
         cd magic
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -358,7 +360,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'cidr' from Git repository..." >&2
         # $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/libcidr cidr
-        $CI_TIME git clone --quiet --depth 1 -b 1.2.3-FTY-master https://github.com/42ity/libcidr cidr
+        $CI_TIME git clone --quiet -b release/IPM_Infra-1.3 --depth 1 https://github.com/42ity/libcidr cidr
         cd cidr
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -390,7 +392,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo ""
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'cxxtools' from Git repository..." >&2
-        $CI_TIME git clone --quiet --depth 1 -b 2.2-FTY-master https://github.com/42ity/cxxtools cxxtools
+        # $CI_TIME git clone --quiet --depth 1 -b 42ity https://github.com/42ity/cxxtools cxxtools
+        $CI_TIME git clone --quiet --depth 1 -b release/IPM_Infra-1.3 https://github.com/42ity/cxxtools cxxtools
         cd cxxtools
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -423,7 +426,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'tntdb' from Git repository..." >&2
         # $CI_TIME git clone --quiet --depth 1 -b 1.3 https://github.com/42ity/tntdb tntdb
-        $CI_TIME git clone --quiet --depth 1 -b 1.3-FTY-master https://github.com/42ity/tntdb tntdb
+        $CI_TIME git clone --quiet --depth 1 -b release/IPM_Infra-1.3 https://github.com/42ity/tntdb tntdb
         cd tntdb
         cd ./tntdb
         CCACHE_BASEDIR=${PWD}
@@ -457,7 +460,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'tntnet' from Git repository..." >&2
         # $CI_TIME git clone --quiet --depth 1 -b 2.2 https://github.com/42ity/tntnet tntnet
-        $CI_TIME git clone --quiet --depth 1 -b 2.2-FTY-master https://github.com/42ity/tntnet tntnet
+        $CI_TIME git clone --quiet --depth 1 -b release/IPM_Infra-1.3 https://github.com/42ity/tntnet tntnet
         cd tntnet
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
@@ -489,7 +492,8 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo ""
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'fty-proto' from Git repository..." >&2
-        $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/fty-proto fty-proto
+        # $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/fty-proto fty-proto
+        $CI_TIME git clone --quiet --depth 1 -b release/IPM_Infra-1.3 https://github.com/42ity/fty-proto fty-proto
         cd fty-proto
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
