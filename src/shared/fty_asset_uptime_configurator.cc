@@ -256,7 +256,8 @@ bool
         for (auto& ups_it : item.second)
         {
             sprintf (key,"ups%d", i);
-            zhash_insert (aux, key, (void*) ups_it.c_str());
+            char *ups_name = strdup (ups_it.c_str ());
+            zhash_insert (aux, key, (void*) ups_name);
             i++;
         }
     }
