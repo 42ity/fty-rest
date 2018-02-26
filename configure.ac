@@ -520,21 +520,28 @@ AS_IF([test -n "$_CC_ORIG"], [
 	AC_MSG_NOTICE([NOTE: Restored default compiler settings: $CC])])
 
 # Checks for the header files
-AC_CHECK_HEADERS([magic.h], [], AC_MSG_ERROR([libmagic: cannot find required header magic.h]))
-AC_CHECK_LIB(
+# Note: the libmagic we use delivers no pkg-config, so we include it explicitly
+# if needed
+PKG_CHECK_MODULES([LIBMAGIC], [libmagic >= 5.18], [], [
+    AC_MSG_WARN([cannot find libmagic library >= 5.18 via pkg-config])
+    AC_CHECK_HEADERS([magic.h], [], AC_MSG_ERROR([libmagic: cannot find required header magic.h]))
+    AC_CHECK_LIB(
              [magic],
              [magic_open],
              [],
              [AC_MSG_ERROR([function magic_open() is not available, this is not the libmagic we are looking for])]
              )
-SAVE_LIBS="$LIBS"
-LIBS="$LIBS -lmagic"
-AC_MSG_CHECKING([linkability with libmagic])
-AC_TRY_LINK([#include <magic.h>], [magic_t magic_cookie = magic_open(MAGIC_NONE); if (!magic_cookie) {;}; magic_close(magic_cookie);],
+    SAVE_LIBS="$LIBS"
+    LIBS="$LIBS -lmagic"
+    AC_MSG_CHECKING([linkability with libmagic])
+    AC_TRY_LINK([#include <magic.h>], [magic_t magic_cookie = magic_open(MAGIC_NONE); if (!magic_cookie) {;}; magic_close(magic_cookie);],
              [AC_MSG_RESULT([ok])],
              [AC_MSG_ERROR([function magic_open() is not available, this is not the libmagic we are looking for])]
              )
-LIBS="$SAVE_LIBS"
+    LIBS="$SAVE_LIBS"
+    LIBMAGIC_LIBS="-lmagic"
+    AC_SUBST(LIBMAGIC_LIBS)
+])
 
 AC_LANG_PUSH([C++])
 AC_CHECK_HEADERS([tntdb.h],
@@ -546,6 +553,8 @@ AC_LANG_POP([C++])
 AC_MSG_NOTICE([Using PKG_CONFIG_PATH='$PKG_CONFIG_PATH'])
 PKG_CHECK_MODULES([LIBCIDR], [libcidr], [], [AC_MSG_ERROR([cannot find libcidr])])
 PKG_CHECK_MODULES([CXXTOOLS], [cxxtools >= 2.2.0], [], [AC_MSG_ERROR([cannot find cxxtools >= 2.2.0])])
+PKG_CHECK_MODULES([TNTDB], [tntdb >= 1.3], [], [AC_MSG_ERROR([cannot find tntdb >= 1.3])])
+PKG_CHECK_MODULES([TNTNET], [tntnet >= 2.2.0], [], [AC_MSG_ERROR([cannot find tntnet >= 2.2.0])])
 PKG_CHECK_MODULES([LIBSASL2], [libsasl2 >= 2.1.0], [], [AC_MSG_ERROR([cannot find sasl 2 library >= 2.1.0])])
 PKG_CHECK_MODULES([LIBSODIUM], [libsodium >= 0.7.0], [], [AC_MSG_ERROR([cannot find libsodium >= 0.7.0])])
 PKG_CHECK_MODULES([LIBZMQ], [libzmq >= 3.0], [], [AC_MSG_ERROR([cannot find libzmq version >= 3])])
