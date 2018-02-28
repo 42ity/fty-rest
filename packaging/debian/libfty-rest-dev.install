@@ -1,3 +1,5 @@
-usr/include/*
-usr/lib/*/libfty_rest.so
-usr/lib/*/pkgconfig/libfty_rest.pc
+# Note: this file was amended to NOT include these files
+# since tntnet shared object is not a typical library
+###usr/include/*
+###usr/lib/*/libfty_rest.so
+###usr/lib/*/pkgconfig/libfty_rest.pc

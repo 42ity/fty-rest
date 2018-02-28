@@ -1,16 +1,17 @@
 <project
     name = "fty-rest"
-    description = "REST API for auth Convergence"
+    description = "Common core REST API for 42ity project"
     script = "zproject.gsl"
     email = "EatonIPCOpenSource@eaton.com"
     url = "https://42ity.org"
     license = "GPL-2.0+"
-    repository = "https://github.com/42ity/fty-proto"
+    repository = "https://github.com/42ity/fty-rest"
     header = "fty_rest.h"
     >
 
     <target name = "debian" />
     <target name = "redhat" />
+    <target name = "travis" />
     <target name = "jenkins" >
         <option name = "agent_label" value = "devel-image &amp;&amp; x86_64" />
         <option name = "triggers_pollSCM" value = "H/2 * * * *" />
@@ -19,27 +20,34 @@
         <option name = "dist_docs" value = "1" />
     </target>
 
-   <classfilename keep-tree = "true" use-cxx = "true" pretty-print = "no" source-extension = "cc" />
-
-   <include filename = "license.xml" />
+    <classfilename keep-tree = "true" use-cxx = "true" pretty-print = "no" source-extension = "cc" />
+    <include filename = "license.xml" />
 
     <version major = "1" minor = "0" patch = "0" />
     <abi current = "1" revision = "0" age = "0" />
 
     <use project = "czmq"
         repository="https://github.com/42ity/czmq.git" release = "v3.0.2-FTY-master"
-        min_major = "3" min_minor = "0" min_patch = "2" />
+        min_major = "3" min_minor = "0" min_patch = "2" >
+        <use project = "libzmq"
+            repository="https://github.com/42ity/libzmq.git" release = "4.2.0-FTY-master" >
+            <use project = "libsodium" prefix = "sodium"
+                repository = "https://github.com/42ity/libsodium.git"
+                release = "1.0.5-FTY-master"
+                test = "sodium_init" />
+        </use>
+    </use>
 
     <use project = "malamute" min_major = "1" test = "mlm_server_test"
         repository="https://github.com/42ity/malamute.git"
         release = "1.0-FTY-master" />
 
     <use project = "cidr" libname = "libcidr" test = "cidr_alloc" header="libcidr.h"
-	debian_name = "libcidr0-dev" redhat_name = "libcidr-devel"
-	repository = "https://github.com/42ity/libcidr.git"
+        debian_name = "libcidr0-dev" redhat_name = "libcidr-devel"
+        repository = "https://github.com/42ity/libcidr.git"
         release = "1.2.3-FTY-master" />
 
-    <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
+    <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
         repository = "https://github.com/42ity/cxxtools.git"
         release = "2.2-FTY-master"
         />
@@ -49,10 +57,13 @@
         release = "2.2-FTY-master"
         />
 
-    <use project = "tntdb" test="tntdb::Date::gmtime"
+    <use project = "tntdb"
+        test="tntdb::Date::gmtime"
         repository = "https://github.com/42ity/tntdb.git"
         release = "1.3-FTY-master"
-        builddir = "tntdb"/>
+        builddir = "tntdb" />
+    <!-- use project = "tntdb" test="tntdb::connectCached" header="tntdb/connect.h" / -->
+    <!-- use project = "tntdb" test="tntdb::Date::gmtime" header="tntdb/connect.h" / -->
 
     <use project = "magic" libname = "libmagic" header = "magic.h" optional = "1"
         repository = "https://github.com/42ity/libmagic.git"
@@ -63,8 +74,8 @@
     <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h" prefix="fty_proto"
         min_major = "1" min_minor = "0" min_patch = "0"
         repository = "https://github.com/42ity/fty-proto.git"
-        test = "fty_proto_test">
-        <use project = "malamute"/>
+        test = "fty_proto_test" >
+        <use project = "malamute" />
     </use>
 
     <header name = "app"  />

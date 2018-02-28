@@ -390,7 +390,7 @@ typedef struct _web_src_hw_capability_t web_src_hw_capability_t;
 
 //  Self test for private classes
 FTY_REST_PRIVATE void
-    fty_rest_private_selftest (bool verbose);
+    fty_rest_private_selftest (bool verbose, const char *subtest);
 
 #endif // FTY_REST_BUILD_DRAFT_API
 

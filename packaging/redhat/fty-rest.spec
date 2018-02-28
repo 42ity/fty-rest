@@ -1,7 +1,21 @@
 #
-#    fty-rest - REST API for auth Convergence
+#    fty-rest - Common core REST API for 42ity project
 #
-#    Copyright (c) the Authors
+#    Copyright (C) 2014 - 2018 Eaton
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
 # To build with draft APIs, use "--with drafts" in rpmbuild for local builds or add
@@ -17,7 +31,7 @@
 Name:           fty-rest
 Version:        1.0.0
 Release:        1
-Summary:        rest api for auth convergence
+Summary:        common core rest api for 42ity project
 License:        GPL-2.0+
 URL:            https://42ity.org
 Source0:        %{name}-%{version}.tar.gz
@@ -33,6 +47,7 @@ BuildRequires:  libtool
 BuildRequires:  pkgconfig
 BuildRequires:  xmlto
 BuildRequires:  gcc-c++
+BuildRequires:  libsodium-devel
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
@@ -45,14 +60,14 @@ BuildRequires:  fty-proto-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
-fty-rest rest api for auth convergence.
+fty-rest common core rest api for 42ity project.
 
 %package -n libfty_rest1
 Group:          System/Libraries
-Summary:        rest api for auth convergence shared library
+Summary:        common core rest api for 42ity project shared library
 
 %description -n libfty_rest1
-This package contains shared library for fty-rest: rest api for auth convergence
+This package contains shared library for fty-rest: common core rest api for 42ity project
 
 %post -n libfty_rest1 -p /sbin/ldconfig
 %postun -n libfty_rest1 -p /sbin/ldconfig
@@ -60,12 +75,15 @@ This package contains shared library for fty-rest: rest api for auth convergence
 %files -n libfty_rest1
 %defattr(-,root,root)
 %doc COPYING
-%{_libdir}/libfty_rest.so.*
+# Note: this file was amended to include .so here too
+# since tntnet shared object is not a typical library
+%{_libdir}/libfty_rest.so*
 
 %package devel
-Summary:        rest api for auth convergence
+Summary:        common core rest api for 42ity project
 Group:          System/Libraries
 Requires:       libfty_rest1 = %{version}
+Requires:       libsodium-devel
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
@@ -77,14 +95,16 @@ Requires:       file-devel
 Requires:       fty-proto-devel
 
 %description devel
-rest api for auth convergence development tools
-This package contains development files for fty-rest: rest api for auth convergence
+common core rest api for 42ity project development tools
+This package contains development files for fty-rest: common core rest api for 42ity project
 
 %files devel
 %defattr(-,root,root)
-%{_includedir}/*
-%{_libdir}/libfty_rest.so
-%{_libdir}/pkgconfig/libfty_rest.pc
+# Note: this file was amended to NOT include these files
+# since tntnet shared object is not a typical library
+###%{_includedir}/*
+###%{_libdir}/libfty_rest.so
+###%{_libdir}/pkgconfig/libfty_rest.pc
 %{_mandir}/man3/*
 %{_mandir}/man7/*
 

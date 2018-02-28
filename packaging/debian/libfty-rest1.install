@@ -1,1 +1,3 @@
-usr/lib/*/libfty_rest.so.*
+# Note: this file was amended to include the .so symlink too
+# since tntnet shared object is not a typical library
+usr/lib/*/libfty_rest.so*

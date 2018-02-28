@@ -1,0 +1,20 @@
+<!--
+Installation model
+
+    1. by path & name
+    path - absolute path to the file
+    name - file name
+
+    2. type
+    * systemd-tmpfiles  - install $(project.name) to /usr/lib/systemd/tmpfiles.d/
+     -->
+
+<install>
+<!--    <item type = "systemd-tmpfiles" /> -->
+    <item path = "/usr/libexec/fty-rest" name = "bios-passwd" />
+    <item path = "/usr/libexec/fty-rest" name = "testpass.sh" />
+<!--
+    <item path = "/usr/libexec/fty-rest" name = "warranty-metric" />
+    <item path = "/usr/libexec/fty-rest" name = "bios-csv" />
+-->
+</install>

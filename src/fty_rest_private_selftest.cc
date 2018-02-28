@@ -35,7 +35,7 @@
 //
 
 void
-fty_rest_private_selftest (bool verbose)
+fty_rest_private_selftest (bool verbose, const char *subtest)
 {
 }
 /*
