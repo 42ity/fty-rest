@@ -68,6 +68,7 @@ make.output*
 cppcheck.supp
 cppcheck.xml
 
+fty_rest_selftest
 test-agents
 test-api
 test-cidr
@@ -173,6 +174,8 @@ tntnet.xml
 src/api/libbiosapi.pc
 !src/api/libbiosapi.pc.in
 
+src/platform.h
+
 # CMake cache
 builds/cmake/
 CMake*
@@ -190,3 +193,4 @@ sodium/
 tntdb/
 tntnet/
 magic/
+libsodium/
