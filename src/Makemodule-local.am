@@ -138,8 +138,6 @@ ECPPCCFILES = $(ECPPFILES:.ecpp=.cc)
 #EXTRA_DIST += $(addprefix $(top_srcdir)/src/web/src/,$(ECPPFILES))
 EXTRA_DIST += $(top_srcdir)/src/web/src/admin_passwd.ecpp
 
-project_libs += -ltntnet
-
 .ecpp.cc:
 	${ECPPC} ${ECPPFLAGS} ${ECPPFLAGS_CPP} -o $(top_builddir)/src/web/src/$(@F) $(top_srcdir)/src/web/src/$(<F) && \
 	    mv -f $(top_builddir)/src/web/src/$(@F).cpp $(top_builddir)/src/web/src/$(@F)
