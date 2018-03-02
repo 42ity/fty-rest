@@ -80,7 +80,7 @@
 
     <use project = "libsasl2" header = "sasl/sasl.h"
         debian_name="libsasl2-dev"
-        redhat_name="libsasl2-devel" />
+        redhat_name="(libsasl2-devel or cyrus-sasl-devel)" />
 
     <header name = "app"  />
     <header name = "bios_agent"  />
