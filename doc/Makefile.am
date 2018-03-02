@@ -42,9 +42,9 @@ SUFFIXES=.txt .adoc .xml .xml7 .1 .3 .7
 	asciidoc -d manpage -b docbook -f $(srcdir)/asciidoc.conf \
         -afty-rest_version=@PACKAGE_VERSION@ -o$@ $<
 .xml.1:
-	xmlto man $<
+	xmlto --skip-validation man $<
 .xml.3:
-	xmlto man $<
+	xmlto --skip-validation man $<
 
 # Special handling for project overview whose basename may collide
 # with a main or class name
@@ -52,7 +52,7 @@ SUFFIXES=.txt .adoc .xml .xml7 .1 .3 .7
 	asciidoc -d manpage -b docbook -f $(srcdir)/asciidoc.conf \
         -afty-rest_version=@PACKAGE_VERSION@ -o$@ $<
 .xml7.7:
-	xmlto man $<
+	xmlto --skip-validation man $<
 
 # List of *.txt and *.doc files generated during build from comments
 # in project program source files and further processed into manpages.
