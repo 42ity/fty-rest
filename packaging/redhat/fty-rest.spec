@@ -58,7 +58,8 @@ BuildRequires:  tntnet-devel
 BuildRequires:  tntdb-devel
 BuildRequires:  file-devel
 BuildRequires:  fty-proto-devel
-BuildRequires:  (libsasl2-devel or cyrus-sasl-devel)
+#BuildRequires:  (libsasl2-devel or cyrus-sasl-devel)
+BuildRequires:  cyrus-sasl-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
@@ -95,7 +96,8 @@ Requires:       tntnet-devel
 Requires:       tntdb-devel
 Requires:       file-devel
 Requires:       fty-proto-devel
-Requires:       (libsasl2-devel or cyrus-sasl-devel)
+#Requires:       (libsasl2-devel or cyrus-sasl-devel)
+Requires:       cyrus-sasl-devel
 
 %description devel
 common core rest api for 42ity project development tools
