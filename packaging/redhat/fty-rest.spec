@@ -32,7 +32,7 @@
 Name:           fty-rest
 Version:        1.0.0
 Release:        1
-Summary:        common core rest api for 42ity project
+#Summary:        common core rest api for 42ity project
 License:        GPL-2.0+
 URL:            https://42ity.org
 Source0:        %{name}-%{version}.tar.gz
@@ -61,9 +61,25 @@ BuildRequires:  fty-proto-devel
 #BuildRequires:  (libsasl2-devel or cyrus-sasl-devel)
 BuildRequires:  cyrus-sasl-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+# Note: Customization over zproject-generated code follows:
+Requires:       libfty_rest1 = %{version}
+Requires:       fty-rest-clients = %{version}
+Requires:       fty-rest-scripts = %{version}
+Requires:       ipc-data
+Requires:       augeas-tools
+Requires:       tntdb-mysql
+Requires:       libcidr0
+Requires:       tntnet-runtime
+Requires:       malamute
+Requires:       libsnmp30
+Requires:       cracklib-runtime
+Requires:       msmtp
+Summary:        grouping of end-user solution with fty-rest
 
-%description
-fty-rest common core rest api for 42ity project.
+%description -n
+This metapackage depends on actual packages needed to implement the core 42ity REST API with fty-rest for end-users of a product.
+
+#fty-rest common core rest api for 42ity project.
 
 %package -n libfty_rest1
 Group:          System/Libraries
@@ -142,25 +158,6 @@ This package contains binary programs that go along with fty-rest.
 ### TODO : Makefile, install and uncomment
 #%{_libexecdir}/warranty-metric
 #%{_libexecdir}/bios-csv
-
-%package -n fty-rest
-Group:          System/Libraries
-Requires:       libfty_rest1 = %{version}
-Requires:       fty-rest-clients = %{version}
-Requires:       fty-rest-scripts = %{version}
-Requires:       ipc-data
-Requires:       augeas-tools
-Requires:       tntdb-mysql
-Requires:       libcidr0
-Requires:       tntnet-runtime
-Requires:       malamute
-Requires:       libsnmp30
-Requires:       cracklib-runtime
-Requires:       msmtp
-Summary:        grouping of end-user solution with fty-rest
-
-%description -n fty-rest
-This metapackage depends on actual packages needed to implement the core 42ity REST API with fty-rest for end-users of a product.
 
 
 %prep
