@@ -16,6 +16,10 @@
         <option name = "agent_label" value = "devel-image &amp;&amp; x86_64" />
         <option name = "triggers_pollSCM" value = "H/2 * * * *" />
         <option name = "test_cppcheck" value = "1" />
+        <option name = "test_check" value = "0" />
+        <option name = "test_memcheck" value = "0" />
+        <option name = "test_distcheck" value = "1" />
+        <option name = "test_install" value = "0" />
         <option name = "build_docs" value = "1" />
         <option name = "dist_docs" value = "1" />
     </target>
