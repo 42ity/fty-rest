@@ -1,5 +1,6 @@
 #
 #    fty-rest - Common core REST API for 42ity project
+# Note: this file is customized after zproject generation, be sure to keep it
 #
 #    Copyright (C) 2014 - 2018 Eaton
 #
