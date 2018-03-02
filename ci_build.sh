@@ -548,6 +548,16 @@ default|default-Werror|default-with-docs|valgrind)
 # Customized : make sure we have the *.pc files
     echo "=== LIBCIDR.PC"
     cat "${BUILD_PREFIX}"/lib/pkgconfig/libcidr.pc || true
+    echo ""
+    echo "=== LIBMAGIC.PC"
+    cat "${BUILD_PREFIX}"/lib/pkgconfig/libmagic.pc || true
+    echo ""
+    echo "=== TNTNET.PC"
+    cat "${BUILD_PREFIX}"/lib/pkgconfig/tntnet.pc || true
+    echo ""
+    echo "=== TNTDB.PC"
+    cat "${BUILD_PREFIX}"/lib/pkgconfig/tntdb.pc || true
+    echo ""
 
     echo "`date`: INFO: Starting build of currently tested project with DRAFT APIs..."
     CCACHE_BASEDIR=${PWD}
