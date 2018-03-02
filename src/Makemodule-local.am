@@ -1,8 +1,7 @@
 # Custom targets, not managed via zproject
 
 ### No-arch pathnames wanted
-###clientdir ?= $(libexecdir)/$(PACKAGE)
-clientdir ?= $(prefix)/libexec/$(PACKAGE)
+clientdir ?= $(libexecdir)/$(PACKAGE)
 
 SED ?= sed
 autopathedit = ${SED} \
