@@ -186,13 +186,13 @@ install-exec-hook:
 
 ### This file contains the TNTNET settings relevant for our test runs
 ### Note: in non-daemon mode, stderr is logged to stderr
-tntnet.xml: src/web/tntnet.xml
+tntnet.xml: src/web/tntnet.xml Makefile
 	${SED} -e 's|\(.*\)\(<!--.*<dir>/</dir>.*-->.*\)|\1<dir>$(abs_top_srcdir)/src/web</dir>\n\1<compPath><entry>$(abs_top_builddir)/.libs</entry></compPath>|' $< > $@ || \
 	rm -f $@
 
 ### This file contains the TNTNET settings distributed as an example for users
 ### Note: in daemon mode, "stderr > /dev/null" unless errorLog is defined
-tntnet.xml.example: src/web/tntnet.xml
+tntnet.xml.example: src/web/tntnet.xml Makefile
 	${SED} -e 's|\(.*\)\(<!--.*<dir>/</dir>.*-->.*\)|\1<dir>$(datarootdir)/@PACKAGE@/web</dir>\n\1<compPath>\n\1\ \ \ <entry>$(pkglibdir)</entry>\n\1\ \ \ <entry>$(libdir)</entry>\n\1</compPath>|' \
 	       -e 's|<!-- <errorLog>/var/log/tntnet/error.log</errorLog> -->|<errorLog>/var/log/tntnet/error.log</errorLog>|' \
 	       -e 's|<port>8000</port>|<port>80</port>|' \
