@@ -3,6 +3,9 @@
 ### No-arch pathnames wanted
 clientdir ?= $(libexecdir)/$(PACKAGE)
 
+# The /usr/libexec/bios is known and used by several components
+bios_libexecdir ?= $(prefix)/libexec/bios
+
 SED ?= sed
 autopathedit = ${SED} \
 	-e 's|@myDBpath[@]|$(myDBpath)|g' \
@@ -23,6 +26,7 @@ autopathedit = ${SED} \
 	-e 's|@prefix[@]|$(prefix)|g' \
 	-e 's|@sysconfdir[@]|$(sysconfdir)|g' \
 	-e 's|@libexecdir[@]|$(libexecdir)|g' \
+	-e 's|@bios_libexecdir[@]|$(bios_libexecdir)|g' \
 	-e 's|@libdir[@]|$(libdir)|g'
 
 define process-in-file
@@ -193,7 +197,7 @@ tntnet.xml: src/web/tntnet.xml Makefile
 ### This file contains the TNTNET settings distributed as an example for users
 ### Note: in daemon mode, "stderr > /dev/null" unless errorLog is defined
 tntnet.xml.example: src/web/tntnet.xml Makefile
-	${SED} -e 's|\(.*\)\(<!--.*<dir>/</dir>.*-->.*\)|\1<dir>$(datarootdir)/@PACKAGE@/web</dir>\n\1<compPath>\n\1\ \ \ <entry>$(pkglibdir)</entry>\n\1\ \ \ <entry>$(libdir)</entry>\n\1</compPath>|' \
+	${SED} -e 's|\(.*\)\(<!--.*<dir>/</dir>.*-->.*\)|\1<dir>$(datarootdir)/@PACKAGE@/web</dir>\n\1<compPath>\n\1\ \ \ <entry>$(pkglibdir)</entry>\n\1\ \ \ <entry>$(libdir)</entry>\n\1\ \ \ <entry>$(bios_libexecdir)</entry>\n\1</compPath>|' \
 	       -e 's|<!-- <errorLog>/var/log/tntnet/error.log</errorLog> -->|<errorLog>/var/log/tntnet/error.log</errorLog>|' \
 	       -e 's|<port>8000</port>|<port>80</port>|' \
 	       -e 's|<port>8443</port>|<port>443</port>|' \
