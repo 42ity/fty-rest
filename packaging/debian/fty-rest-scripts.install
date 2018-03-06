@@ -1,4 +1,7 @@
+# Note: dynamic "libexec"+ARCH paths confuse legacy hardcoding elsewhere
 usr/libexec/fty-rest/bios-passwd
 usr/libexec/fty-rest/testpass.sh
+usr/lib/*/fty-rest/bios-passwd
+usr/lib/*/fty-rest/testpass.sh
 usr/share/fty-rest/examples/tntnet.xml.example
 #usr/share/fty-rest/.git_details
