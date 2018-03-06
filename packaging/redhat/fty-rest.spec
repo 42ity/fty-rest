@@ -62,6 +62,8 @@ BuildRequires:  fty-proto-devel
 BuildRequires:  cyrus-sasl-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 # Note: Customization over zproject-generated code follows:
+BuildRequires:  libxslt
+BuildRequires:  docbook-style-xsl
 Requires:       libfty_rest1 = %{version}
 Requires:       fty-rest-clients = %{version}
 Requires:       fty-rest-scripts = %{version}
