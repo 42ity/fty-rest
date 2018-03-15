@@ -156,8 +156,6 @@
    <class name = "shared/utilspp" private = "0" selftest = "0" />
    <class name = "shared/utils_json" private = "0" selftest = "0" />
 
-   <class name = "warranty/warranty_metric" private = "1" selftest = "0" />
-
    <class name = "web/src/asset_computed_impl" selftest = "0" />
    <class name = "web/src/iface" selftest = "0" />
    <class name = "web/src/location_helpers" selftest = "0" />

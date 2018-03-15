@@ -74,11 +74,12 @@
 #   define FTY_REST_EXPORT
 #   define FTY_REST_PRIVATE
 #else
-#   define FTY_REST_EXPORT
 #   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
 #       define FTY_REST_PRIVATE __attribute__ ((visibility ("hidden")))
+#       define FTY_REST_EXPORT __attribute__ ((visibility ("default")))
 #   else
 #       define FTY_REST_PRIVATE
+#       define FTY_REST_EXPORT
 #   endif
 #endif
 

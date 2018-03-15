@@ -78,7 +78,6 @@ EXTRA_DIST += \
     src/persist/monitor.h \
     src/persist/persist_error.h \
     src/shared/magic.h \
-    src/warranty/warranty_metric.h \
     src/web/src/add_gpio.h \
     src/web/src/admin_iface.h \
     src/web/src/admin_ifaces.h \
@@ -136,6 +135,7 @@ EXTRA_DIST += \
     src/web/src/admin_passwd.h \
     src/web/src/security_removeheaders.h \
     src/web/src/hw_capability.h \
+    README.md \
     src/fty_rest_classes.h
 
 # NOTE: this "include" syntax is not a "make" but an "autotools" keyword,
