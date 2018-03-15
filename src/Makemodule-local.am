@@ -151,7 +151,7 @@ EXTRA_DIST += $(top_srcdir)/src/web/src/admin_passwd.ecpp
 
 clean-local:
 	for file in $(ECPPCCFILES); do \
-	    /bin/rm -f $(top_builddir)/src/web/src/$$file; \
+	    /bin/rm -f $(top_builddir)/src/$$file; \
 	done
 
 # Technically the implementation of tntnet servlets is a shared library
