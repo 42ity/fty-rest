@@ -68,4 +68,5 @@ std::string gaccess_token;
     }
     gaccess_token = access_token;
 }
+return DECLINED;
 </%cpp>
