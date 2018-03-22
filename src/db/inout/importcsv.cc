@@ -451,6 +451,12 @@ promote_rc0(
         char *my_fqdn = (char *)zhash_lookup (myself_db_ext, "fqdn.1");
         retval = check_column_match("fqdn.1", my_fqdn, unused_columns, rcs_in_csv, cm);
         if (0 != retval) break;
+        // check name contains hostname
+        retval = check_column_match("name", checked_hname, unused_columns, rcs_in_csv, cm, false, false);
+        if (0 != retval) break;
+        // check name contains fqdn
+        retval = check_column_match("name", my_fqdn, unused_columns, rcs_in_csv, cm, false, false);
+        if (0 != retval) break;
         // then check ip address
         char *my_ip1 = (char *)zhash_lookup (myself_db_ext, "ip.1");
         if (NULL != my_ip1 && 0 != strcmp(my_ip1, "") &&
