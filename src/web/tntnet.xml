@@ -264,8 +264,7 @@
       <url>^/api/v1/asset/?(datacenter|room|row|rack|group|device)?/?(.*)$</url>
       <method>GET</method>
       <args>
-        <id>$2</id>
-        <type>$1</type>
+        <id>$1</id>
       </args>
     </mapping>
 

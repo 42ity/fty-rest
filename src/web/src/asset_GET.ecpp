@@ -58,7 +58,6 @@ bool database_ready;
 
     // checked parameters
     uint32_t checked_id;
-    std::string checked_type;
 
     // ##################################################
     // BLOCK 1
@@ -68,25 +67,15 @@ bool database_ready;
         // Arguments parsed from URL: -> request.getArg("agrgumentName")
         // Real parameters  in URL (after '?': -> qparam.param("parameterName")
         std::string id  = request.getArg("id");
-        std::string type = request.getArg("type");
         log_debug ("Request parameters - Initial tainted values received:\n\tid = '%s'\n\ttype = '%s'\n",
-                id.c_str (), type.c_str ());
+                   id.c_str ());
 
-        if ( !type.empty() && !persist::type_to_typeid (type) )
-            http_die("request-param-bad", "type", type.c_str(), "one of datacenter/room/row/rack/group/device");
-
-        checked_type = type;
+        if (id.empty ())
+            http_die("request-param-bad", "id", id.c_str(), " valid asset id.");
 
         http_errors_t errors;
         if (!check_element_identifier ("dev", id, checked_id, errors)) {
-            // XXX: we might have device called group.123, which will be passed as
-            //      id = '.123', type = 'group'
-            //      This is deprecated form of the call, but handle that gracefully
-            id = type + id;
-            http_errors_t errors;
-            if (!check_element_identifier ("dev", id, checked_id, errors)) {
-                http_die ("element-not-found", id.c_str ());
-            }
+            http_die ("element-not-found", id.c_str ());
         }
     }
     // Sanity check end
@@ -112,7 +101,7 @@ bool database_ready;
         http_die ("internal-error", "mlm_client_connect() failed.");
     }
     // end connect to malamute
-    std::string jsonAsset = getJsonAsset(client,checked_id);
+    std::string jsonAsset = getJsonAsset(client, checked_id);
     mlm_client_destroy (&client);
     if (jsonAsset.empty())  {
       http_die ("internal-error", "get json asset failed.");
