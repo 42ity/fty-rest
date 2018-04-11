@@ -45,6 +45,10 @@ BuildRequires:  automake
 BuildRequires:  autoconf
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
+# Note: customized dependency added - systemd
+BuildRequires:  systemd-devel
+BuildRequires:  systemd
+%{?systemd_requires}
 BuildRequires:  xmlto
 BuildRequires:  gcc-c++
 BuildRequires:  libsodium-devel
