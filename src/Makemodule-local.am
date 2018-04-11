@@ -803,7 +803,10 @@ TESTS += $(check_SCRIPTS)
 #                        SCM details
 #----------------------------------------------------------------------
 
-gitdetaildir =		$(datarootdir)/@PACKAGE@
+### Note: the legacy location for these git-details files is under
+### /usr/share/bios (renamed into /usr/share/fty by preinstall script)
+#gitdetaildir =		$(datarootdir)/@PACKAGE@
+gitdetaildir =		$(datarootdir)/bios
 gitdetail_DATA =	.git_details-fty-rest
 
 EXTRA_DIST +=		.git_details \

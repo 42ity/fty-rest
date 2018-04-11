@@ -140,7 +140,8 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_prefix}/lib/%{name}/testpass.sh
 %{_prefix}/libexec/%{name}/bios-passwd
 %{_prefix}/libexec/%{name}/testpass.sh
-%{_datadir}/%{name}/.git_details
+#%{_datadir}/%{name}/.git_details-fty-rest
+%{_datadir}/bios/.git_details-fty-rest
 %{_datadir}/%{name}/examples/tntnet.xml.example
 
 %changelog
