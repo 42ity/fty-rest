@@ -114,7 +114,8 @@ int
          std::string asset_name,
          std::vector<uint32_t> types,
          std::vector<uint32_t> subtypes,
-         std::function<void(const tntdb::Row&)> cb
+         std::function<void(const tntdb::Row&)> cb,
+         std::string status
          )
 {
     zsys_debug ("container element_id = %" PRIu32, element_id);
@@ -126,14 +127,16 @@ int
             "   v.id_asset_element as asset_id, "
             "   v.id_asset_device_type as subtype_id, "
             "   v.type_name as subtype_name, "
-            "   v.id_type as type_id "
+            "   v.id_type as type_id, "
+            "   v.status as status  "
             " FROM "
             "   v_bios_asset_element_super_parent v "
             " WHERE "
             "   :containerid in (v.id_parent1, v.id_parent2, v.id_parent3, "
             "                    v.id_parent4, v.id_parent5, v.id_parent6, "
             "                    v.id_parent7, v.id_parent8, v.id_parent9, "
-            "                    v.id_parent10) ";
+            "                    v.id_parent10) AND                        "
+            "                    status = :status                          ";
         if (!subtypes.empty()) {
             std::string list;
             for( auto &id: subtypes) list += std::to_string(id) + ",";
@@ -148,6 +151,7 @@ int
         tntdb::Statement st = conn.prepareCached (select);
 
         tntdb::Result result = st.set("containerid", element_id).
+                                  set ("status", status).
                                   select();
         zsys_debug("[v_bios_asset_element_super_parent]: were selected %" PRIu32 " rows",
                                                             result.size());
@@ -179,7 +183,7 @@ int
          std::function<void(const tntdb::Row&)> cb
          )
 {
-    return select_assets_by_container_(conn, element_id, asset_name, {}, {}, cb);
+    return select_assets_by_container_(conn, element_id, asset_name, {}, {}, cb, "active");
 }
 
 bool
@@ -208,7 +212,7 @@ bool
                 }
             };
 
-        // select dcs and thei IDs
+        // select dcs and their IDs
         db_reply <std::map <uint32_t, std::string> > reply =
             select_short_elements (conn, 2, 11);
         if (reply.status == 0) {
