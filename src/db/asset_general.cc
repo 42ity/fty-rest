@@ -83,7 +83,7 @@ int
         log_error ("end: %s", errmsg.c_str());
         return 3;
     }
-    
+
     if(extattributesRO != NULL) {
         auto ret31 = insert_into_asset_ext_attributes
         (conn, element_id, extattributes, false, errmsg);
@@ -173,7 +173,7 @@ int
         log_error ("end: %s", errmsg.c_str());
         return 3;
     }
-    
+
     if(extattributesRO != NULL) {
         auto ret31 = insert_into_asset_ext_attributes
         (conn, element_id, extattributesRO, true, errmsg);
@@ -264,6 +264,16 @@ db_reply_t
     std::string iname = utils::strip (persist::typeid_to_type (element_type_id));
     log_debug ("  element_name = '%s/%s'", element_name, iname.c_str ());
 
+    if (streq (status, "nonactive")) {
+        db_reply_t ret;
+        ret.status     = 0;
+        ret.errtype    = DB_ERR;
+        ret.errsubtype = DB_ERROR_BADINPUT;
+        ret.rowid      = 8;
+        ret.msg        = std::string ("Element '").append (element_name).append ("' cannot be inactivated. Change status to 'active'.");
+        return ret;
+    }
+
     tntdb::Transaction trans(conn);
     auto reply_insert1 = insert_into_asset_element
                         (conn, iname.c_str (), element_type_id, parent_id,
@@ -275,7 +285,7 @@ db_reply_t
         return reply_insert1;
     }
     auto element_id = reply_insert1.rowid;
-    
+
     std::string err = "";
 
     int reply_insert2 = insert_into_asset_ext_attributes
@@ -293,7 +303,7 @@ db_reply_t
         ret.msg        = err;
         return ret;
     }
-    
+
     if(extattributesRO != NULL) {
         err = "";
 
@@ -377,7 +387,17 @@ db_reply_t
     setlocale (LC_ALL, ""); // move this to main?
     std::string iname = utils::strip (persist::subtypeid_to_subtype (asset_device_type_id));
     log_debug ("  element_name = '%s/%s'", element_name, iname.c_str ());
-    
+
+    if (iname == "rackcontroller-0" && streq (status, "nonactive")) {
+        db_reply_t ret;
+        ret.status     = 0;
+        ret.errtype    = DB_ERR;
+        ret.errsubtype = DB_ERROR_BADINPUT;
+        ret.rowid      = 8;
+        ret.msg        = std::string ("Default rack controller '").append (element_name).append ("' cannot be inactivated. Change status to 'active'.");
+        return ret;
+    }
+
     tntdb::Transaction trans(conn);
 
     auto reply_insert1 = insert_into_asset_element
@@ -391,7 +411,7 @@ db_reply_t
     }
     auto element_id = reply_insert1.rowid;
     std::string err = "";
-   
+
     int reply_insert2 = insert_into_asset_ext_attributes
         (conn, element_id, extattributes, false, err);
     if ( reply_insert2 != 0 )
@@ -407,7 +427,7 @@ db_reply_t
         ret.msg        = err;
         return ret;
     }
-    
+
     if(extattributesRO != NULL) {
         err = "";
         int reply_insert21 = insert_into_asset_ext_attributes
