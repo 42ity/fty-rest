@@ -250,4 +250,17 @@ is_ups(int x) {
     return x == asset_subtype::UPS;
 }
 
+
+bool
+is_container (std::string asset_type)
+{
+    if (asset_type == "datacenter" ||
+        asset_type == "room"       ||
+        asset_type == "row"        ||
+        asset_type == "rack" ) {
+        return true;
+    }
+
+    return false;
+}
 } // namesace end

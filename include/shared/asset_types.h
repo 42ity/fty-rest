@@ -114,5 +114,7 @@ namespace persist {
     bool
     is_ups(int x);
 
+    bool
+    is_container (std::string asset_type);
 } //namespace persist
 #endif //SRC_SHARED_ASSET_TYPES_H

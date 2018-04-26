@@ -30,6 +30,7 @@
 #include <cxxtools/jsondeserializer.h>
 #include <fty_common.h>
 #include "shared/configure_inform.h"
+#include "include/shared/asset_types.h"
 #include "src/db/inout.h"
 #include "db/assets.h"
 </%pre>
@@ -67,14 +68,17 @@ bool database_ready;
         auto si_id = si.findMember("id");
         std::string status;
         si.getMember("status") >>= status;
+        std::string type;
+        si.getMember("type") >>= type;
 
         if ( si_id == NULL ) {
             si.addMember("id") <<= id;
         }
         else if (status  == "nonactive") {
-            if (id == "rackcontroller-0") {
+            if (id == "rackcontroller-0"     ||
+                persist::is_container (type)){
                 log_debug ("Element %s cannot be inactivated.", si_id);
-                http_die ("action-forbidden", "Setting status of rackcontroller-0");
+                http_die ("action-forbidden", "Inactivation of this asset");
             }
             send_inactive = true;
         }
