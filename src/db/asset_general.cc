@@ -53,6 +53,14 @@ int
     tntdb::Transaction trans(conn);
 
     int affected_rows = 0;
+
+    if (streq (status, "nonactive")) {
+        errmsg = element_name + std::string (": Element cannot be inactivated. Change status to 'active'.");
+        log_error ("%s", errmsg.c_str ());
+        return 1;
+    }
+
+
     int ret1 = update_asset_element
         (conn, element_id, element_name, parent_id, status, priority,
          asset_tag.c_str(), affected_rows);
@@ -143,6 +151,13 @@ int
     tntdb::Transaction trans(conn);
 
     int affected_rows = 0;
+
+    if (element_id == 0 && streq (status, "nonactive")) {
+        errmsg = element_name + std::string (": Default rack controller cannot be inactivated. Change status to 'active'.");
+        log_error ("%s", errmsg.c_str ());
+        return 1;
+    }
+
     int ret1 = update_asset_element
         (conn, element_id, element_name, parent_id, status, priority,
          asset_tag.c_str(), affected_rows);
@@ -387,16 +402,6 @@ db_reply_t
     setlocale (LC_ALL, ""); // move this to main?
     std::string iname = utils::strip (persist::subtypeid_to_subtype (asset_device_type_id));
     log_debug ("  element_name = '%s/%s'", element_name, iname.c_str ());
-
-    if (iname == "rackcontroller-0" && streq (status, "nonactive")) {
-        db_reply_t ret;
-        ret.status     = 0;
-        ret.errtype    = DB_ERR;
-        ret.errsubtype = DB_ERROR_BADINPUT;
-        ret.rowid      = 8;
-        ret.msg        = std::string ("Default rack controller '").append (element_name).append ("' cannot be inactivated. Change status to 'active'.");
-        return ret;
-    }
 
     tntdb::Transaction trans(conn);
 
