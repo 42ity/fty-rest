@@ -18,7 +18,7 @@
  #
  #><#
 /*!
- * \file time.ecpp
+ * \file http_proxy.ecpp
  * \author Arnaud Quette <ArnaudQuette@Eaton.com>
  * \brief  manipulating with system HTTP proxy settings
  */
