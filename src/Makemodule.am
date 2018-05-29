@@ -64,6 +64,7 @@ src_libfty_rest_la_SOURCES = \
     src/web/src/list_gpio.cc \
     src/web/src/my_profile.cc \
     src/web/src/netcfg.cc \
+    src/web/src/http_proxy.cc \
     src/web/src/not_found.cc \
     src/web/src/rack_total.cc \
     src/web/src/scan_progress.cc \

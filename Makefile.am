@@ -116,6 +116,7 @@ EXTRA_DIST += \
     src/web/src/list_gpio.h \
     src/web/src/my_profile.h \
     src/web/src/netcfg.h \
+    src/web/src/http_proxy.h \
     src/web/src/not_found.h \
     src/web/src/rack_total.h \
     src/web/src/scan_progress.h \

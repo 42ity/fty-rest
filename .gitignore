@@ -165,6 +165,7 @@ src/web/src/topology_location_from2.cc
 src/web/src/hw_capability.cc
 src/web/src/security_removeheaders.cc
 src/web/src/find_access_token.cc
+src/web/src/http_proxy.cc
 
 tntnet.xml.example
 !src/web/tntnet.xml

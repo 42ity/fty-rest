@@ -211,6 +211,11 @@
         <iface>$1</iface>
       </args>
     </mapping>
+    <mapping>
+      <target>http_proxy@libfty_rest</target>
+      <url>^/api/v1/admin/http_proxy$</url>
+      <method>(GET|PUT)</method>
+    </mapping>
 
     <!-- Time settings -->
     <mapping>

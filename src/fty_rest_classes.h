@@ -239,6 +239,10 @@ typedef struct _web_src_my_profile_t web_src_my_profile_t;
 typedef struct _web_src_netcfg_t web_src_netcfg_t;
 #define WEB_SRC_NETCFG_T_DEFINED
 #endif
+#ifndef WEB_SRC_HTTP_PROXY_T_DEFINED
+typedef struct _web_src_http_proxy_t web_src_http_proxy_t;
+#define WEB_SRC_HTTP_PROXY_T_DEFINED
+#endif
 #ifndef WEB_SRC_NOT_FOUND_T_DEFINED
 typedef struct _web_src_not_found_t web_src_not_found_t;
 #define WEB_SRC_NOT_FOUND_T_DEFINED
@@ -365,6 +369,7 @@ typedef struct _web_src_hw_capability_t web_src_hw_capability_t;
 #include "web/src/list_gpio.h"
 #include "web/src/my_profile.h"
 #include "web/src/netcfg.h"
+#include "web/src/http_proxy.h"
 #include "web/src/not_found.h"
 #include "web/src/rack_total.h"
 #include "web/src/scan_progress.h"

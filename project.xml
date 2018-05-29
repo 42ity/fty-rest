@@ -225,6 +225,7 @@
     <class name = "web/src/list_gpio" private="1" selftest = "0">root object</class>
     <class name = "web/src/my_profile" private="1" selftest = "0">root object</class>
     <class name = "web/src/netcfg" private="1" selftest = "0">root object</class>
+    <class name = "web/src/http_proxy" private="1" selftest = "0">root object</class>
     <class name = "web/src/not_found" private="1" selftest = "0">root object</class>
 
     <class name = "web/src/rack_total" private="1" selftest = "0">root object</class>
