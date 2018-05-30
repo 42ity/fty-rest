@@ -93,6 +93,7 @@ UserInfo user;
         proxy_file_content = "http_proxy=\"" + proxy_line + "\"\n";
         proxy_file_content += "https_proxy=\"" + proxy_line + "\"\n";
         proxy_file_content += "ftp_proxy=\"" + proxy_line + "\"\n";
+        proxy_file_content += "export http_proxy https_proxy ftp_proxy\n";
 
         out_file << proxy_file_content;
         out_file.close();        
