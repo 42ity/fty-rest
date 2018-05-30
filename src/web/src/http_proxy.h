@@ -27,14 +27,6 @@ extern "C" {
 #endif
 
 //  @interface
-//  Create a new web_src_http_proxy
-FTY_REST_PRIVATE web_src_http_proxy_t *
-    web_src_http_proxy_new (void);
-
-//  Destroy the web_src_http_proxy
-FTY_REST_PRIVATE void
-    web_src_http_proxy_destroy (web_src_http_proxy_t **self_p);
-
 
 //  @end
 
