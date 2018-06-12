@@ -801,7 +801,6 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
         if ((SUBTYPES.find("epdu")->second == subtype_id
                 || SUBTYPES.find("sts")->second == subtype_id
                 || SUBTYPES.find("ups")->second == subtype_id
-                || SUBTYPES.find("feed")->second == subtype_id
                 || SUBTYPES.find("genset")->second == subtype_id
                 || SUBTYPES.find("pdu")->second == subtype_id
                 ) && get_active_power_devices() + 1 > limitations.max_active_power_devices) {
