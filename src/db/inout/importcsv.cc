@@ -52,7 +52,7 @@ typedef struct _LIMITATIONS_STRUCT
 {
     int max_active_power_devices;
     int global_configurability;
-    
+
 } LIMITATIONS_STRUCT;
 
 int
@@ -672,6 +672,10 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
     if (unused_columns.empty()) {
         bios_throw("bad-request-document", "Cannot import empty document.");
     }
+
+    // remove the column 'create_mode' which is set to a different value anyway
+    if (unused_columns.count("create_mode"))
+        unused_columns.erase ("create_mode");
 
    // because id is definitely not an external attribute
     auto id_str = unused_columns.count("id") ? cm.get(row_i, "id") : "";
