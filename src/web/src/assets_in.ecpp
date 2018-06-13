@@ -140,12 +140,6 @@ bool database_ready;
         if ( in.empty() ) {
             in_parameter_present = false;
         }
-        if ( type.empty() && sub_type.empty() ) {
-            http_die ("request-param-required", "type' or 'sub_type");
-        }
-        if ( !type.empty() && !sub_type.empty() ) {
-            http_die ("request-param-bad", "type and sub_type", "both", "only one of them");
-        }
 
         // checked subtypes/types
         if( ! sub_type.empty() ) {
@@ -158,7 +152,8 @@ bool database_ready;
                 }
                 checked_subtypes.push_back(sub_type_id);
             }
-        } else {
+        }
+        if ( !type.empty() ) {
             std::vector<std::string> items;
             cxxtools::split(',', type, std::back_inserter(items));
             for( const auto &it : items ) {

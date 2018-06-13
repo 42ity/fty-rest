@@ -1062,30 +1062,40 @@ int
             "   t.id_type as type_id, "
             "   t.id_subtype as subtype_id "
             " FROM "
-            "   t_bios_asset_element as t"
-            " WHERE ";   
+            "   t_bios_asset_element as t";
 
-
+        if(!subtypes.empty() || !types.empty() || status != "" || without != "") {
+          select += " WHERE ";
+        }
         if (!subtypes.empty()) {
             std::string list;
             for( auto &id: subtypes) list += std::to_string(id) + ",";
             select += " t.id_subtype in (" + list.substr(0,list.size()-1) + ")";
         }
         if (!types.empty()) {
+            if(!subtypes.empty() ) {
+              select += " AND ";
+            }
             std::string list;
             for( auto &id: types) list += std::to_string(id) + ",";
             select += " t.id_type in (" + list.substr(0,list.size()-1) + ")";
         }
         if (status != "") {
-            select += " AND t.status = \"" + status + "\"";
+            if(!subtypes.empty() || !types.empty()) {
+              select += " AND ";
+            }
+            select += " t.status = \"" + status + "\"";
         }
         
         std::string end_select = "" ;       
         if (without != "") {
+            if(!subtypes.empty() || !types.empty() || status != "" ) {
+              select += " AND ";
+            }
             if(without == "location") {
-                select += " AND t.id_parent is NULL ";
+                select += " t.id_parent is NULL ";
             } else if (without == "powerchain") {
-                end_select += " AND NOT EXISTS "
+                end_select += " NOT EXISTS "
                         " (SELECT id_asset_device_dest "
                         "  FROM t_bios_asset_link_type as l JOIN t_bios_asset_link as a"
                         "  ON a.id_asset_link_type=l.id_asset_link_type "
@@ -1093,7 +1103,7 @@ int
                         "     name=\"power chain\" "
                         "     AND t.id_asset_element=a.id_asset_device_dest)";
             } else {
-                end_select += " AND NOT EXISTS "
+                end_select += " NOT EXISTS "
                         " (SELECT a.id_asset_element "
                         "  FROM "
                         "     t_bios_asset_ext_attributes as a "
