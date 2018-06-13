@@ -26,6 +26,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 namespace persist {
 
+const static std::string DEFAULT_PARAMETERS = "\"preferences\":{\"email\" : \" \", \"telephone\" : \" \", \"organization\" : \" \", \"date\":\"DDMMYYYY\", \"temperature\":\"C\", \"language\":\"en-us\", \"time\":\"24h\"}";
+
 //=========================
 //lowlevel-functions
 //=========================
@@ -123,9 +125,15 @@ int
         const std::string &data)
 {
     uint16_t rows;
-    
-    return update_agent_info( conn, agent_name, (void *)data.c_str(),
-                              data.size(), rows);
+
+    if (!data.empty()) {
+        return update_agent_info( conn, agent_name, (void *)data.c_str(),
+                                data.size(), rows);
+    }
+    else {
+        return update_agent_info( conn, agent_name, (void *)DEFAULT_PARAMETERS.c_str(),
+                                DEFAULT_PARAMETERS.size(), rows);
+    }
 }
 
 int
@@ -156,9 +164,9 @@ int
 
     if( select_agent_info(conn, agent_name, (void **)&data, size) == 0 ) {
         if( ! data )
-        {   
-            // data is empty
-            return 0;
+        {
+            data = strdup(DEFAULT_PARAMETERS.c_str());
+            size = strlen(data);
         }
         // data is not empty
         data2 = (char *)realloc( data, size + 1 );
@@ -186,6 +194,7 @@ int
         return load_agent_info(connection, agent_name, agent_info);
     } catch( const std::exception &e ) {
         log_info("Cannot load agent %s info: %s", agent_name.c_str(), e.what() );
+        agent_info = DEFAULT_PARAMETERS;
         return -1;
     }
 }
