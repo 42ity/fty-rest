@@ -29,7 +29,6 @@
     #include <cxxtools/jsondeserializer.h>
     #include <cxxtools/jsonserializer.h>
     #include "src/db/agentstate/agentstate.h"
-    #define DEFAULT_PREFERENCES "\"preferences\":{\"email\" : \" \", \"telephone\" : \" \", \"organization\" : \" \", \"date\":\"DDMMYYYY\", \"temperature\":\"C\", \"language\":\"en-us\", \"time\":\"24h\"}"
 </%pre>
 <%request scope="global">
     UserInfo user;
@@ -82,21 +81,10 @@
         try
         {
             persist::load_agent_info(uid, preferences);
-            //mitigate the situation DB content is empty - most of the json parsers don't deal well with empty strings
-
         }
         catch (const std::exception &e)
         {
             log_debug ("my_profile: exception caught %s", e.what ());
-        }
-
-        if (preferences.empty()) {
-            // before licence POST = first login... or a DB error...
-            preferences = DEFAULT_PREFERENCES;
-
-            if (database_ready) {
-                log_debug ("my_profile: database is ready but got empty preferences - using default set.");
-            }
         }
 </%cpp>
 {
@@ -125,7 +113,7 @@
             // JSON is correct, try to save it
             cxxtools::SerializationInfo *preferences_si = si.findMember("preferences");
             if ( preferences_si == NULL ) {
-                int rv = persist::save_agent_info (uid, DEFAULT_PREFERENCES);
+                int rv = persist::save_agent_info (uid, "");
 
                 if ( rv != 0 ) {
                     log_debug ("my_profile: Cannot save changes (default)");
