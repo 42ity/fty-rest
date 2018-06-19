@@ -294,3 +294,41 @@ get_active_power_devices ()
 
     return count;
 }
+
+
+std::string get_status_from_db (std::string element_name) {
+    tntdb::Connection conn;
+    try {
+        conn = tntdb::connectCached (url);
+    }
+    catch ( const std::exception &e) {
+        zsys_error ("DB: cannot connect, %s", e.what());
+        return "unknown";
+    }
+    try{
+        tntdb::Statement st = conn.prepareCached(
+            " SELECT "
+            "   v.status,  "
+            " FROM v_bios_asset_element v  "
+            " WHERE v.name=:vname"
+            );
+
+        tntdb::Row row = st.set ("name", element_name).selectRow ();
+        zsys_debug("get_status_from_db: [v_bios_asset_element]: were selected %zu rows", row.size());
+        if (row.size() == 1) {
+            std::string ret;
+            row [0].get (ret);
+            return ret;
+        } else {
+            return "unknown";
+        }
+    }
+    catch (const tntdb::NotFound &e) {
+        zsys_debug("get_status_from_db: [v_bios_asset_element]: %s asset not found", element_name.c_str ());
+        return "unknown";
+    }
+    catch (const std::exception &e) {
+        zsys_error ("get_status_from_db: [v_bios_asset_element]: error '%s'", e.what());
+        return "unknown";
+    }
+}

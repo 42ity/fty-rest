@@ -407,4 +407,15 @@ multi_insert_string(
 int
 get_active_power_devices ();
 
+/**
+ *  \brief Selects status string for selected asset in the DB
+ *
+ *  \param[in] element_name - name of asset in question
+ *
+ *  \return <status> - in case of success
+ *          "unknown" - in case of failure
+ */
+std::string get_status_from_db (
+        std::string element_name);
+
 #endif // SRC_DB_DBHELPERS_H_
