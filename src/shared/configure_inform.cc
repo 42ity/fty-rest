@@ -153,8 +153,9 @@ void
                     throw std::runtime_error("mlm_client_send () failed.");
                 }
             }
+            //TODO : remove || tag_no_not_really
             if (streq (operation2str (oneRow.second).c_str (), FTY_PROTO_ASSET_OP_CREATE) ||
-                streq (operation2str (oneRow.second).c_str (), FTY_PROTO_ASSET_OP_UPDATE)) {
+                streq (operation2str (oneRow.second).c_str (), FTY_PROTO_ASSET_OP_UPDATE)  || tag_no_not_really) {
                 zmsg_t *republish = zmsg_new ();
                 zmsg_addstr (republish, s_asset_name.c_str ());
                 mlm_client_sendto (client, "asset-agent", "REPUBLISH", NULL, 5000, &republish);
