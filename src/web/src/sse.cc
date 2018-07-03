@@ -252,8 +252,12 @@ std::string Sse::changeFtyProtoAsset2Json(fty_proto_t *asset)
       }
       else
       {
-        log_debug("skipping due to element_src '%s' not being in the list", fty_proto_name(asset));
-        return json;
+        /**
+         * XXX: while we should try not to send stuff that is not relevant to
+         * the SSE stream, not filtering deletions will not harm the UI.
+         */
+        log_debug("element_src '%s' not in the list, but sending it anyway", fty_proto_name(asset));
+        //return json;
       }
     }
     else
