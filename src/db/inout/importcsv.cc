@@ -588,42 +588,37 @@ void get_licensing_limitation(LIMITATIONS_STRUCT &limitations)
         log_fatal ("Cannot send message to etn-licensing");
         bios_throw ("internal-error", "mlm_client_sendto failed.");
     }
+
     zmsg_t *reply = client_ptr->recv (zuuid_str, 30);
     zuuid_destroy (&zuuid);
     if (!reply) {
         log_fatal ("client->recv (timeout = '30') returned NULL for LIMITATION_QUERY");
         bios_throw ("internal-error", "client->recv () returned NULL");
     }
-    // Pop REPLY first, then the actual value
-    char *value = zmsg_popstr (reply);
-    zstr_free (&value);
-    // Now pop the actual value
-    value = zmsg_popstr (reply);
-    char *item = zmsg_popstr (reply);
-    char *category = zmsg_popstr (reply);
-    while (value && item && category) {
-        log_debug("Licensing limitations: category/item/value => %s/%s/%s", category, item, value);
-        if (streq (category, "POWER_NODES") && streq (item, "MAX_ACTIVE")) {
-            limitations.max_active_power_devices = atoi(value);
-            log_debug("limitations.max_active_power_device set to %i", limitations.max_active_power_devices);
+    char *reply = zmsg_popstr (msg);
+    char *status = zmsg_popstr (msg);
+    if (streq (status, "OK") && streq (reply, "REPLY")) {
+        zmsg_t *submsg = zmsg_popmsg(msg);
+        while (submsg) {
+            zmsg_t *submsg = zmsg_popmsg(msg);
+            if (!submsg) {
+                return;
+            }
+            fty_proto_t *submetric = fty_proto_decode(&submsg);
+            assert (fty_proto_id(submetric) == FTY_PROTO_METRIC);
+            if (streq (fty_proto_type(submetric), "POWER_NODES") && streq (fty_proto_name(submetric), "MAX_ACTIVE")) {
+                limitations.max_active_power_devices = atoi(fty_proto_value (submetric));
+                log_debug("limitations.max_active_power_device set to %i", limitations.max_active_power_devices);
+            }
+            else if (streq (fty_proto_type(submetric), "CONFIGURABILITY") && streq (fty_proto_name(submetric), "GLOBAL")) {
+                limitations.global_configurability = atoi(fty_proto_value (submetric));
+                log_debug("limitations.global_configurability set to %i", limitations.global_configurability);
+            }
+            fty_proto_destroy(&submetric);
         }
-        else if (streq (category, "CONFIGURABILITY") && streq (item, "GLOBAL")) {
-            limitations.global_configurability = atoi(value);
-            log_debug("limitations.global_configurability set to %i", limitations.global_configurability);
-        }
-        zstr_free (&value);
-        zstr_free (&item);
-        zstr_free (&category);
-        value = zmsg_popstr (reply);
-        item = zmsg_popstr (reply);
-        category = zmsg_popstr (reply);
     }
-    if (NULL != value)
-        zstr_free (&value);
-    if (NULL != item)
-        zstr_free (&item);
-    if (NULL != category)
-        zstr_free (&category);
+    zstr_free (reply);
+    zstr_free (status);
 }
 
 
