@@ -606,11 +606,11 @@ void get_licensing_limitation(LIMITATIONS_STRUCT &limitations)
             }
             fty_proto_t *submetric = fty_proto_decode(&submsg);
             assert (fty_proto_id(submetric) == FTY_PROTO_METRIC);
-            if (streq (fty_proto_type(submetric), "POWER_NODES") && streq (fty_proto_name(submetric), "MAX_ACTIVE")) {
+            if (streq (fty_proto_name(submetric), "rackcontroller-0") && streq (fty_proto_type(submetric), "power_nodes.max_active")) {
                 limitations.max_active_power_devices = atoi(fty_proto_value (submetric));
                 log_debug("limitations.max_active_power_device set to %i", limitations.max_active_power_devices);
             }
-            else if (streq (fty_proto_type(submetric), "CONFIGURABILITY") && streq (fty_proto_name(submetric), "GLOBAL")) {
+            else if (streq (fty_proto_name(submetric), "rackcontroller-0") && streq (fty_proto_type(submetric), "configurability.global")) {
                 limitations.global_configurability = atoi(fty_proto_value (submetric));
                 log_debug("limitations.global_configurability set to %i", limitations.global_configurability);
             }
