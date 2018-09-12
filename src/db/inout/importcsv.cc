@@ -589,18 +589,18 @@ void get_licensing_limitation(LIMITATIONS_STRUCT &limitations)
         bios_throw ("internal-error", "mlm_client_sendto failed.");
     }
 
-    zmsg_t *reply = client_ptr->recv (zuuid_str, 30);
+    zmsg_t *response = client_ptr->recv (zuuid_str, 30);
     zuuid_destroy (&zuuid);
-    if (!reply) {
+    if (!response) {
         log_fatal ("client->recv (timeout = '30') returned NULL for LIMITATION_QUERY");
         bios_throw ("internal-error", "client->recv () returned NULL");
     }
-    char *reply = zmsg_popstr (msg);
-    char *status = zmsg_popstr (msg);
+    char *reply = zmsg_popstr (response);
+    char *status = zmsg_popstr (response);
     if (streq (status, "OK") && streq (reply, "REPLY")) {
-        zmsg_t *submsg = zmsg_popmsg(msg);
+        zmsg_t *submsg = zmsg_popmsg(response);
         while (submsg) {
-            zmsg_t *submsg = zmsg_popmsg(msg);
+            zmsg_t *submsg = zmsg_popmsg(response);
             if (!submsg) {
                 return;
             }
@@ -617,8 +617,9 @@ void get_licensing_limitation(LIMITATIONS_STRUCT &limitations)
             fty_proto_destroy(&submetric);
         }
     }
-    zstr_free (reply);
-    zstr_free (status);
+    zstr_free (&reply);
+    zstr_free (&status);
+    zmsg_destroy (&response);
 }
 
 
