@@ -25,8 +25,9 @@
 #>
 <%pre>
 #include <malamute.h>
-#include <fty_common_mlm_tntmlm.h>  
+#include <fty_common_mlm_tntmlm.h>
 #include <fty_common_rest.h>
+#include <fty_common_macros.h>
 #include <cxxtools/split.h>
 #include <cxxtools/jsonserializer.h>
 #include <cxxtools/serializationinfo.h>
@@ -67,7 +68,7 @@ if (type.empty ()) {
 MlmClientPool::Ptr client = mlm_pool.get ();
 if (!client.getPointer ()) {
     log_fatal ("mlm_pool.get () failed.");
-    http_die ("internal-error", "mlm_pool.get () failed.");
+    http_die ("internal-error", TRANSLATE_ME ("mlm_pool.get () failed."));
 }
 
 zuuid_t *uuid = zuuid_new ();
@@ -79,14 +80,14 @@ if (rv == -1) {
     log_fatal (
             "client->sendto (address = '%s', subject = '%s', timeout = 1000) failed.",
             "fty-autoconfig", "rfc-evaluator-rules");
-    http_die ("internal-error", "client->sendto () failed");
+    http_die ("internal-error", TRANSLATE_ME ("client->sendto () failed"));
 }
 
 zmsg_t *msg = client->recv (zuuid_str_canonical (uuid), 5);
 zuuid_destroy (&uuid);
 if (!msg) {
     log_fatal ("client->recv (timeout = '5') returned NULL");
-    http_die ("internal-error", "client->recv () returned NULL");
+    http_die ("internal-error", TRANSLATE_ME ("client->recv () returned NULL"));
 }
 
 char *result = zmsg_popstr (msg);
@@ -94,7 +95,7 @@ if (!result || !streq (result, "LIST")) {
     log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result);
     zstr_free (&result);
     zmsg_destroy (&msg);
-    http_die ("internal-error", "LIST template bad response");
+    http_die ("internal-error", TRANSLATE_ME ("LIST template bad response"));
 }
 zstr_free (&result);
 
@@ -103,7 +104,7 @@ if (!result || !streq (result, type.c_str())) {
     log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result);
     zstr_free (&result);
     zmsg_destroy (&msg);
-    http_die ("internal-error", "LIST template bad response");
+    http_die ("internal-error", TRANSLATE_ME ("LIST template bad response"));
 }
 zstr_free (&result);
 cxxtools::SerializationInfo si;
@@ -117,10 +118,10 @@ while(template_name){
     cxxtools::SerializationInfo &si_templat = si_templat_obj.addMember("template");
     std::stringstream input (templat);
     cxxtools::JsonDeserializer  deserializer(input);
-    deserializer.deserialize(si_templat);  
+    deserializer.deserialize(si_templat);
     //the name should be set after the deserialization
     si_templat.setName("template");
-    
+
     cxxtools::SerializationInfo &si_assets_id = si_templat_obj.addMember("assets_id");
     si_assets_id.setCategory(cxxtools::SerializationInfo::Category::Array);
     if (asset_list && strlen(asset_list)>0){
