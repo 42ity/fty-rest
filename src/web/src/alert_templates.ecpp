@@ -69,10 +69,6 @@ if (!client.getPointer ()) {
     log_fatal ("mlm_pool.get () failed.");
     http_die ("internal-error", "mlm_pool.get () failed.");
 }
-if (!client.getPointer ()) {
-    log_fatal ("mlm_pool.get () failed.");
-    http_die ("internal-error", "mlm_pool.get () failed.");
-}
 
 zuuid_t *uuid = zuuid_new ();
 zmsg_t *req_list = s_request_LIST (uuid,type.c_str());
@@ -82,7 +78,7 @@ if (rv == -1) {
     zuuid_destroy (&uuid);
     log_fatal (
             "client->sendto (address = '%s', subject = '%s', timeout = 1000) failed.",
-            "fty-metric-cache", "latest-rt-data");
+            "fty-autoconfig", "rfc-evaluator-rules");
     http_die ("internal-error", "client->sendto () failed");
 }
 
