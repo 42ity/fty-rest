@@ -24,6 +24,7 @@
  * \brief Sends feedback email.
  */
  #><%pre>
+#include <fty_common_macros.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_rest_utils_web.h>
 #include <fty_common_mlm_tntmlm.h>
@@ -98,7 +99,7 @@ s_max_attachment_size () {
         char *endptr;
         off_t foo = strtoll (zconfig_get (smtp, "max_size", NULL), &endptr, 10);
         if (errno != 0)
-            zsys_warning ("smtp/max_size %s it not a number", zconfig_get (smtp, "max_size", NULL));
+            log_warning ("smtp/max_size %s it not a number", zconfig_get (smtp, "max_size", NULL));
         else
             ret = foo;
     }
@@ -137,7 +138,7 @@ UserInfo user;
         }
 
         if (to.find ('@', 0) == std::string::npos)
-            http_die ("request-param-bad", "to", to.c_str (), "valid email address");
+            http_die ("request-param-bad", "to", to.c_str (), TRANSLATE_ME ("valid email address"));
 
         checked_to = to;
 
@@ -147,7 +148,7 @@ UserInfo user;
             http_die ("request-param-required", "reply");
 
         if (_reply.find ('@', 0) == std::string::npos)
-            http_die ("request-param-bad", "reply", _reply.c_str (), "valid email address");
+            http_die ("request-param-bad", "reply", _reply.c_str (), TRANSLATE_ME ("valid email address"));
 
         checked_reply = _reply;
 
@@ -186,7 +187,7 @@ UserInfo user;
             getenv ("SPOOL_DIR") ? getenv ("SPOOL_DIR") : "/tmp");
     temp_dir = mkdtemp (temp_dir);
     if (!temp_dir){
-        http_die ("internal-error", "Can't create temporary directory");
+        http_die ("internal-error", TRANSLATE_ME ("Can't create temporary directory"));
     }
     chmod (temp_dir, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
 
@@ -202,7 +203,7 @@ UserInfo user;
             s_rm_rf (paths, &temp_dir);
             http_die (
                 "internal-error",
-                "Attachment size limit (%jd) have been exceeded (%jd)",
+                TRANSLATE_ME ("Attachment size limit (%jd) have been exceeded (%jd)"),
                 (intmax_t) max_size,
                 (intmax_t) current_size
                 );
@@ -216,7 +217,7 @@ UserInfo user;
         std::ofstream out_file (path);
         if (!out_file) {
             s_rm_rf (paths, &temp_dir);
-            http_die ("internal-error", "Cannot process attachment");
+            http_die ("internal-error", TRANSLATE_ME ("Cannot process attachment"));
         }
 
         // more efficient is the use of iterators:
@@ -235,7 +236,7 @@ UserInfo user;
     if (!client.getPointer ()) {
         log_fatal ("Error: mlm_pool.get () failed.");
         s_rm_rf (paths, &temp_dir);
-        http_die ("internal-error", "mlm_pool.get () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("mlm_pool.get () failed."));
     }
 
     // send message
@@ -259,17 +260,19 @@ UserInfo user;
                     "Error: client->sendto (address = '%s', subject = '%s', timeout = 1000) failed.",
                         AGENT_FTY_EMAIL_SENDMAIL_ONLY, "SENDMAIL");
         s_rm_rf (paths, &temp_dir);
-        http_die ("internal-error", "client->sendto () failed");
+        http_die ("internal-error", TRANSLATE_ME ("client->sendto () failed"));
     }
 
     zmsg_t *recieve = client->recv (zuuid_str_canonical (uuid) , _timeout);
     zuuid_destroy (&uuid);
     if (!recieve)
     {
-        std::string msg = "Error: client->recv (timeout = '" + std::to_string (_timeout) + "') returned NULL";
-        log_error ("%s", msg.c_str ());
+        char *msg = zsys_sprintf (TRANSLATE_ME ("Error: client-> recv (timeout = '%d') returned NULL", _timeout));
+        std::string msg_str (msg);
+        zstr_free (&msg);
+        log_error ("%s", msg_str.c_str ());
         s_rm_rf (paths, &temp_dir);
-        http_die ("internal-error", msg.c_str ());
+        http_die ("internal-error", msg_str.c_str ());
     }
 
     char *err_code = zmsg_popstr (recieve);
@@ -291,7 +294,7 @@ UserInfo user;
     {
         status = "Failed";
         log_fatal ("Error: message recieved with invalid subject.");
-        http_die ("internal-error", "client->recv () invalid message subject");
+        http_die ("internal-error", TRANSLATE_ME ("client->recv () invalid message subject"));
     }
 
     zmsg_destroy(&recieve);

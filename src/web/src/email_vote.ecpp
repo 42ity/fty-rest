@@ -24,6 +24,7 @@
  * \brief Sends voting email.
  */
  #><%pre>
+#include <fty_common_macros.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_mlm_tntmlm.h>
 #include <fty_common_mlm_subprocess.h>
@@ -106,7 +107,7 @@ UserInfo user;
         checked_to = to;
 
         if (to.find ('@', 0) == std::string::npos)
-            http_die ("request-param-bad", "to", to.c_str (), "valid email address");
+            http_die ("request-param-bad", "to", to.c_str (), TRANSLATE_ME ("valid email address"));
         std::string value = qparam.param ("value");
         if (value.empty ())
             http_die ("request-param-required", "value");
@@ -115,7 +116,7 @@ UserInfo user;
             vote = std::stoi (value);
         }
         catch (const std::exception& e) {
-            http_die ("request-param-bad", "value", value.c_str (), "number 1-3");
+            http_die ("request-param-bad", "value", value.c_str (), TRANSLATE_ME ("number 1-3"));
         }
 
         std::string context = qparam.param ("context");
@@ -142,7 +143,7 @@ UserInfo user;
     MlmClientPool::Ptr client = mlm_pool.get ();
     if (!client.getPointer ()) {
         log_fatal ("Error: mlm_pool.get () failed.");
-        http_die ("internal-error", "mlm_pool.get () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("mlm_pool.get () failed."));
     }
 
     // send message
@@ -161,16 +162,18 @@ UserInfo user;
         log_fatal (
                     "Error: client->sendto (address = '%s', subject = '%s', timeout = 1000) failed.",
                         AGENT_FTY_EMAIL_SENDMAIL_ONLY, "SENDMAIL");
-        http_die ("internal-error", "client->sendto () failed");
+        http_die ("internal-error", TRANSLATE_ME ("client->sendto () failed"));
     }
 
     zmsg_t *recieve = client->recv (zuuid_str_canonical (uuid) , _timeout);
     zuuid_destroy (&uuid);
     if (!recieve)
     {
-        std::string msg = "Error: client->recv (timeout = '" + std::to_string (_timeout) + "') returned NULL";
-        log_error ("%s", msg.c_str ());
-        http_die ("internal-error", msg.c_str ());
+        char *msg = zsys_sprintf (TRANSLATE_ME ("Error: client-> recv (timeout = '%d') returned NULL", _timeout));
+        std::string msg_str (msg);
+        zstr_free (&msg);
+        log_error ("%s", msg_str.c_str ());
+        http_die ("internal-error", msg_str.c_str ());
     }
 
     char *err_code = zmsg_popstr (recieve);
@@ -191,7 +194,7 @@ UserInfo user;
     {
         status = "Failed";
         log_fatal ("Error: message recieved with invalid subject.");
-        http_die ("internal-error", "client->recv () invalid message subject");
+        http_die ("internal-error", TRANSLATE_ME ("client->recv () invalid message subject"));
     }
 
     zmsg_destroy(&recieve);
