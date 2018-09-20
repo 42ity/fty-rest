@@ -33,6 +33,7 @@
 #include <cxxtools/join.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_rest_sasl.h>
+#include <fty_common_macros.h>
 #include <fty_common_mlm_subprocess.h>
 
 #include "shared/cidr.h"
@@ -130,20 +131,20 @@ UserInfo user;
             http_die_error(errors);
         }
         if (user == "root") {
-            http_die("request-param-bad", "user", user.c_str(), "<user name other than 'root'>");
+            http_die("request-param-bad", "user", user.c_str(), TRANSLATE_ME ("<user name other than 'root'>"));
         }
         if (user == BIOS_SCRIPT_USER) {
-            http_die("request-param-bad", "user", user.c_str(), "<user name other than this one>");
+            http_die("request-param-bad", "user", user.c_str(), TRANSLATE_ME ("<user name other than this one>"));
         }
 
         if (old_passwd.empty()) {
-            http_die("request-param-bad", "old_passwd", "<empty>", "<password>");
+            http_die("request-param-bad", "old_passwd", TRANSLATE_ME ("<empty>"), TRANSLATE_ME ("<password>"));
         } else {
             checked_old_passwd = old_passwd;
         }
 
         if (new_passwd.empty()) {
-            http_die("request-param-bad", "new_passwd", "<empty>", "<password>");
+            http_die("request-param-bad", "new_passwd", TRANSLATE_ME ("<empty>"), TRANSLATE_ME ("<password>"));
         } else {
             checked_new_passwd = new_passwd;
         }
@@ -158,16 +159,16 @@ UserInfo user;
     }
 
     if (!authenticate(checked_user.c_str(), checked_old_passwd.c_str()))
-        http_die("request-param-bad", "(user|old_passwd)", "<invalid user or password>", "<valid user and password>");
+        http_die("request-param-bad", "(user|old_passwd)", TRANSLATE_ME ("<invalid user or password>"), TRANSLATE_ME ("<valid user and password>"));
 
     std::string reason;
     std::string received;
     int r = s_passwd(checked_user, checked_old_passwd, checked_new_passwd, reason);
     if (r != 0) {
         if (!reason.empty())
-            received = "password with problems: " + reason;
+            received = TRANSLATE_ME ("password with problems: ") + reason;
         else
-            received = "bios-passwd returned error code " + std::to_string(r);
+            received = TRANSLATE_ME ("bios-passwd returned error code ") + std::to_string(r);
 
         //this stretches semantics of request-param-bad!!!
         http_die("request-param-bad",
@@ -178,6 +179,6 @@ UserInfo user;
 
     /* Verify the new password and so flush the SASLAUTHD cache that trusts the old one still */
     if (!authenticate(checked_user.c_str(), checked_new_passwd.c_str()))
-        http_die("internal-error", "Can't authenticate user with new password, saslauthd service failed");
+        http_die("internal-error", TRANSLATE_ME ("Can't authenticate user with new password, saslauthd service failed"));
 </%cpp>
 { "passwd" : "<$$ "password for '" + checked_user + "' changed" $>" }
