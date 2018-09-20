@@ -24,6 +24,7 @@
  */
  #><%pre>
 #include <string>
+#include <fty_common_macros.h>
 #include <fty_common_mlm_tntmlm.h>
 #include <fty_common_rest.h>
 #include <fty_log.h>
@@ -157,23 +158,23 @@ UserInfo user;
     std::string json = request.getBody ();
 
     if (json.empty ()) {
-        http_die ("request-param-required", "<JSON object with keys part_number, manufacturer, type, normal_state, gpx_direction, gpx_power_source, alarm_message, alarm_severity>");
+        http_die ("request-param-required", TRANSLATE_ME ("<JSON object with keys part_number, manufacturer, type, normal_state, gpx_direction, gpx_power_source, alarm_message, alarm_severity>"));
     }
 
     int rv = add_gpio (json);
     if (rv == -1)
-        http_die ("internal-error", "mlmpool.get () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("mlmpool.get () failed."));
     else
     if (rv == -2)
-        http_die ("internal-error", "client->sendto () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("client->sendto () failed."));
     else
     if (rv == -3)
-        http_die ("internal-error", "client->recv () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("client->recv () failed."));
     else
     if (rv == -4)
-        http_die ("request-param-required", "<JSON object with keys part_number, manufacturer, type, normal_state, gpx_direction, gpx_power_source, alarm_message, alarm_severity>");
+        http_die ("request-param-required", TRANSLATE_ME ("<JSON object with keys part_number, manufacturer, type, normal_state, gpx_direction, gpx_power_source, alarm_message, alarm_severity>"));
     else
     if (rv == -5)
-        http_die ("internal-error", "fty-discovery returned malformed or unexpected message.");
+        http_die ("internal-error", TRANSLATE_ME ("fty-discovery returned malformed or unexpected message."));
     else
 </%cpp>

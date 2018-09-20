@@ -24,6 +24,7 @@
  */
  #><%pre>
 #include <string>
+#include <fty_common_macros.h>
 #include <fty_common_mlm_tntmlm.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_db_asset.h>
@@ -33,9 +34,9 @@ req_gpo_interaction (zuuid_t *uuid, std::string sensor, std::string action)
 {
     zmsg_t *msg = zmsg_new ();
     zmsg_addstr (msg, zuuid_str_canonical (uuid));
-    zsys_debug ("sensor = %s", sensor.c_str ());
+    log_debug ("sensor = %s", sensor.c_str ());
     zmsg_addstr (msg, strdup (sensor.c_str ()));
-    zsys_debug ("action = %s", action.c_str ());
+    log_debug ("action = %s", action.c_str ());
     zmsg_addstr (msg, strdup (action.c_str ()));
     return msg;
 }
@@ -131,11 +132,11 @@ UserInfo user;
             if (rv == -1)
                 http_die ("not-found", sensor.c_str ());
             if (rv == -2)
-                http_die ("internal-error", "database failure");
+                http_die ("internal-error", TRANSLATE_ME ("database failure"));
             checked_sensor = sensor;
         }
         else
-            http_die ("request-param-bad", "sensor", "empty asset name", "non-empty asset name");
+            http_die ("request-param-bad", "sensor", TRANSLATE_ME ("empty asset name"), TRANSLATE_ME ("non-empty asset name"));
     }
 
     // action will be checked in fty-sensor-gpio
@@ -145,30 +146,30 @@ UserInfo user;
         if (!action.empty ())
             checked_action = action;
         else
-            http_die ("request-param-bad", "action", "empty action", "non-empty action");
+            http_die ("request-param-bad", "action", TRANSLATE_ME ("empty action"), TRANSLATE_ME ("non-empty action"));
     }
 
     int rv = gpo_action (checked_sensor, checked_action);
     if (rv == -1)
-        http_die ("internal-error", "mlmpool.get () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("mlmpool.get () failed."));
     else
     if (rv == -2)
-        http_die ("internal-error", "client->sendto () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("client->sendto () failed."));
     else
     if (rv == -3)
-        http_die ("internal-error", "client->recv () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("client->recv () failed."));
     else
     if (rv == -4)
-        http_die ("request-param-bad", "sensor", "not a GPO asset", "GPO asset");
+        http_die ("request-param-bad", "sensor", TRANSLATE_ME ("not a GPO asset"), TRANSLATE_ME ("GPO asset"));
     else
     if (rv == -5)
-        http_die ("precondition-failed", "required action is not applicable in current state.");
+        http_die ("precondition-failed", TRANSLATE_ME ("required action is not applicable in current state."));
     else
     if (rv == -6)
-        http_die ("request-param-bad", "action", "invalid action", "valid action");
+        http_die ("request-param-bad", "action", TRANSLATE_ME ("invalid action"), TRANSLATE_ME ("valid action"));
     else
     if (rv == -7)
-        http_die ("internal-error", "fty-asset-gpio returned malformed or unexpected message.");
+        http_die ("internal-error", TRANSLATE_ME ("fty-asset-gpio returned malformed or unexpected message."));
     else
 </%cpp>
 {}
