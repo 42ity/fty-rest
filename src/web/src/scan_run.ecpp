@@ -171,6 +171,7 @@ UserInfo user;
 
     //std::string config = request.getArg ("config");
     //std::string range = request.getArg ("range");
+    //for compatibility with previous version, call can have an argument
     std::string range = qparam.param("range");
     //char *checked_range = strdup (range.c_str ());
 
@@ -195,7 +196,7 @@ UserInfo user;
         http_die ("internal-error", "client->recv () failed.");
     else
     if (rv == -4)
-        http_die ("request-param-required", "<range>");
+        http_die ("internal-error", "fty-discovery returned error.");
     else
     if (rv == -5)
         http_die ("internal-error", "fty-discovery returned malformed or unexpected message.");
@@ -205,8 +206,5 @@ UserInfo user;
     else
     if (rv == -7)
         http_die ("internal-error", "fty-discovery already have a scan running.");
-    else
-    if (rv == -8)
-        http_die("bad-request-document", "Please check RFC-11 for valid json schema description.");
     else
 </%cpp>
