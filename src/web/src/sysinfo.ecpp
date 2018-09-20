@@ -49,6 +49,7 @@
 #include <fty_common_db_asset.h>
 #include <fty_common_mlm_tntmlm.h>
 #include <fty_common.h>
+#include <fty_common_macros.h>
 #include <fty_common_mlm_subprocess.h>
 
 #include "shared/utils.h"
@@ -69,7 +70,7 @@
 #endif
 
 /* If OSIMAGE_BASENAME==NULL - no envvar, tntnet is not running under systemd */
-const char * OSIMAGE_BASENAME = ( getenv("OSIMAGE_BASENAME") ? getenv("OSIMAGE_BASENAME") : "OS image name is not available" );
+const char * OSIMAGE_BASENAME = ( getenv("OSIMAGE_BASENAME") ? getenv("OSIMAGE_BASENAME") : TRANSLATE_ME ("OS image name is not available") );
 
 void
 get_location (
@@ -109,7 +110,7 @@ get_location (
             log_debug ("get_location() did not find any 'datacenter' asset with an 'address'");
     }
     catch (const std::exception& e) {
-        log_error ("Exception caught: %s", e.what ());
+        log_error ("Exception caught: %s", JSONIFY(e.what ()));
     }
 }
 
@@ -128,14 +129,14 @@ get_installation_date (
             // TODO: we should probably check for time_t max/min, but hey!... ;)
             char chtmp[64];
             if (calendar_to_datetime ((time_t) i64, chtmp, 64) == -1) {
-                installation_date = "N/A - Error retrieveing installation date";
-                throw std::runtime_error ("calendar_to_datetime () failed.");
+                installation_date = TRANSLATE_ME ("N/A - Error retrieveing installation date");
+                throw std::runtime_error (TRANSLATE_ME ("calendar_to_datetime () failed."));
             }
             installation_date.assign (chtmp);
         }
     }
     catch (const std::exception& e) {
-        log_error ("Exception caught: %s", e.what ());
+        log_error ("Exception caught: %s", JSONIFY(e.what ()));
     }
 }
 
@@ -150,9 +151,9 @@ sysinfo_detail (
     output.clear ();
 
     // Certain strings returned to caller in some cases
-    static const std::string UNAUTHORIZED = "unauthorized";
-    static const std::string NOTAVAILABLE = "N/A";
-    static const std::string NOTLICENSEDYET = "License not accepted yet";
+    static const std::string UNAUTHORIZED = TRANSLATE_ME ("unauthorized");
+    static const std::string NOTAVAILABLE = TRANSLATE_ME ("N/A");
+    static const std::string NOTLICENSEDYET = TRANSLATE_ME ("License not accepted yet");
 
     output += "{\n"
     "\t\"operating-system\" : {\n";
@@ -239,7 +240,7 @@ sysinfo_detail (
     output += utils::json::jsonify ("installation-date", installation_date);
     output += "\n";
 
-    std::string location = "N/A - Error retrieving location";
+    std::string location = TRANSLATE_ME ("N/A - Error retrieving location");
     get_location (location);
 
     output += ",\t\t";
@@ -349,7 +350,7 @@ sysinfo_detail (
         try {
             std::ifstream in (BIOS_RELEASE_JSON_FILE, std::ios::in | std::ios::binary);
             if (!in) {
-                throw std::runtime_error ("Could not open file.");
+                throw std::runtime_error (TRANSLATE_ME ("Could not open file."));
             }
 
             std::ostringstream tmp;
@@ -363,11 +364,11 @@ sysinfo_detail (
             deserializer.deserialize (si);
 
             if (si.category () != cxxtools::SerializationInfo::Category::Object) {
-                throw std::runtime_error ("Document root type is not Json Object.");
+                throw std::runtime_error (TRANSLATE_ME ("Document root type is not Json Object."));
             }
 
             if (si.memberCount () == 0) {
-                throw std::runtime_error ("Root json object is empty.");
+                throw std::runtime_error (TRANSLATE_ME ("Root json object is empty."));
             }
             std::size_t index = bios_release.find_first_of ("{");
             if (index != std::string::npos) {
@@ -563,7 +564,7 @@ sysinfo_detail (
             }
 
             if (unitstate_output.empty ()) {
-                throw std::runtime_error ("Returned document was empty.");
+                throw std::runtime_error (TRANSLATE_ME ("Returned document was empty."));
             }
             std::stringstream input (unitstate_output, std::ios_base::in);
             cxxtools::JsonDeserializer deserializer (input);
@@ -571,11 +572,11 @@ sysinfo_detail (
             deserializer.deserialize (si);
 
             if (si.category () != cxxtools::SerializationInfo::Category::Array) {
-                throw std::runtime_error ("Document root type is not Json Array.");
+                throw std::runtime_error (TRANSLATE_ME ("Document root type is not Json Array."));
             }
 
             if (si.memberCount () == 0) {
-                throw std::runtime_error ("Root json array is empty.");
+                throw std::runtime_error (TRANSLATE_ME ("Root json array is empty."));
             }
 
             output += ",\t\"services\" :\n";
@@ -600,8 +601,9 @@ sysinfo_detail (
             log_debug ("MlmSubprocess::output2 () finished with return value == '%" PRIi32"'", rv);
             if (rv != 0) {
                 std::string message =
-                    "MlmSubprocess::output2 (args = '{\"df\", \"-k\"}') failed; ";
-                message += "return code == '";
+                    TRANSLATE_ME ("MlmSubprocess::output2 (args = '{\"df\", \"-k\"}') failed; ");
+                message += TRANSLATE_ME ("return code");
+                message += " == '";
                 message += rv;
                 message += "'";
                 throw std::runtime_error (message);
@@ -626,8 +628,9 @@ sysinfo_detail (
             log_debug ("MlmSubprocess::output2 () finished with return value == '%" PRIi32"'", rv);
             if (rv != 0) {
                 std::string message =
-                    "MlmSubprocess::output2 (args = '{\"mount\"}') failed; ";
-                message += "return code == '";
+                    TRANSLATE_ME ("MlmSubprocess::output2 (args = '{\"mount\"}') failed; ");
+                message += TRANSLATE_ME ("return code");
+                message += " == '";
                 message += rv;
                 message += "'";
                 throw std::runtime_error (message);
