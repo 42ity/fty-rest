@@ -24,6 +24,7 @@
  */
  #><%pre>
 #include <string>
+#include <fty_common_macros.h>
 #include <fty_common_mlm_tntmlm.h>
 #include <fty_common_rest_helpers.h>
 #include <cxxtools/jsondeserializer.h>
@@ -187,24 +188,24 @@ UserInfo user;
 
 
     if (rv == -1)
-        http_die ("internal-error", "mlmpool.get () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("mlmpool.get () failed."));
     else
     if (rv == -2)
-        http_die ("internal-error", "client->sendto () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("client->sendto () failed."));
     else
     if (rv == -3)
-        http_die ("internal-error", "client->recv () failed.");
+        http_die ("internal-error", TRANSLATE_ME ("client->recv () failed."));
     else
     if (rv == -4)
-        http_die ("internal-error", "fty-discovery returned error.");
+        http_die ("internal-error", TRANSLATE_ME ("fty-discovery returned error."));
     else
     if (rv == -5)
-        http_die ("internal-error", "fty-discovery returned malformed or unexpected message.");
+        http_die ("internal-error", TRANSLATE_ME ("fty-discovery returned malformed or unexpected message."));
     else
     if (rv == -6)
-        http_die ("internal-error", "fty-discovery precedent scan currently stopping.");
+        http_die ("internal-error", TRANSLATE_ME ("fty-discovery precedent scan currently stopping."));
     else
     if (rv == -7)
-        http_die ("internal-error", "fty-discovery already have a scan running.");
+        http_die ("internal-error", TRANSLATE_ME ("fty-discovery already have a scan running."));
     else
 </%cpp>
