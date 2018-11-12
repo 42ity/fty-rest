@@ -66,6 +66,7 @@ BuildRequires:  fty-common-devel
 BuildRequires:  fty-common-db-devel
 BuildRequires:  fty-common-rest-devel
 BuildRequires:  malamute-devel
+BuildRequires:  openssl-devel
 BuildRequires:  fty-common-mlm-devel
 BuildRequires:  cyrus-sasl-devel
 BuildRequires:  fty-proto-devel
@@ -111,6 +112,7 @@ Requires:       fty-common-devel
 Requires:       fty-common-db-devel
 Requires:       fty-common-rest-devel
 Requires:       malamute-devel
+Requires:       openssl-devel
 Requires:       fty-common-mlm-devel
 Requires:       cyrus-sasl-devel
 Requires:       fty-proto-devel
