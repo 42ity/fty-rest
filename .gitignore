@@ -280,6 +280,8 @@ src/web/src/hw_capability.cc
 src/web/src/security_removeheaders.cc
 src/web/src/find_access_token.cc
 src/web/src/http_proxy.cc
+src/web/src/asset_actions_GET.cc
+src/web/src/asset_actions_POST.cc
 
 tntnet.xml.example
 !src/web/tntnet.xml

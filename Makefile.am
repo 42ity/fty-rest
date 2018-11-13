@@ -98,6 +98,8 @@ EXTRA_DIST += \
     src/web/src/alert_rules_list.h \
     src/web/src/alert_templates.h \
     src/web/src/asset_DELETE.h \
+    src/web/src/asset_actions_GET.h \
+    src/web/src/asset_actions_POST.h \
     src/web/src/asset_export.h \
     src/web/src/asset_GET.h \
     src/web/src/asset_import.h \

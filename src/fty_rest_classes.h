@@ -123,6 +123,14 @@ typedef struct _web_src_alert_templates_t web_src_alert_templates_t;
 typedef struct _web_src_asset_delete_t web_src_asset_delete_t;
 #define WEB_SRC_ASSET_DELETE_T_DEFINED
 #endif
+#ifndef WEB_SRC_ASSET_ACTIONS_GET_T_DEFINED
+typedef struct _web_src_asset_actions_get_t web_src_asset_actions_get_t;
+#define WEB_SRC_ASSET_ACTIONS_GET_T_DEFINED
+#endif
+#ifndef WEB_SRC_ASSET_ACTIONS_POST_T_DEFINED
+typedef struct _web_src_asset_actions_post_t web_src_asset_actions_post_t;
+#define WEB_SRC_ASSET_ACTIONS_POST_T_DEFINED
+#endif
 #ifndef WEB_SRC_ASSET_EXPORT_T_DEFINED
 typedef struct _web_src_asset_export_t web_src_asset_export_t;
 #define WEB_SRC_ASSET_EXPORT_T_DEFINED
@@ -344,6 +352,8 @@ typedef struct _web_src_hw_capability_t web_src_hw_capability_t;
 #include "web/src/alert_rules_list.h"
 #include "web/src/alert_templates.h"
 #include "web/src/asset_DELETE.h"
+#include "web/src/asset_actions_GET.h"
+#include "web/src/asset_actions_POST.h"
 #include "web/src/asset_export.h"
 #include "web/src/asset_GET.h"
 #include "web/src/asset_import.h"

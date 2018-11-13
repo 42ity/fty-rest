@@ -1,0 +1,144 @@
+<#
+ #
+ # Copyright (C) 2015-2018 Eaton
+ #
+ # This program is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 2 of the License, or
+ # (at your option) any later version.
+ #
+ # This program is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License along
+ # with this program; if not, write to the Free Software Foundation, Inc.,
+ # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ #
+ #><#
+/*!
+ * \file asset_actions_GET.ecpp
+ * \author Jean-Baptiste Boric <JeanBaptisteBorid@Eaton.com>
+ * \brief Implementation of GET operation for actions on asset
+ */
+ #><%pre>
+#include <cxxtools/regex.h>
+
+#include <fty_proto.h>
+#include <malamute.h>
+
+#include "shared/data.h"
+#include "shared/utils_json.h"
+#include "web/src/asset_computed_impl.h"
+#include <fty_common_rest_helpers.h>
+#include <fty_common_asset_types.h>
+#include <fty_common_mlm.h>
+#include <fty_common_mlm_utils.h>
+#include <fty_common_macros.h>
+#include <cxxtools/serializationinfo.h>
+#include <cxxtools/jsonserializer.h>
+</%pre>
+<%request scope="global">
+UserInfo user;
+bool database_ready;
+</%request>
+<%cpp>
+    // verify server is ready
+    if (!database_ready) {
+        log_debug ("Database is not ready yet.");
+        std::string err =  TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    // check user permissions
+    static const std::map <BiosProfile, std::string> PERMISSIONS = {
+            {BiosProfile::Dashboard, "R"},
+            {BiosProfile::Admin,     "R"}
+            };
+    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string checked_id; // user-friendly identifier
+
+    // sanity check
+    {
+        std::string id = request.getArg("id");
+        if ( id.empty() ) {
+            http_die("request-param-required", "id");
+        }
+
+        if ( !persist::is_ok_name (id.c_str ()) ) {
+            std::string err = TRANSLATE_ME ("valid asset name");
+            http_die ("request-param-bad", "id", id.c_str (), err.c_str ());
+        }
+        checked_id = id;
+    }
+    // end sanity checks
+
+    // connect to malamute
+    MlmClientGuard client(mlm_client_new( ));
+    if (!client) {
+        log_fatal ("mlm_client_new() failed.");
+        std::string err =  TRANSLATE_ME ("mlm_client_new() failed.");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    std::string client_name = utils::generate_mlm_client_id ("web.asset_get");
+    log_debug ("malamute client name = '%s'.", client_name.c_str ());
+
+    int rv = mlm_client_connect (client, MLM_ENDPOINT, 1000, client_name.c_str ());
+    if (rv == -1) {
+        log_fatal ("mlm_client_connect (endpoint = '%s', timeout = '%d', address = '%s') failed.",
+                        MLM_ENDPOINT, 1000, client_name.c_str ());
+        std::string err = TRANSLATE_ME ("mlm_client_connect() failed.");
+        http_die ("internal-error", err.c_str ());
+    }
+    // end connect to malamute
+
+    // send request
+    zmsg_t *rqst = zmsg_new();
+    zmsg_addstr(rqst, "GET_COMMANDS");
+    zmsg_addstr(rqst, "");
+    zmsg_addstr(rqst, checked_id.c_str());
+
+    if (mlm_client_sendto(client, "fty-nut-command", "power-actions", nullptr, 5000, &rqst) != 0) {
+        log_fatal ("failed to send GET_COMMANDS request to fty-nut-command.");
+        std::string err = TRANSLATE_ME ("failed to send request to fty-nut-command.");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    // wait for reply
+    ZpollerGuard poller(zpoller_new(mlm_client_msgpipe(client), nullptr));
+    if (!zpoller_wait(poller, 5000)) {
+        std::string err = TRANSLATE_ME ("zmq_poll() failed.");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    ZmsgGuard msg(mlm_client_recv(client));
+    ZstrGuard status(zmsg_popstr(msg));
+    ZstrGuard uuid(zmsg_popstr(msg));
+    if (!streq(status, "OK")) {
+        ZstrGuard errmsg(zmsg_popstr(msg));
+        log_fatal ("request GET_COMMANDS to fty-nut-command failed: %s.", errmsg.get());
+        std::string err = TRANSLATE_ME ("request to fty-nut-command failed.");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    ZstrGuard assetDelimiter(zmsg_popstr(msg));
+    ZstrGuard assetName(zmsg_popstr(msg));
+
+    cxxtools::SerializationInfo replySi;
+    replySi.setCategory(cxxtools::SerializationInfo::Category::Array);
+
+    while (zmsg_size(msg)) {
+        ZstrGuard cmdlabel(zmsg_popstr(msg));
+        ZstrGuard cmddesc(zmsg_popstr(msg));
+        cxxtools::SerializationInfo cmd;
+        cmd.addValue("command", cmdlabel.get());
+        cmd.addValue("description", cmddesc.get());
+        replySi.addMember("") <<= cmd;
+    }
+
+    // Serialize reply.
+    cxxtools::JsonSerializer serializer(reply.out());
+    serializer.serialize(replySi).finish();
+</%cpp>

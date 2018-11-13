@@ -501,6 +501,8 @@
     <class name = "web/src/alert_templates" private = "1" selftest = "0">root object</class>
     <class name = "web/src/asset_DELETE" private = "1" selftest = "0">root object</class>
 
+    <class name = "web/src/asset_actions_GET" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/asset_actions_POST" private= "1" selftest = "0">root object</class>
     <class name = "web/src/asset_export" private = "1" selftest = "0">root object</class>
     <class name = "web/src/asset_GET" private = "1" selftest = "0">root object</class>
     <class name = "web/src/asset_import" private = "1" selftest = "0">root object</class>

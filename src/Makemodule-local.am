@@ -173,6 +173,8 @@ ECPPFILES= \
   web/src/asset_POST.ecpp \
   web/src/asset_PUT.ecpp \
   web/src/assets_in.ecpp \
+  web/src/asset_actions_GET.ecpp \
+  web/src/asset_actions_POST.ecpp \
   web/src/auth.ecpp \
   web/src/auth_verify.ecpp \
   web/src/average.ecpp \

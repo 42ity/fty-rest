@@ -266,6 +266,24 @@
       <url>^/api/v1/asset/export.*</url>
     </mapping>
 
+    <mapping>
+      <target>asset_actions_GET@libfty_rest</target>
+      <url>^/api/v1/asset/(.*)/actions$</url>
+      <method>GET</method>
+      <args>
+        <id>$1</id>
+      </args>
+    </mapping>
+
+    <mapping>
+      <target>asset_actions_POST@libfty_rest</target>
+      <url>^/api/v1/asset/(.*)/actions$</url>
+      <method>POST</method>
+      <args>
+        <id>$1</id>
+      </args>
+    </mapping>
+
     <!--
          Asset GET
          XXX: This needs to be last position as this regexp matches all possible
