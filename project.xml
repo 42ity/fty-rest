@@ -55,28 +55,29 @@
     <abi current = "1" revision = "0" age = "0" />
 
     <use project = "czmq"
-        repository="https://github.com/42ity/czmq.git"
+        repository = "https://github.com/42ity/czmq.git"
         release = "v3.0.2-FTY-master"
         min_major = "3" min_minor = "0" min_patch = "2" >
 
         <use project = "libzmq"
-            repository="https://github.com/42ity/libzmq.git"
+            repository = "https://github.com/42ity/libzmq.git"
             release = "4.2.0-FTY-master" >
 
             <use project = "libsodium" prefix = "sodium"
                 repository = "https://github.com/42ity/libsodium.git"
                 release = "1.0.5-FTY-master"
-                test = "sodium_init" />
+                test = "sodium_init"
+                />
         </use>
     </use>
 
-    <use project = "cidr" libname = "libcidr" test = "cidr_alloc" header="libcidr.h"
+    <use project = "cidr" libname = "libcidr" test = "cidr_alloc" header = "libcidr.h"
         debian_name = "libcidr0-dev" redhat_name = "libcidr-devel"
         repository = "https://github.com/42ity/libcidr.git"
         release = "1.2.3-FTY-master"
         />
 
-    <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
+    <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
         repository = "https://github.com/42ity/cxxtools.git"
         release = "2.2-FTY-master"
         />
@@ -88,18 +89,20 @@
         />
 
     <use project = "tntdb"
-        test="tntdb::Date::gmtime"
+        test = "tntdb::Date::gmtime"
         repository = "https://github.com/42ity/tntdb.git"
         release = "1.3-FTY-master"
-        builddir = "tntdb" />
+        builddir = "tntdb"
+        />
 
     <use project = "magic" libname = "libmagic" header = "magic.h" optional = "1"
         repository = "https://github.com/42ity/libmagic.git"
         test = "magic_close"
         redhat_name = "file-devel"
-        release = "5.18-FTY-master" />
+        release = "5.18-FTY-master"
+        />
 
-    <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
+    <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
         repository = "https://github.com/42ity/fty-common-logging.git"
         release = "master"
         test = "fty_common_logging_selftest" >
@@ -110,295 +113,306 @@
             />
     </use>
 
-    <use project = "fty-common" libname = "libfty_common" header="fty_common.h"
-    repository = "https://github.com/42ity/fty-common.git"
-    test = "fty_commmon_selftest" >
-
-        <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
-        repository = "https://github.com/42ity/fty-common-logging.git"
+    <use project = "fty-common" libname = "libfty_common" header = "fty_common.h"
+        repository = "https://github.com/42ity/fty-common.git"
         release = "master"
-        test = "fty_common_logging_selftest" >
+        test = "fty_commmon_selftest" >
+
+        <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+            repository = "https://github.com/42ity/fty-common-logging.git"
+            release = "master"
+            test = "fty_common_logging_selftest" >
 
             <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
-            repository = "https://github.com/42ity/log4cplus.git"
-            release = "1.1.2-FTY-master"
-            />
+                repository = "https://github.com/42ity/log4cplus.git"
+                release = "1.1.2-FTY-master"
+                />
         </use>
     </use>
 
-    <use project = "fty-common-db" libname = "libfty_common_db" header="fty_common_db.h"
+    <use project = "fty-common-db" libname = "libfty_common_db" header = "fty_common_db.h"
         repository = "https://github.com/42ity/fty-common-db.git"
         release = "master"
         test = "fty_commmon_db_selftest" >
 
         <use project = "czmq"
-            repository="https://github.com/42ity/czmq.git"
+            repository = "https://github.com/42ity/czmq.git"
             release = "v3.0.2-FTY-master"
             min_major = "3" min_minor = "0" min_patch = "2" >
 
             <use project = "libzmq"
-                repository="https://github.com/42ity/libzmq.git"
+                repository = "https://github.com/42ity/libzmq.git"
                 release = "4.2.0-FTY-master" >
 
                 <use project = "libsodium" prefix = "sodium"
                     repository = "https://github.com/42ity/libsodium.git"
                     release = "1.0.5-FTY-master"
-                    test = "sodium_init" />
+                    test = "sodium_init"
+                    />
             </use>
         </use>
 
         <use project = "tntdb"
-            test="tntdb::Date::gmtime"
+            test = "tntdb::Date::gmtime"
             repository = "https://github.com/42ity/tntdb.git"
             release = "1.3-FTY-master"
             builddir = "tntdb">
 
-            <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
+            <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
                 repository = "https://github.com/42ity/cxxtools.git"
                 release = "2.2-FTY-master"
                 />
         </use>
 
-        <use project = "fty-common" libname = "libfty_common" header="fty_common.h"
+        <use project = "fty-common" libname = "libfty_common" header = "fty_common.h"
             repository = "https://github.com/42ity/fty-common.git"
+            release = "master"
             test = "fty_commmon_selftest" >
 
-            <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
-            repository = "https://github.com/42ity/fty-common-logging.git"
-            release = "master"
-            test = "fty_common_logging_selftest" >
+            <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+                repository = "https://github.com/42ity/fty-common-logging.git"
+                release = "master"
+                test = "fty_common_logging_selftest" >
 
                 <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
-                repository = "https://github.com/42ity/log4cplus.git"
-                release = "1.1.2-FTY-master"
-                />
+                    repository = "https://github.com/42ity/log4cplus.git"
+                    release = "1.1.2-FTY-master"
+                    />
            </use>
         </use>
     </use>
 
-    <use project = "fty-common-rest" libname = "libfty_common_rest" header="fty_common_rest.h"
+    <use project = "fty-common-rest" libname = "libfty_common_rest" header = "fty_common_rest.h"
         repository = "https://github.com/42ity/fty-common-rest.git"
         release = "master"
         test = "fty_commmon_rest_selftest" >
 
         <use project = "libsodium" prefix = "sodium"
-        repository = "https://github.com/42ity/libsodium.git"
-        release = "1.0.5-FTY-master"
-        test = "sodium_init" />
+            repository = "https://github.com/42ity/libsodium.git"
+            release = "1.0.5-FTY-master"
+            test = "sodium_init"
+            />
 
-        <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
-        repository = "https://github.com/42ity/cxxtools.git"
-        release = "2.2-FTY-master"
-        />
+        <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
+            repository = "https://github.com/42ity/cxxtools.git"
+            release = "2.2-FTY-master"
+            />
 
         <use project = "czmq"
-            repository="https://github.com/42ity/czmq.git"
+            repository = "https://github.com/42ity/czmq.git"
             release = "v3.0.2-FTY-master"
             min_major = "3" min_minor = "0" min_patch = "2" >
 
             <use project = "libzmq"
-                repository="https://github.com/42ity/libzmq.git"
+                repository = "https://github.com/42ity/libzmq.git"
                 release = "4.2.0-FTY-master" >
 
                 <use project = "libsodium" prefix = "sodium"
                     repository = "https://github.com/42ity/libsodium.git"
                     release = "1.0.5-FTY-master"
-                    test = "sodium_init" />
+                    test = "sodium_init"
+                    />
             </use>
         </use>
 
         <use project = "tntnet"
-        header = "tnt/tntnet.h"
-        repository = "https://github.com/42ity/tntnet.git"
-        release = "2.2-FTY-master"
-        />
+            header = "tnt/tntnet.h"
+            repository = "https://github.com/42ity/tntnet.git"
+            release = "2.2-FTY-master"
+            />
 
         <use project = "libsasl2" header = "sasl/sasl.h"
-        debian_name="libsasl2-dev"
-        redhat_name="cyrus-sasl-devel"
-        />
-
-        <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
-        repository = "https://github.com/42ity/fty-common-logging.git"
-        release = "master"
-        test = "fty_common_logging_selftest" >
-
-            <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
-            repository = "https://github.com/42ity/log4cplus.git"
-            release = "1.1.2-FTY-master"
+            debian_name = "libsasl2-dev"
+            redhat_name = "cyrus-sasl-devel"
             />
-        </use>
 
-        <use project = "fty-common" libname = "libfty_common" header="fty_common.h"
-            repository = "https://github.com/42ity/fty-common.git"
-            test = "fty_commmon_selftest" >
-
-            <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
+        <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
             repository = "https://github.com/42ity/fty-common-logging.git"
             release = "master"
             test = "fty_common_logging_selftest" >
 
-                <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+            <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
                 repository = "https://github.com/42ity/log4cplus.git"
                 release = "1.1.2-FTY-master"
                 />
+        </use>
+
+        <use project = "fty-common" libname = "libfty_common" header = "fty_common.h"
+            repository = "https://github.com/42ity/fty-common.git"
+            release = "master"
+            test = "fty_commmon_selftest" >
+
+            <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+                repository = "https://github.com/42ity/fty-common-logging.git"
+                release = "master"
+                test = "fty_common_logging_selftest" >
+
+                <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+                    repository = "https://github.com/42ity/log4cplus.git"
+                    release = "1.1.2-FTY-master"
+                    />
            </use>
         </use>
-    
-        <use project = "fty-common-db" libname = "libfty_common_db" header="fty_common_db.h"
+
+        <use project = "fty-common-db" libname = "libfty_common_db" header = "fty_common_db.h"
             repository = "https://github.com/42ity/fty-common-db.git"
             release = "master"
             test = "fty_commmon_db_selftest" >
 
             <use project = "czmq"
-                repository="https://github.com/42ity/czmq.git"
+                repository = "https://github.com/42ity/czmq.git"
                 release = "v3.0.2-FTY-master"
                 min_major = "3" min_minor = "0" min_patch = "2" >
 
                 <use project = "libzmq"
-                    repository="https://github.com/42ity/libzmq.git"
+                    repository = "https://github.com/42ity/libzmq.git"
                     release = "4.2.0-FTY-master" >
 
                     <use project = "libsodium" prefix = "sodium"
-                    repository = "https://github.com/42ity/libsodium.git"
-                    release = "1.0.5-FTY-master"
-                    test = "sodium_init" />
+                        repository = "https://github.com/42ity/libsodium.git"
+                        release = "1.0.5-FTY-master"
+                        test = "sodium_init"
+                        />
                 </use>
             </use>
 
             <use project = "tntdb"
-            test="tntdb::Date::gmtime"
-            repository = "https://github.com/42ity/tntdb.git"
-            release = "1.3-FTY-master"
-            builddir = "tntdb">
+                test = "tntdb::Date::gmtime"
+                repository = "https://github.com/42ity/tntdb.git"
+                release = "1.3-FTY-master"
+                builddir = "tntdb">
 
-            <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
-                repository = "https://github.com/42ity/cxxtools.git"
-                release = "2.2-FTY-master"
-                />
+                <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
+                    repository = "https://github.com/42ity/cxxtools.git"
+                    release = "2.2-FTY-master"
+                    />
             </use>
 
-            <use project = "fty-common" libname = "libfty_common" header="fty_common.h"
+            <use project = "fty-common" libname = "libfty_common" header = "fty_common.h"
                 repository = "https://github.com/42ity/fty-common.git"
+                release = "master"
                 test = "fty_commmon_selftest" >
 
-                <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
+                <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
                     repository = "https://github.com/42ity/fty-common-logging.git"
                     release = "master"
                     test = "fty_common_logging_selftest" >
 
                     <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
-                    repository = "https://github.com/42ity/log4cplus.git"
-                    release = "1.1.2-FTY-master"
-                    />
+                        repository = "https://github.com/42ity/log4cplus.git"
+                        release = "1.1.2-FTY-master"
+                        />
                 </use>
             </use>
         </use>
     </use>
 
-    <use project = "fty-common-mlm" libname = "libfty_common_mlm" header="fty_common_mlm.h"
+    <use project = "fty-common-mlm" libname = "libfty_common_mlm" header = "fty_common_mlm.h"
         repository = "https://github.com/42ity/fty-common-mlm.git"
-	release = "master"
+        release = "master"
         test = "fty_commmon_mlm_selftest" >
 
         <use project = "czmq"
-            repository="https://github.com/42ity/czmq.git"
+            repository = "https://github.com/42ity/czmq.git"
             release = "v3.0.2-FTY-master"
             min_major = "3" min_minor = "0" min_patch = "2" >
 
             <use project = "libzmq"
-                repository="https://github.com/42ity/libzmq.git"
+                repository = "https://github.com/42ity/libzmq.git"
                 release = "4.2.0-FTY-master" >
 
                 <use project = "libsodium" prefix = "sodium"
                     repository = "https://github.com/42ity/libsodium.git"
                     release = "1.0.5-FTY-master"
-                    test = "sodium_init" />
+                    test = "sodium_init"
+                    />
             </use>
         </use>
 
-        <use project = "cxxtools" test="cxxtools::Utf8Codec::Utf8Codec" header="cxxtools/allocator.h"
-        repository = "https://github.com/42ity/cxxtools.git"
-        release = "2.2-FTY-master"
-        />
+        <use project = "cxxtools" test = "cxxtools::Utf8Codec::Utf8Codec" header = "cxxtools/allocator.h"
+            repository = "https://github.com/42ity/cxxtools.git"
+            release = "2.2-FTY-master"
+            />
 
         <use project = "malamute" min_major = "1" test = "mlm_server_test"
-        repository="https://github.com/42ity/malamute.git"
-        release = "1.0-FTY-master"
-        />
+            repository = "https://github.com/42ity/malamute.git"
+            release = "1.0-FTY-master"
+            />
 
-        <use project = "openssl" header = "openssl/sha.h" debian_name="libssl-dev"/>
+        <use project = "openssl" header = "openssl/sha.h" debian_name = "libssl-dev"/>
 
-        <use project = "fty-common" libname = "libfty_common" header="fty_common.h"
+        <use project = "fty-common" libname = "libfty_common" header = "fty_common.h"
             repository = "https://github.com/42ity/fty-common.git"
+            release = "master"
             test = "fty_commmon_selftest" >
 
-            <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
+            <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+                repository = "https://github.com/42ity/fty-common-logging.git"
+                release = "master"
+                test = "fty_common_logging_selftest" >
+
+                <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+                    repository = "https://github.com/42ity/log4cplus.git"
+                    release = "1.1.2-FTY-master"
+                    />
+           </use>
+        </use>
+
+        <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
             repository = "https://github.com/42ity/fty-common-logging.git"
             release = "master"
             test = "fty_common_logging_selftest" >
 
-                <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
+            <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
                 repository = "https://github.com/42ity/log4cplus.git"
                 release = "1.1.2-FTY-master"
                 />
-           </use>
-        </use>
-
-        <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
-        repository = "https://github.com/42ity/fty-common-logging.git"
-        release = "master"
-        test = "fty_common_logging_selftest" >
-
-            <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
-            repository = "https://github.com/42ity/log4cplus.git"
-            release = "1.1.2-FTY-master"
-            />
         </use>
     </use>
 
-    <!--        redhat_name="(libsasl2-devel or cyrus-sasl-devel)" -->
+    <!--        redhat_name = "(libsasl2-devel or cyrus-sasl-devel)" -->
     <use project = "libsasl2" header = "sasl/sasl.h"
-         debian_name="libsasl2-dev"
-         redhat_name="cyrus-sasl-devel"
-    />
+        debian_name = "libsasl2-dev"
+        redhat_name = "cyrus-sasl-devel"
+        />
 
-    <use project = "fty-proto" libname = "libfty_proto" header="ftyproto.h" prefix="fty_proto"
-    min_major = "1" min_minor = "0" min_patch = "0"
-    repository = "https://github.com/42ity/fty-proto.git"
-    release = "master"
-    test = "fty_proto_test" >
+    <use project = "fty-proto" libname = "libfty_proto" header = "ftyproto.h" prefix = "fty_proto"
+        min_major = "1" min_minor = "0" min_patch = "0"
+        repository = "https://github.com/42ity/fty-proto.git"
+        release = "master"
+        test = "fty_proto_test" >
 
         <use project = "czmq"
-        repository="https://github.com/42ity/czmq.git"
-        release = "v3.0.2-FTY-master"
-        min_major = "3" min_minor = "0" min_patch = "2" >
+            repository = "https://github.com/42ity/czmq.git"
+            release = "v3.0.2-FTY-master"
+            min_major = "3" min_minor = "0" min_patch = "2" >
 
             <use project = "libzmq"
-            repository="https://github.com/42ity/libzmq.git"
-            release = "4.2.0-FTY-master" >
+                repository = "https://github.com/42ity/libzmq.git"
+                release = "4.2.0-FTY-master" >
 
                 <use project = "libsodium" prefix = "sodium"
-                repository = "https://github.com/42ity/libsodium.git"
-                release = "1.0.5-FTY-master"
-                test = "sodium_init" />
+                    repository = "https://github.com/42ity/libsodium.git"
+                    release = "1.0.5-FTY-master"
+                    test = "sodium_init"
+                    />
             </use>
         </use>
 
         <use project = "malamute" min_major = "1" test = "mlm_server_test"
-        repository="https://github.com/42ity/malamute.git"
-        release = "1.0-FTY-master"
-        />
+            repository = "https://github.com/42ity/malamute.git"
+            release = "1.0-FTY-master"
+            />
 
-        <use project = "fty-common-logging" libname = "libfty_common_logging" header="fty_log.h"
-        repository = "https://github.com/42ity/fty-common-logging.git"
-        release = "master"
-        test = "fty_common_logging_selftest" >
+        <use project = "fty-common-logging" libname = "libfty_common_logging" header = "fty_log.h"
+            repository = "https://github.com/42ity/fty-common-logging.git"
+            release = "master"
+            test = "fty_common_logging_selftest" >
 
             <use project = "log4cplus" header = "log4cplus/logger.h" test = "appender_test"
-            repository = "https://github.com/42ity/log4cplus.git"
-            release = "1.1.2-FTY-master"
-            />
+                repository = "https://github.com/42ity/log4cplus.git"
+                release = "1.1.2-FTY-master"
+                />
         </use>
     </use>
 
@@ -463,77 +477,77 @@
          in other generated files. There is no selftest.
      -->
 
-    <class name = "web/src/add_gpio" private="1" selftest = "0">root object</class>
-    <class name = "web/src/admin_iface" private="1" selftest = "0">root object</class>
-    <class name = "web/src/admin_ifaces" private="1" selftest = "0">root object</class>
-    <class name = "web/src/admin_sse" private="1" selftest = "0">root object</class>
-    <class name = "web/src/alert_ack" private="1" selftest = "0">root object</class>
+    <class name = "web/src/add_gpio" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/admin_iface" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/admin_ifaces" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/admin_sse" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/alert_ack" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/alert_list" private="1" selftest = "0">root object</class>
-    <class name = "web/src/alert_rules_detail" private="1" selftest = "0">root object</class>
-    <class name = "web/src/alert_rules" private="1" selftest = "0">root object</class>
-    <class name = "web/src/alert_rules_list" private="1" selftest = "0">root object</class>
-    <class name = "web/src/alert_templates" private="1" selftest = "0">root object</class>
-    <class name = "web/src/asset_DELETE" private="1" selftest = "0">root object</class>
+    <class name = "web/src/alert_list" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/alert_rules_detail" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/alert_rules" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/alert_rules_list" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/alert_templates" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/asset_DELETE" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/asset_export" private="1" selftest = "0">root object</class>
-    <class name = "web/src/asset_GET" private="1" selftest = "0">root object</class>
-    <class name = "web/src/asset_import" private="1" selftest = "0">root object</class>
-    <class name = "web/src/asset_list" private="1" selftest = "0">root object</class>
-    <class name = "web/src/asset_POST" private="1" selftest = "0">root object</class>
+    <class name = "web/src/asset_export" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/asset_GET" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/asset_import" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/asset_list" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/asset_POST" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/asset_PUT" private="1" selftest = "0">root object</class>
-    <class name = "web/src/assets_in" private="1" selftest = "0">root object</class>
-    <class name = "web/src/auth" private="1" selftest = "0">root object</class>
-    <class name = "web/src/auth_verify" private="1" selftest = "0">root object</class>
-    <class name = "web/src/average" private="1" selftest = "0">root object</class>
+    <class name = "web/src/asset_PUT" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/assets_in" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/auth" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/auth_verify" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/average" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/conf_scan" private="1" selftest = "0">root object</class>
-    <class name = "web/src/config" private="1" selftest = "0">root object</class>
-    <class name = "web/src/current" private="1" selftest = "0">root object</class>
-    <class name = "web/src/datacenter_indicators" private="1" selftest = "0">root object</class>
-    <class name = "web/src/email_feedback" private="1" selftest = "0">root object</class>
+    <class name = "web/src/conf_scan" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/config" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/current" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/datacenter_indicators" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/email_feedback" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/email_test" private="1" selftest = "0">root object</class>
-    <class name = "web/src/email_vote" private="1" selftest = "0">root object</class>
-    <class name = "web/src/find_access_token" private="1" selftest = "0">root object</class>
-    <class name = "web/src/getlog_GET" private="1" selftest = "0">root object</class>
-    <class name = "web/src/gpo_action" private="1" selftest = "0">root object</class>
-    <class name = "web/src/info" private="1" selftest = "0">root object</class>
+    <class name = "web/src/email_test" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/email_vote" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/find_access_token" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/getlog_GET" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/gpo_action" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/info" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/input_power_chain" private="1" selftest = "0">root object</class>
-    <class name = "web/src/json" private="1" selftest = "0">root object</class>
-    <class name = "web/src/license" private="1" selftest = "0">root object</class>
-    <class name = "web/src/license_POST" private="1" selftest = "0">root object</class>
-    <class name = "web/src/license_status" private="1" selftest = "0">root object</class>
+    <class name = "web/src/input_power_chain" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/json" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/license" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/license_POST" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/license_status" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/license_text" private="1" selftest = "0">root object</class>
-    <class name = "web/src/list_gpio" private="1" selftest = "0">root object</class>
-    <class name = "web/src/my_profile" private="1" selftest = "0">root object</class>
-    <class name = "web/src/netcfg" private="1" selftest = "0">root object</class>
-    <class name = "web/src/http_proxy" private="1" selftest = "0">root object</class>
-    <class name = "web/src/not_found" private="1" selftest = "0">root object</class>
+    <class name = "web/src/license_text" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/list_gpio" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/my_profile" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/netcfg" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/http_proxy" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/not_found" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/rack_total" private="1" selftest = "0">root object</class>
-    <class name = "web/src/scan_progress" private="1" selftest = "0">root object</class>
-    <class name = "web/src/scan_run" private="1" selftest = "0">root object</class>
-    <class name = "web/src/security_headers" private="1" selftest = "0">root object</class>
-    <class name = "web/src/server_status" private="1" selftest = "0">root object</class>
+    <class name = "web/src/rack_total" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/scan_progress" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/scan_run" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/security_headers" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/server_status" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/ssl_redirect" private="1" selftest = "0">root object</class>
-    <class name = "web/src/sysinfo" private="1" selftest = "0">root object</class>
-    <class name = "web/src/systemctl" private="1" selftest = "0">root object</class>
-    <class name = "web/src/time" private="1" selftest = "0">root object</class>
-    <class name = "web/src/uptime" private="1" selftest = "0">root object</class>
+    <class name = "web/src/ssl_redirect" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/sysinfo" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/systemctl" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/time" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/uptime" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/topology_location_from2" private="1" selftest = "0">root object</class>
-    <class name = "web/src/topology_location_from" private="1" selftest = "0">root object</class>
-    <class name = "web/src/topology_location_to" private="1" selftest = "0">root object</class>
-    <class name = "web/src/topology_power" private="1" selftest = "0">root object</class>
+    <class name = "web/src/topology_location_from2" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/topology_location_from" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/topology_location_to" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/topology_power" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/admin_passwd" private="1" selftest = "0">root object</class>
+    <class name = "web/src/admin_passwd" private = "1" selftest = "0">root object</class>
 
-    <class name = "web/src/security_removeheaders" private="1" selftest = "0">root object</class>
-    <class name = "web/src/hw_capability" private="1" selftest = "0">root object</class>
+    <class name = "web/src/security_removeheaders" private = "1" selftest = "0">root object</class>
+    <class name = "web/src/hw_capability" private = "1" selftest = "0">root object</class>
 
 </project>
