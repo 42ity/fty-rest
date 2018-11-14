@@ -17,6 +17,7 @@
         <!-- option name = "clangformat_require_good" value = "1" / -->
         <option name = "clangformat_allow_failures" value = "1" />
         <option name = "use_pkg_deps_prereqs_source" value = "0" />
+        <option name = "require_gitignore" value = "1" />
     </target>
     <target name = "jenkins" >
         <option name = "agent_label" value = "devel-image &amp;&amp; x86_64" />
