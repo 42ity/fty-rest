@@ -1,5 +1,5 @@
 /*  =========================================================================
-    fty_rest - REST API for auth Convergence
+    fty_rest - Common core REST API for 42ity project
 
     Copyright (C) 2014 - 2018 Eaton
 
