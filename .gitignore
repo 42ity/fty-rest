@@ -1,6 +1,7 @@
 # This is a skeleton created by zproject.
 # You can add hand-written code here.
 ### Note: Customized after generation; take care upon regens
+
 save.xml
 # Object files
 *.o
@@ -57,11 +58,11 @@ Makefile.in
 aclocal.m4
 autom4te.cache/
 build-aux
-config/
+conftest.*
 confdefs.h
 config.log
 config.status
-conftest.*
+config/
 configure
 !configure.ac
 configure.lineno
