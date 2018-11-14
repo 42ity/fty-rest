@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
  * \author Alena Chernikava <AlenaChernikava@Eaton.com>
  * \brief Not yet documented file
  */
-#include "catch.hpp"    
+#include "catch.hpp"
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@ bool is_equal_gl_opts(struct global_opts *opts_before, struct global_opts *opts_
         return false;
     else if (opts_before->use_pager != opts_after->use_pager)
         return false;
-    else 
+    else
        return true;
 }
 
@@ -63,15 +63,15 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
         copy_gl_opts(&gopts,&gopts0);
 
         WHEN("Handle_global_options used"){
-    
+
             int optind = handle_global_options(argc0, argv0, &gopts0);
-            
-            THEN("return value is 0"){ 
+
+            THEN("return value is 0"){
                 REQUIRE(optind == 0);
                 REQUIRE(is_equal_gl_opts(&gopts,&gopts0));
             }
         }
-    }       
+    }
 
 
     GIVEN("argc < 0 and     argv = NULL"){
@@ -96,28 +96,28 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
         const char ** argv2 = NULL;
         struct global_opts gopts0;
         copy_gl_opts(&gopts,&gopts0);
-        
+
         WHEN("Handle_global_options used"){
             int optind = handle_global_options(argc2, argv2, &gopts0);
-            
+
             THEN("return value is 0"){
                 REQUIRE(optind == 0);
                 REQUIRE(is_equal_gl_opts(&gopts,&gopts0));
             }
         }
     }
-    
+
     GIVEN("gopts = NULL"){
         const char *argv3[] = {"cli", "--foo", "--bar", NULL};
         struct  global_opts *gopts3 = NULL;
-            
+
         WHEN("Handle_global_options used"){
             int optind = handle_global_options(3, argv3, gopts3);
-            
+
             THEN("return value is 0"){
                 REQUIRE(optind == 0);
             }
-        }       
+        }
     }
 
     GIVEN("argv[arc] != NULL"){
@@ -144,13 +144,13 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
 
         WHEN("Handle_global_options used"){
             int optind = handle_global_options(1, argv5, &gopts0);
-        
+
             THEN("return value is 1"){
                 REQUIRE(optind == 1);
-                
+
                 AND_THEN("verbosity remain 0"){
                     REQUIRE(gopts0.verbosity == 0);
-                
+
                     AND_THEN("use-pager remain true"){
                         REQUIRE(gopts0.use_pager == true);
                     }
@@ -163,10 +163,10 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
         const char *argv6[] = {"cli", "cmd", NULL};
         struct global_opts gopts0;
         copy_gl_opts(&gopts,&gopts0);
- 
+
         WHEN("Handle_global_options used"){
             int optind = handle_global_options(2, argv6, &gopts0);
-        
+
             THEN("return value is 1, verbosity remain 0 , use-pager remain true"){
                 REQUIRE(optind == 1);
                 REQUIRE(gopts0.verbosity == 0);
@@ -182,7 +182,7 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
 
         WHEN("test --verbosity cmd"){
             int optind = handle_global_options(2, argv7, &gopts0);
-        
+
             THEN("return value is 2, verbosity become 1 , use-pager remain true"){
                 REQUIRE(optind == 2);
                 REQUIRE(gopts0.verbosity == 1);
@@ -206,15 +206,15 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
             }
         }
     }
-    
+
     GIVEN(" two arguments -vvv --no-paper"){
         const char *argv10[] = {"cli", "-vvv", "--no-pager", NULL};
         struct global_opts gopts0;
         copy_gl_opts(&gopts,&gopts0);
-    
+
         WHEN(" test -vv --no-pager cmd "){
             int optind = handle_global_options(3, argv10, &gopts0);
-    
+
             THEN("return value is 3, verbosity become 3 , use-pager become false"){
                 REQUIRE(optind == 3);
                 REQUIRE(gopts0.verbosity == 3);
@@ -222,20 +222,20 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
             }
         }
     }
-    
+
     GIVEN(" one argument --unknown"){
         const char *argv11[] = {"cli", "--unknown", NULL};
         struct global_opts gopts0;
         copy_gl_opts(&gopts,&gopts0);
         WHEN(" test unknown global argument "){
             int optind = handle_global_options(2, argv11, &gopts0);
-            
+
             THEN("return value is -1, verbosity remain 0 , use-pager remain true"){
                 REQUIRE(optind == -1);
                 //  fprintf(stderr, "ERROR: unknown option %s\n", argv11[-optind]);
                 REQUIRE(gopts0.verbosity == 0);
                 // this is just shared state between tests, lets handle that in a framework
-                REQUIRE(gopts0.use_pager == true);//  ditto 
+                REQUIRE(gopts0.use_pager == true);//  ditto
             }
         }
     }

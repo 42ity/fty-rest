@@ -1,7 +1,5 @@
-#ifndef SRC_SHARED_UPSSTATUS_H_
-#define SRC_SHARED_UPSSTATUS_H_
 /*
-Copyright (C) 2014 Eaton
+Copyright (C) 2014 - 2018 Eaton
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +21,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
             as it is used in networkupstools
     \author Tomas Halman <TomasHalman@Eaton.com>
 */
+
+#ifndef SRC_SHARED_UPSSTATUS_H_
+#define SRC_SHARED_UPSSTATUS_H_
 
 #include<string>
 #include<cstdint>

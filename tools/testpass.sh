@@ -1,7 +1,7 @@
 #!/bin/bash
 # Note: bash-specific syntax is in fact used below, do not change the shebang!
 #
-# Copyright (C) 2015-2018 Eaton
+# Copyright (C) 2015 - 2018 Eaton
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

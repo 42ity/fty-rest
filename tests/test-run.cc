@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,5 +23,5 @@
  * \author Alena Chernikava <AlenaChernikava@Eaton.com>
  * \brief Not yet documented file
  */
-#define CATCH_CONFIG_MAIN  
+#define CATCH_CONFIG_MAIN
 #include "catch.hpp"

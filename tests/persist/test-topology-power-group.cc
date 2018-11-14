@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ TEST_CASE("Power topology group #1","[db][topology][power][group][power_topology
 #if CZMQ_VERSION_MAJOR == 3
     byte* buffer = zframe_data (frame);
     assert ( buffer );
-    
+
     _scoped_zmsg_t *zmsg = zmsg_decode ( buffer, zframe_size (frame));
 #else
     _scoped_zmsg_t *zmsg = zmsg_decode (frame);

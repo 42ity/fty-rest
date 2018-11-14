@@ -1,6 +1,6 @@
 /*  =========================================================================
     ymsg - draft
-    
+
     Codec header for ymsg.
 
     ** WARNING *************************************************************
@@ -12,22 +12,22 @@
      * The XML model used for this code generation: rozp.xml, or
      * The code generation script that built this file: zproto_codec_c_v1
     ************************************************************************
-                                                                        
-    Copyright (C) 2014 - 2015 Eaton                                     
-                                                                        
+
+    Copyright (C) 2014 - 2018 Eaton
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or   
-    (at your option) any later version.                                 
-                                                                        
-    This program is distributed in the hope that it will be useful,     
-    but WITHOUT ANY WARRANTY; without even the implied warranty of      
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       
-    GNU General Public License for more details.                        
-                                                                        
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -45,11 +45,11 @@
     REPLY - Transport layer reply
 
 Fields that are common with message 'send' are described there.
-        version             number 1    
-        seq                 number 2    
+        version             number 1
+        seq                 number 2
         rep                 number 2    Value must be identical to field 'seq' of message 'send' to which this reply message is being created.
-        aux                 hash        
-        response            chunk       
+        aux                 hash
+        response            chunk
         request             chunk       Application specific payload of message 'send' may be included (repeated) in reply.
 */
 
@@ -88,7 +88,7 @@ BIOS_EXPORT bool
     is_ymsg (zmsg_t *msg_p);
 
 //  Parse a ymsg from zmsg_t. Returns a new object, or NULL if
-//  the message could not be parsed, or was NULL. Destroys msg and 
+//  the message could not be parsed, or was NULL. Destroys msg and
 //  nullifies the msg reference.
 BIOS_EXPORT ymsg_t *
     ymsg_decode (zmsg_t **msg_p);
@@ -98,12 +98,12 @@ BIOS_EXPORT ymsg_t *
 BIOS_EXPORT zmsg_t *
     ymsg_encode (ymsg_t **self_p);
 
-//  Receive and parse a ymsg from the socket. Returns new object, 
+//  Receive and parse a ymsg from the socket. Returns new object,
 //  or NULL if error. Will block if there's no message waiting.
 BIOS_EXPORT ymsg_t *
     ymsg_recv (void *input);
 
-//  Receive and parse a ymsg from the socket. Returns new object, 
+//  Receive and parse a ymsg from the socket. Returns new object,
 //  or NULL either if there was no input waiting, or the recv was interrupted.
 BIOS_EXPORT ymsg_t *
     ymsg_recv_nowait (void *input);
@@ -116,7 +116,7 @@ BIOS_EXPORT int
 BIOS_EXPORT int
     ymsg_send_again (ymsg_t *self, void *output);
 
-//  Encode the SEND 
+//  Encode the SEND
 BIOS_EXPORT zmsg_t *
     ymsg_encode_send (
         byte version,
@@ -124,7 +124,7 @@ BIOS_EXPORT zmsg_t *
         zhash_t *aux,
         zchunk_t *request);
 
-//  Encode the REPLY 
+//  Encode the REPLY
 BIOS_EXPORT zmsg_t *
     ymsg_encode_reply (
         byte version,
@@ -143,7 +143,7 @@ BIOS_EXPORT int
         uint16_t seq,
         zhash_t *aux,
         zchunk_t *request);
-    
+
 //  Send the REPLY to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 BIOS_EXPORT int
@@ -154,7 +154,7 @@ BIOS_EXPORT int
         zhash_t *aux,
         zchunk_t *response,
         zchunk_t *request);
-    
+
 //  Duplicate the ymsg message
 BIOS_EXPORT ymsg_t *
     ymsg_dup (ymsg_t *self);
@@ -198,7 +198,7 @@ BIOS_EXPORT zhash_t *
 //  Set the aux field, transferring ownership from caller
 BIOS_EXPORT void
     ymsg_set_aux (ymsg_t *self, zhash_t **aux_p);
-    
+
 //  Get/set a value in the aux dictionary
 BIOS_EXPORT const char *
     ymsg_aux_string (ymsg_t *self,

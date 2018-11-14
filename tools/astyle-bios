@@ -2,9 +2,9 @@
 
 # EXCLUDES are handled on line 100
 
-# Command line options have precedence over config/options file 
+# Command line options have precedence over config/options file
 declare -r BIOS_INDENT=2     # number of spaces in one indentation step
-declare -r BIOS_MAXCOLS=120  # max line length, does not break comments, 
+declare -r BIOS_MAXCOLS=120  # max line length, does not break comments,
                              # quotes, arrays
 
 declare -r ASTYLE_MASK=( "c" "h" "cc" "hh" "cpp" "hpp" "cx" "cxx" "hxx" )
@@ -34,11 +34,11 @@ cat << EOF
 $SCRIPTNAME [-cq] <options_file> <target_directory>
 
 DESCRIPTION:
-  astyle (http://astyle.sourceforge.net/) wrapper for use with GNU Autotools 
+  astyle (http://astyle.sourceforge.net/) wrapper for use with GNU Autotools
 
 OPTIONS:
-  -c  check 
-      Perform "pretend-like" check whether files in <target_irectory> are formatted.          
+  -c  check
+      Perform "pretend-like" check whether files in <target_irectory> are formatted.
 
   -q  quiet
       Be quiet.
@@ -90,7 +90,7 @@ if [[ -z "$1" || -z "$2" ]]; then
 fi
 
 if [[ -f "$LOCKFILE" ]]; then
-  [[ "$BE_QUIET" -eq 0 ]] && echo "$MSG_LOCKFILE_PRESENT"   
+  [[ "$BE_QUIET" -eq 0 ]] && echo "$MSG_LOCKFILE_PRESENT"
   exit 1
 fi
 
@@ -104,7 +104,7 @@ declare -r SRC_PATH="$2"  # NOTE: Make sure it doesn't end with /
 #)
 
 declare -a OPTS=(
-  "--options=${1}"   
+  "--options=${1}"
   "--max-code-length=${BIOS_MAXCOLS}"
   "--indent=spaces=${BIOS_INDENT}"
   "--recursive"
@@ -126,56 +126,56 @@ if [[ "$MAKE_CHECK" -eq 0 ]]; then
     echo "$SRC_PATH"
     echo -n "$MSG_LIST_TYPE"
     for wc in "${ASTYLE_MASK[@]}"; do
-      echo -n " $wc" 
+      echo -n " $wc"
     done
     echo ""
-  fi  
+  fi
   for wc in "${ASTYLE_MASK[@]}"; do
     tmp_arr=( "$ASTYLE_CMD" "${OPTS[@]}" "$SRC_PATH/*.$wc" )
     error_message=$( "${tmp_arr[@]}" 2>&1 )
     if [[ "$?" -ne 0 && ! "$error_message" =~ "$ASTYLE_EXP_EMPTY_STDOUT" ]]; then
-      [[ "$BE_QUIET" -eq 0 ]] && echo "$error_message"      
-      exit 1      
-    fi    
+      [[ "$BE_QUIET" -eq 0 ]] && echo "$error_message"
+      exit 1
+    fi
   done
   tmp_arr=( )
   exit 0
 
 else
   # Simulates "--pretend". Creates a copy on side, tries astyle,
-  # reports return value, cleans up 
+  # reports return value, cleans up
   declare -i ERROR=0
 
   # Copy on side
 #  error_message=$( mkdir "$ASTYLE_TMP_DIR" )
 #  if [[ "$?" -ne 0 ]]; then
-#    [[ "$BE_QUIET" -eq 0 ]] && echo "$error_message"   
+#    [[ "$BE_QUIET" -eq 0 ]] && echo "$error_message"
 #    exit 1
 #  fi
-  error_message=$( cp -r "$SRC_PATH" "./$ASTYLE_TMP_DIR" )  
+  error_message=$( cp -r "$SRC_PATH" "./$ASTYLE_TMP_DIR" )
   if [[ "$?" -ne 0 ]]; then
     [[ "$BE_QUIET" -eq 0 ]] && echo "$error_message"
     exit 1
   fi
 
-  # try astyle  
+  # try astyle
   for wc in "${ASTYLE_MASK[@]}"; do
     tmp_arr=( "$ASTYLE_CMD" "${OPTS[@]}" "./$ASTYLE_TMP_DIR/*.$wc" )
     error_message=$( "${tmp_arr[@]}" 2>&1 )
     if [[ "$?" -ne 0 && !  "$error_message"  =~ "$ASTYLE_EXP_EMPTY_STDOUT" ]]; then
-      [[ "$BE_QUIET" -eq 0 ]] && echo "$error_message"      
-      exit 1    
+      [[ "$BE_QUIET" -eq 0 ]] && echo "$error_message"
+      exit 1
     else
       if [[ "$error_message" =~ "Formatted" ]]; then
-        [[ "$BE_QUIET" -eq 0 ]] && echo "Found UNSTYLED files."        
+        [[ "$BE_QUIET" -eq 0 ]] && echo "Found UNSTYLED files."
         ERROR=1
-        break     
+        break
       fi
     fi
   done
 
   if [[ "$ERROR" -eq 0 ]]; then
-    echo "Check OK"        
+    echo "Check OK"
     exit 0
   else
     echo "Check FAILED"

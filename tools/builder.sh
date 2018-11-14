@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#   Copyright (c) 2014-2016 Eaton
+#   Copyright (c) 2014 - 2018 Eaton
 #
 #   This file is part of the Eaton 42ity project.
 #
@@ -303,7 +303,7 @@ do_build() {
 	MRES_S="SKIPPED"
 
 	echo "INFO-MAKE[$$]: `date`: beginning do_build() in directory '`pwd`'"
-	if [ x"$NOPARMAKE" != xyes ]; then 
+	if [ x"$NOPARMAKE" != xyes ]; then
 	    echo "=== PARMAKE[$$] (fast first pass which is allowed to fail): $MAKE_OPTS_PAR $MAKE_OPTS $@"
 	    case " $MAKE_OPTS_PAR $MAKE_OPTS $*" in
 		*\ V=*|*\ --trace*)
@@ -325,7 +325,7 @@ do_build() {
 	# User can request 'builder.sh install-subdir V=0' or somesuch
 	# to suppress the build tracing, or '... --trace' to increase it
 	# ...or the MAKE variable can be overridden to the same effect
-	    if [ x"$NOSEQMAKE" != xyes ]; then 
+	    if [ x"$NOSEQMAKE" != xyes ]; then
 		echo "=== SEQMAKE[$$]: $MAKE_OPTS_SEQ $MAKE_OPTS $@"
 		do_make $MAKE_OPTS_SEQ $MAKE_OPTS "$@"
 		MRES=$?

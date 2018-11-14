@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ bool is_equal_gl_opts(struct global_opts *opts_before, struct global_opts *opts_
         return false;
     else if (opts_before->use_pager != opts_after->use_pager)
         return false;
-    else 
+    else
        return true;
 }
 
@@ -66,7 +66,7 @@ void copy_gl_opts(struct global_opts *from, struct global_opts *to){
 //TEST_CASE/SCENARIO    name    - name of the test
 //GIVEN                 name    - name of the initial conditions
 //WHEN                  name    - name of the action to control
-//THEN                  name    - name of the expected outcome 
+//THEN                  name    - name of the expected outcome
 
 //As a basic assertion you could use REQUIRE/REQUIRE_FALSE/CHECK/CHECK_FALSE
 //More example are provided in the end of file
@@ -85,7 +85,7 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
 
     //don't write any code between SCENARIO-section and GIVEN-section
     //fprinf prints a message somewhere after every GIVEN-section
-    
+
     //in one scenario it is possible to have more that one GIVEN-section
     GIVEN("argc = 0     and     argv = NULL"){
 
@@ -100,24 +100,24 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
 
         //it is possible to have more independent WHEN-sections in one GIVEN-section
         WHEN("Handle_global_options used"){
-    
+
             //some actions
             //It is a bad idea to write here(in WHEN-section) some REQUIRE or CHECK statements
             int optind = handle_global_options(argc0, argv0, &gopts0);
-            
-            //it is possible to have more than one THEN-section, but it is not recommended. 
-            //If you have to check more then one outcome, than you can 
+
+            //it is possible to have more than one THEN-section, but it is not recommended.
+            //If you have to check more then one outcome, than you can
             //  1. Use more REQUIRE(or CHECK) in one THEN-section
             //  2. Use nested AND_THEN("somename"){ ...} for the 2+ outcomes. But for the first outcome use THEN-section. (you can find example somewhere here downwards)
             //
             //Also it is possible to use the nested AND_WHEN-section in the WHEN-,THEN-,AND_THEN-sections. (you can find example somewhere here downwards)
-            THEN("return value is 0"){ 
+            THEN("return value is 0"){
                 //control expected outcome
                 REQUIRE(optind == 0);
                 REQUIRE(is_equal_gl_opts(&gopts,&gopts0));
             }
         }
-    }       
+    }
 
 
     // use the following code as a simple example of GIVEN-section
@@ -146,13 +146,13 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
 
         WHEN("Handle_global_options used"){
             int optind = handle_global_options(1, argv5, &gopts0);
-        
+
             THEN("return value is 1"){
                 REQUIRE(optind == 1);
-                
+
                 AND_THEN("verbosity remain 0"){
                     REQUIRE(gopts0.verbosity == 0);
-                
+
                     AND_THEN("use-pager remain true"){
                         REQUIRE(gopts0.use_pager == true);
                     }
@@ -166,10 +166,10 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
         const char *argv6[] = {"cli", "cmd", NULL};
         struct global_opts gopts0;
         copy_gl_opts(&gopts,&gopts0);
- 
+
         WHEN("Handle_global_options used"){
             int optind = handle_global_options(2, argv6, &gopts0);
-        
+
             THEN("return value is 1, verbosity remain 0 , use-pager remain true"){
                 REQUIRE(optind == 1);
                 REQUIRE(gopts0.verbosity == 0);
@@ -181,20 +181,20 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
 }
 
 
-//Example nested AND_WHEN. It is possible to use the nested AND_WHEN-section in the WHEN-,THEN-,AND_THEN-sections. 
+//Example nested AND_WHEN. It is possible to use the nested AND_WHEN-section in the WHEN-,THEN-,AND_THEN-sections.
 /*
     GIVEN("initial conditions") {
-        // set_initial_conditions(); 
-        
+        // set_initial_conditions();
+
         WHEN("smth is done") {
-            //  do_some_action(); 
-        
+            //  do_some_action();
+
             THEN( "smth must hold" ) {
                 REQUIRE( //some condition );
-                
+
                 AND_WHEN( "and if smth1 done again" ) {
                     // do_some_action1();
-                    
+
                     THEN( "smth must hold" ) {
                         REQUIRE( // some condition );
                     }
@@ -209,7 +209,7 @@ SCENARIO("Test handle_global_options","[hndl_glbl_ptns][cli]"){
 /* CATCH framework provide a special class Aprox for the comparison of the numbers(float and double)
    Examples are copied from the https://github.com/philsquared/Catch
    default epsilon is std::numeric_limits<float>::epsilon()*100 */
-  
+
 TEST_CASE("TC: Approximate comparisons with mixed numeric types","[Approx][.][template]"){
     const double dZero = 0;
     const double dSmall = 0.00001;

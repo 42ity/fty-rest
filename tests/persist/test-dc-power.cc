@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,10 +42,10 @@
 TEST_CASE("DC power #1 v2","[db][power][dc][calc][v2][dc_power.sql]")
 {
     log_info ("=============== DC POWER #1 v2 ==================");
-/*    
+/*
     tntdb::Connection conn;
-    REQUIRE_NOTHROW (conn = tntdb::connectCached(url)); 
-    
+    REQUIRE_NOTHROW (conn = tntdb::connectCached(url));
+
     db_reply <std::map<std::string, std::vector<std::string>>> ret =
         select_devices_total_power_dcs (conn);
 

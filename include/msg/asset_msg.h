@@ -1,6 +1,6 @@
 /*  =========================================================================
     asset_msg - assets management protocol
-    
+
     Codec header for asset_msg.
 
     ** WARNING *************************************************************
@@ -12,19 +12,19 @@
      * The XML model used for this code generation: asset_msg.xml, or
      * The code generation script that built this file: zproto_codec_c_v1
     ************************************************************************
-                                                                        
-    Copyright (C) 2014 Eaton                                            
-                                                                        
+
+    Copyright (C) 2014 - 2018 Eaton
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or   
-    (at your option) any later version.                                 
-                                                                        
-    This program is distributed in the hope that it will be useful,     
-    but WITHOUT ANY WARRANTY; without even the implied warranty of      
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       
-    GNU General Public License for more details.                        
-                                                                        
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -185,7 +185,7 @@ bool
     is_asset_msg (zmsg_t *msg_p);
 
 //  Parse a asset_msg from zmsg_t. Returns a new object, or NULL if
-//  the message could not be parsed, or was NULL. Destroys msg and 
+//  the message could not be parsed, or was NULL. Destroys msg and
 //  nullifies the msg reference.
 asset_msg_t *
     asset_msg_decode (zmsg_t **msg_p);
@@ -195,12 +195,12 @@ asset_msg_t *
 zmsg_t *
     asset_msg_encode (asset_msg_t **self_p);
 
-//  Receive and parse a asset_msg from the socket. Returns new object, 
+//  Receive and parse a asset_msg from the socket. Returns new object,
 //  or NULL if error. Will block if there's no message waiting.
 asset_msg_t *
     asset_msg_recv (void *input);
 
-//  Receive and parse a asset_msg from the socket. Returns new object, 
+//  Receive and parse a asset_msg from the socket. Returns new object,
 //  or NULL either if there was no input waiting, or the recv was interrupted.
 asset_msg_t *
     asset_msg_recv_nowait (void *input);
@@ -213,7 +213,7 @@ int
 int
     asset_msg_send_again (asset_msg_t *self, void *output);
 
-//  Encode the ELEMENT 
+//  Encode the ELEMENT
 zmsg_t *
     asset_msg_encode_element (
         const char *name,
@@ -222,7 +222,7 @@ zmsg_t *
         byte type,
         zhash_t *ext);
 
-//  Encode the DEVICE 
+//  Encode the DEVICE
 zmsg_t *
     asset_msg_encode_device (
         const char *device_type,
@@ -234,68 +234,68 @@ zmsg_t *
         const char *mac,
         zmsg_t *msg);
 
-//  Encode the GET_ELEMENT 
+//  Encode the GET_ELEMENT
 zmsg_t *
     asset_msg_encode_get_element (
         uint32_t element_id,
         byte type);
 
-//  Encode the RETURN_ELEMENT 
+//  Encode the RETURN_ELEMENT
 zmsg_t *
     asset_msg_encode_return_element (
         uint32_t element_id,
         zmsg_t *msg);
 
-//  Encode the UPDATE_ELEMENT 
+//  Encode the UPDATE_ELEMENT
 zmsg_t *
     asset_msg_encode_update_element (
         uint32_t element_id,
         zmsg_t *msg);
 
-//  Encode the INSERT_ELEMENT 
+//  Encode the INSERT_ELEMENT
 zmsg_t *
     asset_msg_encode_insert_element (
         zmsg_t *msg);
 
-//  Encode the DELETE_ELEMENT 
+//  Encode the DELETE_ELEMENT
 zmsg_t *
     asset_msg_encode_delete_element (
         uint32_t element_id,
         byte type);
 
-//  Encode the OK 
+//  Encode the OK
 zmsg_t *
     asset_msg_encode_ok (
         uint32_t element_id);
 
-//  Encode the FAIL 
+//  Encode the FAIL
 zmsg_t *
     asset_msg_encode_fail (
         byte error_id);
 
-//  Encode the GET_ELEMENTS 
+//  Encode the GET_ELEMENTS
 zmsg_t *
     asset_msg_encode_get_elements (
         byte type);
 
-//  Encode the RETURN_ELEMENTS 
+//  Encode the RETURN_ELEMENTS
 zmsg_t *
     asset_msg_encode_return_elements (
         zhash_t *element_ids);
 
-//  Encode the GET_LOCATION_FROM 
+//  Encode the GET_LOCATION_FROM
 zmsg_t *
     asset_msg_encode_get_location_from (
         uint32_t element_id,
         byte recursive,
         byte filter_type);
 
-//  Encode the GET_LOCATION_TO 
+//  Encode the GET_LOCATION_TO
 zmsg_t *
     asset_msg_encode_get_location_to (
         uint32_t element_id);
 
-//  Encode the RETURN_LOCATION_TO 
+//  Encode the RETURN_LOCATION_TO
 zmsg_t *
     asset_msg_encode_return_location_to (
         uint32_t element_id,
@@ -304,7 +304,7 @@ zmsg_t *
         const char *type_name,
         zmsg_t *msg);
 
-//  Encode the RETURN_LOCATION_FROM 
+//  Encode the RETURN_LOCATION_FROM
 zmsg_t *
     asset_msg_encode_return_location_from (
         uint32_t element_id,
@@ -318,35 +318,35 @@ zmsg_t *
         zframe_t *devices,
         zframe_t *grps);
 
-//  Encode the GET_POWER_FROM 
+//  Encode the GET_POWER_FROM
 zmsg_t *
     asset_msg_encode_get_power_from (
         uint32_t element_id);
 
-//  Encode the POWERCHAIN_DEVICE 
+//  Encode the POWERCHAIN_DEVICE
 zmsg_t *
     asset_msg_encode_powerchain_device (
         uint32_t element_id,
         const char *type_name,
         const char *name);
 
-//  Encode the RETURN_POWER 
+//  Encode the RETURN_POWER
 zmsg_t *
     asset_msg_encode_return_power (
         zframe_t *devices,
         zlist_t *powers);
 
-//  Encode the GET_POWER_TO 
+//  Encode the GET_POWER_TO
 zmsg_t *
     asset_msg_encode_get_power_to (
         uint32_t element_id);
 
-//  Encode the GET_POWER_GROUP 
+//  Encode the GET_POWER_GROUP
 zmsg_t *
     asset_msg_encode_get_power_group (
         uint32_t element_id);
 
-//  Encode the GET_POWER_DATACENTER 
+//  Encode the GET_POWER_DATACENTER
 zmsg_t *
     asset_msg_encode_get_power_datacenter (
         uint32_t element_id);
@@ -361,7 +361,7 @@ int
         byte location_type,
         byte type,
         zhash_t *ext);
-    
+
 //  Send the DEVICE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -374,65 +374,65 @@ int
         const char *fqdn,
         const char *mac,
         zmsg_t *msg);
-    
+
 //  Send the GET_ELEMENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_get_element (void *output,
         uint32_t element_id,
         byte type);
-    
+
 //  Send the RETURN_ELEMENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_return_element (void *output,
         uint32_t element_id,
         zmsg_t *msg);
-    
+
 //  Send the UPDATE_ELEMENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_update_element (void *output,
         uint32_t element_id,
         zmsg_t *msg);
-    
+
 //  Send the INSERT_ELEMENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_insert_element (void *output,
         zmsg_t *msg);
-    
+
 //  Send the DELETE_ELEMENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_delete_element (void *output,
         uint32_t element_id,
         byte type);
-    
+
 //  Send the OK to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_ok (void *output,
         uint32_t element_id);
-    
+
 //  Send the FAIL to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_fail (void *output,
         byte error_id);
-    
+
 //  Send the GET_ELEMENTS to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_get_elements (void *output,
         byte type);
-    
+
 //  Send the RETURN_ELEMENTS to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_return_elements (void *output,
         zhash_t *element_ids);
-    
+
 //  Send the GET_LOCATION_FROM to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -440,13 +440,13 @@ int
         uint32_t element_id,
         byte recursive,
         byte filter_type);
-    
+
 //  Send the GET_LOCATION_TO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_get_location_to (void *output,
         uint32_t element_id);
-    
+
 //  Send the RETURN_LOCATION_TO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -456,7 +456,7 @@ int
         const char *name,
         const char *type_name,
         zmsg_t *msg);
-    
+
 //  Send the RETURN_LOCATION_FROM to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -471,13 +471,13 @@ int
         zframe_t *racks,
         zframe_t *devices,
         zframe_t *grps);
-    
+
 //  Send the GET_POWER_FROM to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_get_power_from (void *output,
         uint32_t element_id);
-    
+
 //  Send the POWERCHAIN_DEVICE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -485,32 +485,32 @@ int
         uint32_t element_id,
         const char *type_name,
         const char *name);
-    
+
 //  Send the RETURN_POWER to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_return_power (void *output,
         zframe_t *devices,
         zlist_t *powers);
-    
+
 //  Send the GET_POWER_TO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_get_power_to (void *output,
         uint32_t element_id);
-    
+
 //  Send the GET_POWER_GROUP to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_get_power_group (void *output,
         uint32_t element_id);
-    
+
 //  Send the GET_POWER_DATACENTER to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     asset_msg_send_get_power_datacenter (void *output,
         uint32_t element_id);
-    
+
 //  Duplicate the asset_msg message
 asset_msg_t *
     asset_msg_dup (asset_msg_t *self);
@@ -566,7 +566,7 @@ zhash_t *
 //  Set the ext field, transferring ownership from caller
 void
     asset_msg_set_ext (asset_msg_t *self, zhash_t **ext_p);
-    
+
 //  Get/set a value in the ext dictionary
 const char *
     asset_msg_ext_string (asset_msg_t *self,
@@ -681,7 +681,7 @@ zhash_t *
 //  Set the element_ids field, transferring ownership from caller
 void
     asset_msg_set_element_ids (asset_msg_t *self, zhash_t **element_ids_p);
-    
+
 //  Get/set a value in the element_ids dictionary
 const char *
     asset_msg_element_ids_string (asset_msg_t *self,

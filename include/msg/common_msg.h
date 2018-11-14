@@ -1,6 +1,6 @@
 /*  =========================================================================
     common_msg - common messages
-    
+
     Codec header for common_msg.
 
     ** WARNING *************************************************************
@@ -12,19 +12,19 @@
      * The XML model used for this code generation: common_msg.xml, or
      * The code generation script that built this file: zproto_codec_c_v1
     ************************************************************************
-                                                                        
-    Copyright (C) 2014 Eaton                                            
-                                                                        
+
+    Copyright (C) 2014 - 2018 Eaton
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or   
-    (at your option) any later version.                                 
-                                                                        
-    This program is distributed in the hope that it will be useful,     
-    but WITHOUT ANY WARRANTY; without even the implied warranty of      
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       
-    GNU General Public License for more details.                        
-                                                                        
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -36,28 +36,28 @@
 
 /*  These are the common_msg messages:
 
-    GET_MEASURE_TYPE_I - 
+    GET_MEASURE_TYPE_I -
         mt_id               number 2    Measurement type id
 
-    GET_MEASURE_TYPE_S - 
+    GET_MEASURE_TYPE_S -
         mt_name             string      Measurement type name
         mt_unit             string      Prefered units
 
-    GET_MEASURE_SUBTYPE_I - 
+    GET_MEASURE_SUBTYPE_I -
         mt_id               number 2    Measurement type id
         mts_id              number 2    Measurement subtype id
 
-    GET_MEASURE_SUBTYPE_S - 
+    GET_MEASURE_SUBTYPE_S -
         mt_id               number 2    Measurement type id
         mts_name            string      Measurement subtype name
         mts_scale           number 1    Preffered scale
 
-    RETURN_MEASURE_TYPE - 
+    RETURN_MEASURE_TYPE -
         mt_id               number 2    Measurement type id
         mt_name             string      Measurement type name
         mt_unit             string      Measurement type units
 
-    RETURN_MEASURE_SUBTYPE - 
+    RETURN_MEASURE_SUBTYPE -
         mts_id              number 2    Measurement subtype id
         mt_id               number 2    Measurement type id
         mts_scale           number 1    Measurement subtype scale
@@ -92,11 +92,11 @@
 
     NEW_MEASUREMENT - New measurment
         client_name         string       Name of the client
-        device_name         string       device name 
-        device_type         string       device type 
+        device_name         string       device name
+        device_type         string       device type
         mt_id               number 2     Measurement type id
         mts_id              number 2     Measurement subtype id
-        value               number 8     measurement value 
+        value               number 8     measurement value
 
     CLIENT_INFO - Structure describing client info
         client_id           number 4     A client id
@@ -158,7 +158,7 @@
 
     RETURN_LAST_MEASUREMENTS - The last measurements about the device with asset_element_id
         device_id           number 4     An asset_element_id of the device
-        device_name         string       device name 
+        device_name         string       device name
         measurements        strings      A list of string values "keytagid:subkeytagid:value:scale"
 */
 
@@ -225,7 +225,7 @@ bool
     is_common_msg (zmsg_t *msg_p);
 
 //  Parse a common_msg from zmsg_t. Returns a new object, or NULL if
-//  the message could not be parsed, or was NULL. Destroys msg and 
+//  the message could not be parsed, or was NULL. Destroys msg and
 //  nullifies the msg reference.
 common_msg_t *
     common_msg_decode (zmsg_t **msg_p);
@@ -235,12 +235,12 @@ common_msg_t *
 zmsg_t *
     common_msg_encode (common_msg_t **self_p);
 
-//  Receive and parse a common_msg from the socket. Returns new object, 
+//  Receive and parse a common_msg from the socket. Returns new object,
 //  or NULL if error. Will block if there's no message waiting.
 common_msg_t *
     common_msg_recv (void *input);
 
-//  Receive and parse a common_msg from the socket. Returns new object, 
+//  Receive and parse a common_msg from the socket. Returns new object,
 //  or NULL either if there was no input waiting, or the recv was interrupted.
 common_msg_t *
     common_msg_recv_nowait (void *input);
@@ -253,38 +253,38 @@ int
 int
     common_msg_send_again (common_msg_t *self, void *output);
 
-//  Encode the GET_MEASURE_TYPE_I 
+//  Encode the GET_MEASURE_TYPE_I
 zmsg_t *
     common_msg_encode_get_measure_type_i (
         uint16_t mt_id);
 
-//  Encode the GET_MEASURE_TYPE_S 
+//  Encode the GET_MEASURE_TYPE_S
 zmsg_t *
     common_msg_encode_get_measure_type_s (
         const char *mt_name,
         const char *mt_unit);
 
-//  Encode the GET_MEASURE_SUBTYPE_I 
+//  Encode the GET_MEASURE_SUBTYPE_I
 zmsg_t *
     common_msg_encode_get_measure_subtype_i (
         uint16_t mt_id,
         uint16_t mts_id);
 
-//  Encode the GET_MEASURE_SUBTYPE_S 
+//  Encode the GET_MEASURE_SUBTYPE_S
 zmsg_t *
     common_msg_encode_get_measure_subtype_s (
         uint16_t mt_id,
         const char *mts_name,
         byte mts_scale);
 
-//  Encode the RETURN_MEASURE_TYPE 
+//  Encode the RETURN_MEASURE_TYPE
 zmsg_t *
     common_msg_encode_return_measure_type (
         uint16_t mt_id,
         const char *mt_name,
         const char *mt_unit);
 
-//  Encode the RETURN_MEASURE_SUBTYPE 
+//  Encode the RETURN_MEASURE_SUBTYPE
 zmsg_t *
     common_msg_encode_return_measure_subtype (
         uint16_t mts_id,
@@ -292,7 +292,7 @@ zmsg_t *
         byte mts_scale,
         const char *mts_name);
 
-//  Encode the FAIL 
+//  Encode the FAIL
 zmsg_t *
     common_msg_encode_fail (
         byte errtype,
@@ -300,40 +300,40 @@ zmsg_t *
         const char *errmsg,
         zhash_t *aux);
 
-//  Encode the DB_OK 
+//  Encode the DB_OK
 zmsg_t *
     common_msg_encode_db_ok (
         uint32_t rowid,
         zhash_t *aux);
 
-//  Encode the CLIENT 
+//  Encode the CLIENT
 zmsg_t *
     common_msg_encode_client (
         const char *name);
 
-//  Encode the INSERT_CLIENT 
+//  Encode the INSERT_CLIENT
 zmsg_t *
     common_msg_encode_insert_client (
         zmsg_t *msg);
 
-//  Encode the UPDATE_CLIENT 
+//  Encode the UPDATE_CLIENT
 zmsg_t *
     common_msg_encode_update_client (
         uint32_t client_id,
         zmsg_t *msg);
 
-//  Encode the DELETE_CLIENT 
+//  Encode the DELETE_CLIENT
 zmsg_t *
     common_msg_encode_delete_client (
         uint32_t client_id);
 
-//  Encode the RETURN_CLIENT 
+//  Encode the RETURN_CLIENT
 zmsg_t *
     common_msg_encode_return_client (
         uint32_t rowid,
         zmsg_t *msg);
 
-//  Encode the NEW_MEASUREMENT 
+//  Encode the NEW_MEASUREMENT
 zmsg_t *
     common_msg_encode_new_measurement (
         const char *client_name,
@@ -343,7 +343,7 @@ zmsg_t *
         uint16_t mts_id,
         uint64_t value);
 
-//  Encode the CLIENT_INFO 
+//  Encode the CLIENT_INFO
 zmsg_t *
     common_msg_encode_client_info (
         uint32_t client_id,
@@ -351,91 +351,91 @@ zmsg_t *
         zchunk_t *info,
         uint32_t date);
 
-//  Encode the INSERT_CINFO 
+//  Encode the INSERT_CINFO
 zmsg_t *
     common_msg_encode_insert_cinfo (
         zmsg_t *msg);
 
-//  Encode the DELETE_CINFO 
+//  Encode the DELETE_CINFO
 zmsg_t *
     common_msg_encode_delete_cinfo (
         uint32_t cinfo_id);
 
-//  Encode the RETURN_CINFO 
+//  Encode the RETURN_CINFO
 zmsg_t *
     common_msg_encode_return_cinfo (
         uint32_t rowid,
         zmsg_t *msg);
 
-//  Encode the DEVICE 
+//  Encode the DEVICE
 zmsg_t *
     common_msg_encode_device (
         uint32_t devicetype_id,
         const char *name);
 
-//  Encode the INSERT_DEVICE 
+//  Encode the INSERT_DEVICE
 zmsg_t *
     common_msg_encode_insert_device (
         zmsg_t *msg);
 
-//  Encode the DELETE_DEVICE 
+//  Encode the DELETE_DEVICE
 zmsg_t *
     common_msg_encode_delete_device (
         uint32_t device_id);
 
-//  Encode the RETURN_DEVICE 
+//  Encode the RETURN_DEVICE
 zmsg_t *
     common_msg_encode_return_device (
         uint32_t rowid,
         zmsg_t *msg);
 
-//  Encode the DEVICE_TYPE 
+//  Encode the DEVICE_TYPE
 zmsg_t *
     common_msg_encode_device_type (
         const char *name);
 
-//  Encode the INSERT_DEVTYPE 
+//  Encode the INSERT_DEVTYPE
 zmsg_t *
     common_msg_encode_insert_devtype (
         zmsg_t *msg);
 
-//  Encode the DELETE_DEVTYPE 
+//  Encode the DELETE_DEVTYPE
 zmsg_t *
     common_msg_encode_delete_devtype (
         uint32_t devicetype_id);
 
-//  Encode the RETURN_DEVTYPE 
+//  Encode the RETURN_DEVTYPE
 zmsg_t *
     common_msg_encode_return_devtype (
         uint32_t rowid,
         zmsg_t *msg);
 
-//  Encode the GET_CLIENT 
+//  Encode the GET_CLIENT
 zmsg_t *
     common_msg_encode_get_client (
         uint32_t client_id);
 
-//  Encode the GET_CINFO 
+//  Encode the GET_CINFO
 zmsg_t *
     common_msg_encode_get_cinfo (
         uint32_t cinfo_id);
 
-//  Encode the GET_DEVICE 
+//  Encode the GET_DEVICE
 zmsg_t *
     common_msg_encode_get_device (
         uint32_t device_id);
 
-//  Encode the GET_DEVTYPE 
+//  Encode the GET_DEVTYPE
 zmsg_t *
     common_msg_encode_get_devtype (
         uint32_t devicetype_id);
 
-//  Encode the GET_LAST_MEASUREMENTS 
+//  Encode the GET_LAST_MEASUREMENTS
 zmsg_t *
     common_msg_encode_get_last_measurements (
         uint32_t device_id);
 
-//  Encode the RETURN_LAST_MEASUREMENTS 
+//  Encode the RETURN_LAST_MEASUREMENTS
 zmsg_t *
     common_msg_encode_return_last_measurements (
         uint32_t device_id,
@@ -448,21 +448,21 @@ zmsg_t *
 int
     common_msg_send_get_measure_type_i (void *output,
         uint16_t mt_id);
-    
+
 //  Send the GET_MEASURE_TYPE_S to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_get_measure_type_s (void *output,
         const char *mt_name,
         const char *mt_unit);
-    
+
 //  Send the GET_MEASURE_SUBTYPE_I to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_get_measure_subtype_i (void *output,
         uint16_t mt_id,
         uint16_t mts_id);
-    
+
 //  Send the GET_MEASURE_SUBTYPE_S to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -470,7 +470,7 @@ int
         uint16_t mt_id,
         const char *mts_name,
         byte mts_scale);
-    
+
 //  Send the RETURN_MEASURE_TYPE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -478,7 +478,7 @@ int
         uint16_t mt_id,
         const char *mt_name,
         const char *mt_unit);
-    
+
 //  Send the RETURN_MEASURE_SUBTYPE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -487,7 +487,7 @@ int
         uint16_t mt_id,
         byte mts_scale,
         const char *mts_name);
-    
+
 //  Send the FAIL to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -496,46 +496,46 @@ int
         uint32_t errorno,
         const char *errmsg,
         zhash_t *aux);
-    
+
 //  Send the DB_OK to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_db_ok (void *output,
         uint32_t rowid,
         zhash_t *aux);
-    
+
 //  Send the CLIENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_client (void *output,
         const char *name);
-    
+
 //  Send the INSERT_CLIENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_insert_client (void *output,
         zmsg_t *msg);
-    
+
 //  Send the UPDATE_CLIENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_update_client (void *output,
         uint32_t client_id,
         zmsg_t *msg);
-    
+
 //  Send the DELETE_CLIENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_delete_client (void *output,
         uint32_t client_id);
-    
+
 //  Send the RETURN_CLIENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_return_client (void *output,
         uint32_t rowid,
         zmsg_t *msg);
-    
+
 //  Send the NEW_MEASUREMENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -546,7 +546,7 @@ int
         uint16_t mt_id,
         uint16_t mts_id,
         uint64_t value);
-    
+
 //  Send the CLIENT_INFO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -555,107 +555,107 @@ int
         uint32_t device_id,
         zchunk_t *info,
         uint32_t date);
-    
+
 //  Send the INSERT_CINFO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_insert_cinfo (void *output,
         zmsg_t *msg);
-    
+
 //  Send the DELETE_CINFO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_delete_cinfo (void *output,
         uint32_t cinfo_id);
-    
+
 //  Send the RETURN_CINFO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_return_cinfo (void *output,
         uint32_t rowid,
         zmsg_t *msg);
-    
+
 //  Send the DEVICE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_device (void *output,
         uint32_t devicetype_id,
         const char *name);
-    
+
 //  Send the INSERT_DEVICE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_insert_device (void *output,
         zmsg_t *msg);
-    
+
 //  Send the DELETE_DEVICE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_delete_device (void *output,
         uint32_t device_id);
-    
+
 //  Send the RETURN_DEVICE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_return_device (void *output,
         uint32_t rowid,
         zmsg_t *msg);
-    
+
 //  Send the DEVICE_TYPE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_device_type (void *output,
         const char *name);
-    
+
 //  Send the INSERT_DEVTYPE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_insert_devtype (void *output,
         zmsg_t *msg);
-    
+
 //  Send the DELETE_DEVTYPE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_delete_devtype (void *output,
         uint32_t devicetype_id);
-    
+
 //  Send the RETURN_DEVTYPE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_return_devtype (void *output,
         uint32_t rowid,
         zmsg_t *msg);
-    
+
 //  Send the GET_CLIENT to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_get_client (void *output,
         uint32_t client_id);
-    
+
 //  Send the GET_CINFO to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_get_cinfo (void *output,
         uint32_t cinfo_id);
-    
+
 //  Send the GET_DEVICE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_get_device (void *output,
         uint32_t device_id);
-    
+
 //  Send the GET_DEVTYPE to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_get_devtype (void *output,
         uint32_t devicetype_id);
-    
+
 //  Send the GET_LAST_MEASUREMENTS to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
     common_msg_send_get_last_measurements (void *output,
         uint32_t device_id);
-    
+
 //  Send the RETURN_LAST_MEASUREMENTS to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 int
@@ -663,7 +663,7 @@ int
         uint32_t device_id,
         const char *device_name,
         zlist_t *measurements);
-    
+
 //  Duplicate the common_msg message
 common_msg_t *
     common_msg_dup (common_msg_t *self);
@@ -749,7 +749,7 @@ zhash_t *
 //  Set the aux field, transferring ownership from caller
 void
     common_msg_set_aux (common_msg_t *self, zhash_t **aux_p);
-    
+
 //  Get/set a value in the aux dictionary
 const char *
     common_msg_aux_string (common_msg_t *self,

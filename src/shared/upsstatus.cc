@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ status_lkp_t status_info[] = {
     { "CHRG", STATUS_CHRG },
     { "DISCHRG", STATUS_DISCHRG },
     { "HB", STATUS_HB },
-    { "FSD", STATUS_FSD },    
+    { "FSD", STATUS_FSD },
     { "NULL", 0 },
 };
 /* previous definition is taken as it is from network ups tool project (dummy-ups.h)*/

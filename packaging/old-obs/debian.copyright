@@ -1,13 +1,13 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: core
+Upstream-Name: fty-rest
 
 Files: *
-Copyright: Copyright 2014, 2015, 2016 Eaton
+Copyright: Copyright 2014, 2015, 2016, 2017, 2018 Eaton
 License: GPL-2+
 
 Files: tools/JSON.sh
 Copyright: Copyright 2014, 2015 Dominic Tarr
-           Copyright 2015 Eaton
+           Copyright 2015 - 2018 Eaton
 License: Apache-2 and Expat
 
 Files: tests/include/catch.hpp

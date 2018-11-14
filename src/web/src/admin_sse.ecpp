@@ -19,7 +19,7 @@
  #><#
 /*!
  \file admin_sse.ecpp
- \author nicolas DAVIET <nicolasdaviet@Eaton.com>
+ \author Nicolas DAVIET <nicolasdaviet@Eaton.com>
  \brief Open an sse connection to send any notification to UI
 */
 #><%pre>

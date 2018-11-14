@@ -2,7 +2,7 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: fty-rest
 
 Files: *
-Copyright: 2015- fty-rest Developers <eatonipcopensource@eaton.com>
+Copyright: 2014- fty-rest Developers <eatonipcopensource@eaton.com>
 License: fty-rest_license
  Copyright (C) 2014 - 2018 Eaton
  .

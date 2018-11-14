@@ -1,6 +1,6 @@
 /*
-Copyright (C) 2015 Eaton
- 
+Copyright (C) 2015 - 2018 Eaton
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -32,7 +32,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 // DEVICE
 // ===============================================================
 
-db_reply_t 
-    select_device (tntdb::Connection &conn, 
+db_reply_t
+    select_device (tntdb::Connection &conn,
                    const char* device_name);
 #endif // SRC_PERSIST_MONITOR_H_

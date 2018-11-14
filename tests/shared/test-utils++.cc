@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -162,8 +162,8 @@ TEST_CASE ("join", "[utilities]") {
 
     const char **arr5 = NULL;
     const char **arr6 = { NULL };
-    const char **arr_empty = {};  
-     
+    const char **arr_empty = {};
+
 
     SECTION ("version with length specified") {
         CHECK ( utils::join (arr1, arr1_len, ",").compare ("mean,min,max") == 0 );
@@ -205,15 +205,15 @@ TEST_CASE ("join", "[utilities]") {
 TEST_CASE ("stobiosf", "[utilities]") {
     int8_t scale = 0;
     int32_t integer = 0;
-    
+
     CHECK (utils::math::stobiosf ("12.835", integer, scale));
     CHECK ( integer == 12835 );
     CHECK ( scale == -3 );
- 
+
     CHECK (utils::math::stobiosf ("178746.2332", integer, scale));
     CHECK ( integer == 1787462332 );
     CHECK ( scale == -4 );
- 
+
     CHECK (utils::math::stobiosf ("0.00004", integer, scale));
     CHECK ( integer == 4 );
     CHECK ( scale == -5 );
@@ -233,7 +233,7 @@ TEST_CASE ("stobiosf", "[utilities]") {
     CHECK ( utils::math::stobiosf ("0", integer, scale) );
     CHECK ( integer == 0 );
     CHECK ( scale == 0 );
-    
+
     CHECK ( utils::math::stobiosf ("1", integer, scale) );
     CHECK ( integer == 1 );
     CHECK ( scale == 0 );
@@ -257,7 +257,7 @@ TEST_CASE ("stobiosf", "[utilities]") {
     CHECK ( utils::math::stobiosf ("1234324532452345623541.00", integer, scale) == false );
 
     CHECK ( utils::math::stobiosf ("2.532132356545624522452456", integer, scale) == false );
-    
+
     CHECK ( utils::math::stobiosf ("12x43", integer, scale) == false );
     CHECK ( utils::math::stobiosf ("sdfsd", integer, scale) == false );
 }

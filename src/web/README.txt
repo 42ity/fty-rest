@@ -7,7 +7,7 @@ Currently highly in progress and supports only time command.
 Requirements
 ------------
 
-Requires 'tntnet', 'libsodium', 'cxxtools', 'libsasl2' and 'saslauthd'. 
+Requires 'tntnet', 'libsodium', 'cxxtools', 'libsasl2' and 'saslauthd'.
 To be able to set date/time, also needs properly setup 'sudo' (example
 configuration provided in the project documentation).
 
@@ -21,7 +21,7 @@ or '/var/run/sasl2/mux' to set it up accordinally.
 
 On Debian 8 the SASL and PAM are pre-integrated, you only need to make
 sure that the 'admin' user (with the currently hardcoded password 'admin')
-has been created in the OS and added to the 'sasl' group. The project 
+has been created in the OS and added to the 'sasl' group. The project
 delivers a script `init-os-accounts.sh` made to set this all up for you.
 
 On other OSes some manual configuration may be needed...

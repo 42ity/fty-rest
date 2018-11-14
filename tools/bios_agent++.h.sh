@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2015 Eaton
+# Copyright (C) 2015 - 2018 Eaton
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ BEGIN{
         printf(", %s", pname);
     }
     printf(" ); };\n");
-    type = ""; 
+    type = "";
 }
 '< "$INCLUDE" | sed -e 's,[ \t][ \t]*, ,g' -e 's,^[ \t]*\([^ \t].*\)$,    \1,' -e 's,[ \t]*$,,g'
 # The SED filter should ensure that all nonempty lines do not have two or more

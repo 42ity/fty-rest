@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2014 - 2015 Eaton
+Copyright (C) 2014 - 2018 Eaton
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -135,11 +135,11 @@ BIOS_EXPORT ymsg_t *
 BIOS_EXPORT ymsg_t *
     bios_agent_recv_wait (bios_agent_t *self, int timeout);
 
-/*! 
- \brief Prepare to publish to a specified stream. 
- 
+/*!
+ \brief Prepare to publish to a specified stream.
+
  After this, all messages are sent to this stream exclusively.
- 
+
  \param[in] self Bios agent
  \param[in] name of the stream
 
@@ -149,9 +149,9 @@ BIOS_EXPORT int
     bios_agent_set_producer (bios_agent_t *self, const char *stream);
 
 /*!
- \brief Prepare to consume messages from a specified stream with 
+ \brief Prepare to consume messages from a specified stream with
  topic that matches the pattern.
- 
+
  The pattern is a regular expression
  using the CZMQ zrex syntax. The most useful elements are: ^ and $ to match the
  start and end, . to match any character, \s and \S to match whitespace and
@@ -159,11 +159,11 @@ BIOS_EXPORT int
  alphabetic and non-alphabetic, \w and \W to match alphanumeric and
  non-alphanumeric, + for one or more repetitions, * for zero or more repetitions,
  and ( ) to create groups.
- 
+
  \param[in] self     Bios agent
  \param[in] stream   Name of the stream
  \param[in] pattern  regular expression (CZMQ syntax)
- 
+
  \return 0 if subscription was successful, -2 on bad input, -1 on fail for any other reason.
 */
 BIOS_EXPORT int
@@ -284,7 +284,7 @@ BIOS_EXPORT mlm_client_t *
 // ACE: there is a need to send new metrics from core
 BIOS_EXPORT int
     bios_agent_send_proto_metric (bios_agent_t *self, const char *subject, zmsg_t **msg_p);
- 
+
 // TODO (miska): please change for utils_ymsg.h functions
 BIOS_EXPORT const char * ymsg_get_string(ymsg_t* msg, const char *key);
 BIOS_EXPORT int32_t ymsg_get_int32(ymsg_t* msg, const char *key);

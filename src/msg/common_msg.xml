@@ -135,7 +135,7 @@
 </message>
 
 <message name = "insert_device"  id = "213">
-    Insert a 
+    Insert a device
     <field name = "msg"         type = "msg"> Device info to be inserted</field>
 </message>
 

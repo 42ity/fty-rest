@@ -1,6 +1,6 @@
 /*
-Copyright (C) 2014 Eaton
- 
+Copyright (C) 2014 - 2018 Eaton
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -35,7 +35,7 @@ namespace bios
     class BiosErrorBase : public std::runtime_error
     {
         public:
-        
+
         // Constructor
         explicit BiosErrorBase(const std::string& msg);
     };
@@ -49,9 +49,9 @@ namespace bios
         // Constructor
         ElementIsNotDevice();
     };
-    
+
     /*
-     * \brief Exception thrown when for specified device 
+     * \brief Exception thrown when for specified device
      *  monitor counterpart was not found.
      */
     class MonitorCounterpartNotFound : public BiosErrorBase
@@ -82,7 +82,7 @@ namespace bios
         // Constructor
         InternalDBError(const std::string& msg);
     };
-    
+
     /*
      * \brief Exception thrown when bad input data found
      * in database.

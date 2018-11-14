@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ TEST_CASE("Power topology group","[db][topology][power][group]")
     assert ( cretTopology );
     asset_msg_print (cretTopology);
     print_frame_devices (asset_msg_devices (cretTopology));
-    
+
     asset_msg_destroy (&getmsg);
     asset_msg_destroy (&cretTopology);
 }
@@ -72,7 +72,7 @@ TEST_CASE("Power topology group empty","[db][topology][power][group]")
     assert ( cretTopology );
     asset_msg_print (cretTopology);
     print_frame_devices (asset_msg_devices (cretTopology));
-    
+
     asset_msg_destroy (&getmsg);
     asset_msg_destroy (&cretTopology);
 }
@@ -91,7 +91,7 @@ TEST_CASE("Power topology datacenter1","[db][topology][power][datacenter]")
     assert ( cretTopology );
     asset_msg_print (cretTopology);
     print_frame_devices (asset_msg_devices (cretTopology));
-    
+
     asset_msg_destroy (&getmsg);
     asset_msg_destroy (&cretTopology);
 }
@@ -112,7 +112,7 @@ TEST_CASE("Power topology datacenter10","[db][topology][power][datacenter]")
     assert ( cretTopology );
     asset_msg_print (cretTopology);
     print_frame_devices (asset_msg_devices (cretTopology));
-    
+
     asset_msg_destroy (&getmsg);
     asset_msg_destroy (&cretTopology);
 }

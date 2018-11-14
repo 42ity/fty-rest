@@ -1,6 +1,6 @@
 /*  =========================================================================
     app - draft
-    
+
     Codec header for app.
 
     ** WARNING *************************************************************
@@ -12,19 +12,19 @@
      * The XML model used for this code generation: application.xml, or
      * The code generation script that built this file: zproto_codec_c_v1
     ************************************************************************
-                                                                        
-    Copyright (C) 2014 - 2015 Eaton                                     
-                                                                        
+
+    Copyright (C) 2014 - 2018 Eaton
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or   
-    (at your option) any later version.                                 
-                                                                        
-    This program is distributed in the hope that it will be useful,     
-    but WITHOUT ANY WARRANTY; without even the implied warranty of      
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the       
-    GNU General Public License for more details.                        
-                                                                        
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -36,15 +36,15 @@
 
 /*  These are the app messages:
 
-    MODULE - 
-        name                string      
+    MODULE -
+        name                string
         params              strings     List of parameters for module
-        args                hash        
+        args                hash
 
-    DB - 
-        op                  number 4    
-        params              strings     
-        args                hash        
+    DB -
+        op                  number 4
+        params              strings
+        args                hash
         bin                 chunk       In case we want to store pictures in db, etc...
 */
 
@@ -87,7 +87,7 @@ BIOS_EXPORT bool
     is_app (zmsg_t *msg_p);
 
 //  Parse a app from zmsg_t. Returns a new object, or NULL if
-//  the message could not be parsed, or was NULL. Destroys msg and 
+//  the message could not be parsed, or was NULL. Destroys msg and
 //  nullifies the msg reference.
 BIOS_EXPORT app_t *
     app_decode (zmsg_t **msg_p);
@@ -97,12 +97,12 @@ BIOS_EXPORT app_t *
 BIOS_EXPORT zmsg_t *
     app_encode (app_t **self_p);
 
-//  Receive and parse a app from the socket. Returns new object, 
+//  Receive and parse a app from the socket. Returns new object,
 //  or NULL if error. Will block if there's no message waiting.
 BIOS_EXPORT app_t *
     app_recv (void *input);
 
-//  Receive and parse a app from the socket. Returns new object, 
+//  Receive and parse a app from the socket. Returns new object,
 //  or NULL either if there was no input waiting, or the recv was interrupted.
 BIOS_EXPORT app_t *
     app_recv_nowait (void *input);
@@ -115,14 +115,14 @@ BIOS_EXPORT int
 BIOS_EXPORT int
     app_send_again (app_t *self, void *output);
 
-//  Encode the MODULE 
+//  Encode the MODULE
 BIOS_EXPORT zmsg_t *
     app_encode_module (
         const char *name,
         zlist_t *params,
         zhash_t *args);
 
-//  Encode the DB 
+//  Encode the DB
 BIOS_EXPORT zmsg_t *
     app_encode_db (
         uint32_t op,
@@ -138,7 +138,7 @@ BIOS_EXPORT int
         const char *name,
         zlist_t *params,
         zhash_t *args);
-    
+
 //  Send the DB to the output in one step
 //  WARNING, this call will fail if output is of type ZMQ_ROUTER.
 BIOS_EXPORT int
@@ -147,7 +147,7 @@ BIOS_EXPORT int
         zlist_t *params,
         zhash_t *args,
         zchunk_t *bin);
-    
+
 //  Duplicate the app message
 BIOS_EXPORT app_t *
     app_dup (app_t *self);
@@ -205,7 +205,7 @@ BIOS_EXPORT zhash_t *
 //  Set the args field, transferring ownership from caller
 BIOS_EXPORT void
     app_set_args (app_t *self, zhash_t **args_p);
-    
+
 //  Get/set a value in the args dictionary
 BIOS_EXPORT const char *
     app_args_string (app_t *self,

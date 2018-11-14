@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (C) 2015 Eaton
+ * Copyright (C) 2015 - 2018 Eaton
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,17 +56,17 @@ TEST_CASE("Power topology datacenter #1","[db][topology][power][datacenter][powe
     sdevices.insert (std::make_tuple(5084, "ePDU2-05", "epdu"));
     sdevices.insert (std::make_tuple(5085, "SRV1-05", "server"));
     sdevices.insert (std::make_tuple(5086, "SRV2-05", "server"));
-    
+
     // the expected links
     std::set<std::string> spowers;
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5087:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5081"); 
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5087:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5082"); 
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5081:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5083"); 
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5082:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5084"); 
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5083:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5085"); 
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5083:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5086"); 
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5084:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5085"); 
-    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5084:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5086"); 
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5087:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5081");
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5087:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5082");
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5081:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5083");
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5082:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5084");
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5083:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5085");
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5083:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5086");
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5084:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5085");
+    spowers.insert (std::string(SRCOUT_DESTIN_IS_NULL) + ":5084:" + std::string(SRCOUT_DESTIN_IS_NULL) + ":5086");
 
     _scoped_zmsg_t* retTopology = get_return_power_topology_datacenter (url.c_str(), getmsg);
     assert ( retTopology );
@@ -75,7 +75,7 @@ TEST_CASE("Power topology datacenter #1","[db][topology][power][datacenter][powe
     assert ( cretTopology );
 //    asset_msg_print (cretTopology);
 //    print_frame_devices (asset_msg_devices (cretTopology));
-    
+
     // check powers
     _scoped_zlist_t* powers = asset_msg_get_powers (cretTopology);
     REQUIRE ( powers );
@@ -102,7 +102,7 @@ TEST_CASE("Power topology datacenter #1","[db][topology][power][datacenter][powe
 #if CZMQ_VERSION_MAJOR == 3
     byte* buffer1 = zframe_data (frame);
     assert ( buffer1 );
-    
+
     _scoped_zmsg_t *zmsg = zmsg_decode ( buffer1, zframe_size (frame));
 #else
     _scoped_zmsg_t *zmsg = zmsg_decode (frame);
@@ -116,7 +116,7 @@ TEST_CASE("Power topology datacenter #1","[db][topology][power][datacenter][powe
         _scoped_zmsg_t* pop = NULL;
         pop = zmsg_popmsg (zmsg);
         REQUIRE (pop);
-   
+
         _scoped_asset_msg_t* item = asset_msg_decode (&pop); // pop is freed
         assert (item);
 //    asset_msg_print (item);
@@ -124,15 +124,15 @@ TEST_CASE("Power topology datacenter #1","[db][topology][power][datacenter][powe
                                                     asset_msg_name (item),
                                                     asset_msg_type_name (item) ));
         REQUIRE ( it != sdevices.end() );
-        sdevices.erase (it); 
+        sdevices.erase (it);
         asset_msg_destroy (&item);
     }
-    
+
     // there is no more devices
     _scoped_zmsg_t *pop = zmsg_popmsg (zmsg);
     REQUIRE ( pop == NULL );
     REQUIRE ( sdevices.empty() );
-    
+
     asset_msg_destroy (&getmsg);
     asset_msg_destroy (&cretTopology);
 }
@@ -154,14 +154,14 @@ TEST_CASE("Power topology datacenter #2","[db][topology][power][datacenter][powe
     // check powers
     _scoped_zlist_t* powers = asset_msg_get_powers (cretTopology);
     REQUIRE ( zlist_size(powers) == 0 );
-    
+
     // check the devices
     zframe_t* frame = asset_msg_devices (cretTopology);
-    
+
 #if CZMQ_VERSION_MAJOR == 3
     byte* buffer2 = zframe_data (frame);
     assert ( buffer2 );
-    
+
     _scoped_zmsg_t *zmsg = zmsg_decode ( buffer2, zframe_size (frame));
 #else
     _scoped_zmsg_t *zmsg = zmsg_decode (frame);
@@ -171,10 +171,10 @@ TEST_CASE("Power topology datacenter #2","[db][topology][power][datacenter][powe
 
     _scoped_zmsg_t* pop = zmsg_popmsg (zmsg);
     REQUIRE ( pop == NULL );
- 
+
 //    asset_msg_print (cretTopology);
 //    print_frame_devices (asset_msg_devices (cretTopology));
-    
+
     asset_msg_destroy (&getmsg);
     asset_msg_destroy (&cretTopology);
 }
