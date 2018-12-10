@@ -74,7 +74,13 @@
     <!-- We are getting authorized -->
     <mapping>
       <target>auth@libfty_rest</target>
+      <!-- Code for oauth allows GET as an unchecked development path,
+           but since GET requests are by default fully logged with their
+           arguments by our server and by any proxies, we don't want
+           our clients to use it by mistake. Blocking GET should expose
+           such behavioral regressions early, during CI testing. -->
       <url>^/api/v1/oauth2/token$</url>
+      <method>(POST|PUT)</method>
     </mapping>
     <!-- Set BiosProfile profile variable if the request is authenticated
          and validate rights are sufficient.
