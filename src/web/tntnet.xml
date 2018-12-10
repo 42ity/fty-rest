@@ -78,9 +78,12 @@
            but since GET requests are by default fully logged with their
            arguments by our server and by any proxies, we don't want
            our clients to use it by mistake. Blocking GET should expose
-           such behavioral regressions early, during CI testing. -->
+           such behavioral regressions early, during CI testing.
+           If some developer needs to test with GET, they can comment
+           the method line below in their local build/deployment.
+           Note that the fty-core::weblib.sh uses POST since long ago. -->
       <url>^/api/v1/oauth2/token$</url>
-      <method>(POST|PUT)</method>
+      <method>POST</method>
     </mapping>
     <!-- Set BiosProfile profile variable if the request is authenticated
          and validate rights are sufficient.
