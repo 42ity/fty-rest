@@ -108,7 +108,7 @@
     <mapping>
       <target>auth@libfty_rest</target>
       <url>^/api/v1/oauth2/revoke$</url>
-      <method>(POST|PUT)</method>
+      <method>POST</method>
     </mapping>
 
     <!-- alerts/activelist -->
