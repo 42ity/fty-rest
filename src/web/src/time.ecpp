@@ -143,9 +143,9 @@ UserInfo user;
             int64_t delta_time = (int64_t)difftime(setting_time, entry_time);
 
             if ( delta_time > 0 ) {
-                log_warning ("It took " PRIi64 " seconds to get from start of call processing to setting the clock", delta_time);
+                log_warning ("It took %" PRIi64 " seconds to get from start of call processing to setting the clock", delta_time);
                 checked_time += " + ";
-                checked_time += delta_time;
+                checked_time += std::to_string (delta_time);
                 checked_time += " sec";
             }
 
