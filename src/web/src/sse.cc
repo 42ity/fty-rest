@@ -366,6 +366,56 @@ std::string Sse::changeFtyProtoAsset2Json(fty_proto_t *asset)
   return json;
 }
 
+std::string Sse::changeSseMessage2Json(zmsg_t *message)
+{
+  std::string json = "";
+
+  if (message == NULL) {
+    log_error("message is NULL");
+    return json;
+  }
+
+  // pop frames
+  std::string sseSign, topic, jsonPayload, assetID;
+  char *aux;
+
+  aux = zmsg_popstr(message);
+  sseSign = aux ? aux : "";
+  zstr_free(&aux);
+
+  aux = zmsg_popstr(message);
+  topic = aux ? aux : "";
+  zstr_free(&aux);
+
+  aux = zmsg_popstr(message);
+  jsonPayload = aux ? aux : "";
+  zstr_free(&aux);
+
+  aux = zmsg_popstr(message);
+  assetID = aux ? aux : "";
+  zstr_free(&aux);
+
+  if (sseSign != "sse") {
+    log_error("input message frame0 is not 'sse'");
+    return json;
+  }
+
+  if (assetID.empty()) { // optional
+  } // nop
+  else if (_assetsOfDatacenter.find(assetID) == _assetsOfDatacenter.end())
+  {
+    log_debug("skipping due to element_src '%s' not being in the list", assetID.c_str());
+    return json;
+  }
+
+  json += "data:{";
+  json += "\"topic\":\"" + topic +"\",";
+  json += "\"payload\":" + jsonPayload;
+  json += "}\n\n";
+
+  return json;
+}
+
 bool Sse::isAssetInDatacenter(fty_proto_t *asset)
 {
   int i = 1;

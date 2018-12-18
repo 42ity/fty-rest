@@ -116,10 +116,14 @@ bool database_ready;
         std::string err = TRANSLATE_ME ("Cannot consume ALERT stream");
         http_die ("internal-error", err.c_str ());
     }
-
     //Stream Asset
     if (-1 == sseManager.consumeStream("ASSETS", ".*")) {
         std::string err = TRANSLATE_ME ("Cannot consume ASSETS stream");
+        http_die ("internal-error", err.c_str ());
+    }
+    //Stream Sse
+    if (-1 == sseManager.consumeStream("SSE", ".*")) {
+        std::string err = TRANSLATE_ME ("Cannot consume SSE stream");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -215,14 +219,29 @@ bool database_ready;
         // Got it
         //Check if the message comes from stream
         if (sseManager.isMessageComesFrom("STREAM DELIVER")) {
+            bool msg_is_sse = false;
+
             fty_proto_t *msgProto = fty_proto_decode (&recv_msg);
             if (!msgProto) {
-                log_error ("Can't decode fty_proto from stream");
-                zmsg_destroy (&recv_msg);
-                continue;
+                // check if recv_msg is sse
+                char *frame0 = zmsg_popstr (recv_msg);
+                if (frame0 && streq (frame0, "sse")) {
+                    msg_is_sse = true;
+                    zmsg_pushstr (recv_msg, frame0); //restore msg
+                    zstr_free (&frame0);
+                }
+                else {
+                    zstr_free (&frame0);
+                    log_error ("Can't decode fty_proto or sse from recv_msg");
+                    zmsg_destroy (&recv_msg);
+                    continue;
+                }
             }
 
-            if (fty_proto_id (msgProto) == FTY_PROTO_ALERT) {
+            if (msg_is_sse) {
+                log_debug ("message is  SSE");
+                json = sseManager.changeSseMessage2Json(recv_msg);
+            } else if (fty_proto_id (msgProto) == FTY_PROTO_ALERT) {
                 log_debug ("message id is  FTY_PROTO_ALERT");
                 json = sseManager.changeFtyProtoAlert2Json(msgProto);
             } else if (fty_proto_id (msgProto) == FTY_PROTO_ASSET) {
@@ -233,7 +252,7 @@ bool database_ready;
                 continue;
             }
 
-            fty_proto_destroy (&msgProto);
+            if (msgProto) fty_proto_destroy (&msgProto);
             zmsg_destroy (&recv_msg);
 
             if (!json.empty()){

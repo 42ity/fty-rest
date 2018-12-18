@@ -142,6 +142,10 @@ public:
   //Return an empty string if error
   std::string changeFtyProtoAsset2Json(fty_proto_t *asset);
 
+  //Convert generic sse message to json
+  //Return an empty string if error
+  std::string changeSseMessage2Json(zmsg_t *message);
+
 };
 
 #endif // SRC_WEB_INCLUDE_SSE_H
