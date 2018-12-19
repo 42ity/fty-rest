@@ -284,6 +284,8 @@ sysinfo_detail (
     output += ",\t\t\t";
     output += utils::json::jsonify ("vendor", PACKAGE_VENDOR);
     output += "\n";
+#else
+    log_debug("sysinfo: compiled without PACKAGE_VENDOR");
 #endif
 
     output += "\t}\n"; // "core-package" closing bracket
@@ -322,6 +324,8 @@ sysinfo_detail (
 
         output += "\t}\n"; // "source-repo" closing bracket
 
+#else
+    log_debug("sysinfo: compiled without HAVE_PACKAGE_GIT and corresponding details");
 # endif // HAVE_PACKAGE_GIT
 
 #if defined(HAVE_PACKAGE_BUILD_HOST) || defined(HAVE_PACKAGE_BUILD_TSTAMP)
@@ -341,6 +345,8 @@ sysinfo_detail (
 #ifdef HAVE_PACKAGE_BUILD_TSTAMP
         output += ",";
 #endif
+#else
+    log_debug("sysinfo: compiled without HAVE_PACKAGE_BUILD_HOST and corresponding details");
 #endif // HAVE_PACKAGE_BUILD_HOST
 
 #ifdef HAVE_PACKAGE_BUILD_TSTAMP
@@ -351,6 +357,8 @@ sysinfo_detail (
         output += ",\t\t";
         output.append ("\"build-timestamp-iso8601\" : \"").append (PACKAGE_BUILD_TSTAMP_ISO8601_ESCAPED).append ("\"");
         output += "\n";
+#else
+    log_debug("sysinfo: compiled without HAVE_PACKAGE_BUILD_TSTAMP and corresponding details");
 #endif // HAVE_PACKAGE_BUILD_TSTAMP
         output += "\t}\n"; // "build-info" closing bracket
 # endif // HAVE_PACKAGE_BUILD_*: HOST and/or TSTAMP
