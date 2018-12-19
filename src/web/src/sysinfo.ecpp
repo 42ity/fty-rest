@@ -70,6 +70,8 @@
 #endif
 
 /* If OSIMAGE_BASENAME==NULL - no envvar, tntnet is not running under systemd */
+// FIXME : Wrap into a macro that keeps this as a string
+// value in final JSON, not a key:value object
 const char * OSIMAGE_BASENAME = ( getenv("OSIMAGE_BASENAME") ? getenv("OSIMAGE_BASENAME") : TRANSLATE_ME ("OS image name is not available").c_str () );
 
 void
@@ -130,6 +132,8 @@ get_installation_date (
             // TODO: we should probably check for time_t max/min, but hey!... ;)
             char chtmp[64];
             if (calendar_to_datetime ((time_t) i64, chtmp, 64) == -1) {
+                // FIXME : Wrap into a macro that keeps this as a string
+                // value in final JSON, not a key:value object
                 installation_date = TRANSLATE_ME ("N/A - Error retrieveing installation date");
                 throw std::runtime_error (TRANSLATE_ME ("calendar_to_datetime () failed."));
             }
@@ -153,6 +157,8 @@ sysinfo_detail (
     output.clear ();
 
     // Certain strings returned to caller in some cases
+    // FIXME : Wrap into a macro that keeps this as a string
+    // value in final JSON, not a key:value object
     static const std::string UNAUTHORIZED = TRANSLATE_ME ("unauthorized");
     static const std::string NOTAVAILABLE = TRANSLATE_ME ("N/A");
     static const std::string NOTLICENSEDYET = TRANSLATE_ME ("License not accepted yet");
@@ -242,6 +248,8 @@ sysinfo_detail (
     output += utils::json::jsonify ("installation-date", installation_date);
     output += "\n";
 
+    // FIXME : Wrap into a macro that keeps this as a string
+    // value in final JSON, not a key:value object
     std::string location = TRANSLATE_ME ("N/A - Error retrieving location");
     get_location (location);
 
