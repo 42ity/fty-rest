@@ -124,8 +124,15 @@ public:
   //return the time in second before expiration or -1 if token isn't valid
   long int checkTokenValidity();
 
-  //Check if the message comes from a channel in parameter
+  //Check if the message comes from a channel in parameter,
+  //about command of the latest msg received
   bool isMessageComesFrom(const char * channel);
+  
+  //Returns the message command, for the latest msg received
+  std::string messageCommand();
+
+  //Returns the message subject, for the latest msg received
+  std::string messageSubject();
 
   // get the message from malamate
   zmsg_t * getMessageFromMlm();
