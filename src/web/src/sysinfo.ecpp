@@ -515,7 +515,7 @@ sysinfo_detail (
             } // if (proceed_loop)
 
 
-            if (!dpkg_error_printed
+            if (dpkg_error_printed
 //               && some_config_flag // FIXME?
             ) {
                 if (first) {
