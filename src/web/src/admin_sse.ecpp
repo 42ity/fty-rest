@@ -71,7 +71,6 @@ bool database_ready;
         http_die ("request-param-required", "datacenter");
     }
 
-
     int64_t dbid =  DBAssets::name_to_asset_id (dc);
     if (dbid == -1) {
             http_die ("element-not-found", dc.c_str ());
@@ -132,11 +131,6 @@ bool database_ready;
     reply.setDirectMode();
     reply.out().flush();
 
-    int64_t start = zclock_mono();
-    int64_t sendNextExpTime = 0;
-    int64_t diff = 0;
-    int64_t now = 0;
-
     //get the token from the request
     std::string access_token = gaccess_token;
 
@@ -147,12 +141,16 @@ bool database_ready;
     }
 
     sseManager.setToken(access_token);
-    long int tme;
-    unsigned tntRequestTimeout = tnt::TntConfig::it().maxRequestTime * 1000 / 2 ;
 
     // Every ( connection request time out / 2) minutes we close the connection to avoid a connection timeout which would kill tntnet.
     // The client will reconnect itself.
+
+    unsigned tntRequestTimeout = tnt::TntConfig::it().maxRequestTime * 1000 / 2 ;
+    int64_t start = zclock_mono();
+    int64_t sendNextExpTime = 0;
+    int64_t diff = 0, now = 0;
     std::string json;
+
     while (diff < tntRequestTimeout) {
 
         //Check if a request shutdown was initiated
@@ -167,7 +165,7 @@ bool database_ready;
 
         //check if token is still valid
         //If valid return the time before the session expiration
-        tme = sseManager.checkTokenValidity();
+        long int tme = sseManager.checkTokenValidity();
         if (-1 == tme)
         {
             log_info ("sse : Token revoked or expired");
@@ -180,93 +178,82 @@ bool database_ready;
             json = "data:{\"topic\":\"session\",\"payload\":{\"exptime\":" ;
             json +=  std::to_string(tme).c_str();
             json +=  "}}\n\n";
-            reply.out()<<json;
+            reply.out() << json;
             if (reply.out().flush().fail())
-            {
-                log_debug ("Error during flush");
-                break;
-            }
+                { log_debug ("Error during flush"); break; }
             sendNextExpTime = now;
         }
 
         // wait for the right message or time-out
         zmsg_t *recv_msg = NULL;
-
         zsock_t *which = (zsock_t *) zpoller_wait (sseManager.getPoller(), 10000);
         if (which == sseManager.getPipe()) {
             recv_msg = sseManager.getMessageFromMlm();
         }
-        if (!recv_msg ){
+
+        if (!recv_msg )
+        {
             if (zpoller_expired (sseManager.getPoller())) {
                 //Send heartbeat message
                 json = "data:{\"topic\":\"heartbeat\",\"payload\":{}}\n\n";
-
-                reply.out()<<json;
+                reply.out() << json;
                 if (reply.out().flush().fail())
-                {
-                    log_debug ("Error during flush");
-                    break;
-                }
+                    { log_debug ("Error during flush"); break; }
                 continue;
             }
 
-            if (zpoller_terminated(sseManager.getPoller())){
+            if (zpoller_terminated(sseManager.getPoller())) {
                 log_error ("zpoller_wait(timeout = 10000) terminated.");
                 break;
             }
+            
+            continue;
         }
 
-        // Got it
-        //Check if the message comes from stream
-        if (sseManager.isMessageComesFrom("STREAM DELIVER")) {
-            bool msg_is_sse = false;
+        // Here recv_msg is set handle it.
 
+        if (sseManager.isMessageComesFrom("STREAM DELIVER")) //msg.command==ST
+        {
             fty_proto_t *msgProto = fty_proto_decode (&recv_msg);
-            if (!msgProto) {
-                // check if recv_msg is sse
-                char *frame0 = zmsg_popstr (recv_msg);
-                if (frame0 && streq (frame0, "sse")) {
-                    msg_is_sse = true;
-                    zmsg_pushstr (recv_msg, frame0); //restore msg
-                    zstr_free (&frame0);
-                }
-                else {
-                    zstr_free (&frame0);
-                    log_error ("Can't decode fty_proto or sse from recv_msg");
-                    zmsg_destroy (&recv_msg);
-                    continue;
-                }
-            }
+            json = "";
 
-            if (msg_is_sse) {
-                log_debug ("message is  SSE");
-                json = sseManager.changeSseMessage2Json(recv_msg);
-            } else if (fty_proto_id (msgProto) == FTY_PROTO_ALERT) {
-                log_debug ("message id is  FTY_PROTO_ALERT");
-                json = sseManager.changeFtyProtoAlert2Json(msgProto);
-            } else if (fty_proto_id (msgProto) == FTY_PROTO_ASSET) {
-                log_debug ("message id is  FTY_PROTO_ASSET");
-                json = sseManager.changeFtyProtoAsset2Json(msgProto);
-            } else {
-                log_debug ("message id %d is not implemented for sse",fty_proto_id (msgProto));
-                continue;
-            }
-
-            if (msgProto) fty_proto_destroy (&msgProto);
-            zmsg_destroy (&recv_msg);
-
-            if (!json.empty()){
-                reply.out()<<json;
-                if (reply.out().flush().fail())
+            if (msgProto) // proto msg
+            {
+                if (fty_proto_id (msgProto) == FTY_PROTO_ALERT)
                 {
-                    log_debug ("Error during flush");
-                    break;
+                    log_debug ("message is FTY_PROTO_ALERT");
+                    json = sseManager.changeFtyProtoAlert2Json(msgProto);
                 }
+                else if (fty_proto_id (msgProto) == FTY_PROTO_ASSET)
+                {
+                    log_debug ("message is FTY_PROTO_ASSET");
+                    json = sseManager.changeFtyProtoAsset2Json(msgProto);
+                } 
+                else
+                {
+                    log_debug ("FTY_PROTO message not implemented (id: %d)", fty_proto_id (msgProto));
+                }
+                
+                fty_proto_destroy (&msgProto);
             }
-        } else if (sseManager.isMessageComesFrom("MAILBOX DELIVER")) {
-            //not implemented yet
-            zmsg_destroy (&recv_msg);
+            else // generic msg
+            {
+                json = sseManager.changeSseMessage2Json(recv_msg);
+                if (!json.empty())
+                    log_debug ("message is SSE");
+            }
+
+            if (!json.empty())
+            {
+                reply.out() << json;
+                if (reply.out().flush().fail())
+                    { log_debug ("Error during flush"); break; }
+            }
         }
-    }
+        //else if (sseManager.isMessageComesFrom("MAILBOX DELIVER"))
+        //{}
+
+        zmsg_destroy (&recv_msg);
+    }//while
 
 </%cpp>

@@ -381,6 +381,12 @@ std::string Sse::changeSseMessage2Json(zmsg_t *message)
 
   aux = zmsg_popstr(message);
   sseSign = aux ? aux : "";
+  if (sseSign != "sse") {
+    log_error("input message frame0 is not 'sse'");
+    zmsg_pushstr (message, aux ? aux : ""); // restore msg
+    zstr_free(&aux);
+    return json;
+  }
   zstr_free(&aux);
 
   aux = zmsg_popstr(message);
@@ -395,15 +401,12 @@ std::string Sse::changeSseMessage2Json(zmsg_t *message)
   assetID = aux ? aux : "";
   zstr_free(&aux);
 
-  if (sseSign != "sse") {
-    log_error("input message frame0 is not 'sse'");
-    return json;
-  }
-
-  if (assetID.empty()) { // optional
-  } // nop
-  else if (_assetsOfDatacenter.find(assetID) == _assetsOfDatacenter.end())
+  // check asset (assetID is optional)
+  if (!assetID.empty()
+    && (_assetsOfDatacenter.find(assetID) == _assetsOfDatacenter.end())
+  )
   {
+    //NOTE: here, message is (partially) consumed and can't be handled elsewhere
     log_debug("skipping due to element_src '%s' not being in the list", assetID.c_str());
     return json;
   }

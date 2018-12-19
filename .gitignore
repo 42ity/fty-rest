@@ -32,6 +32,7 @@ src/fty_rest_selftest
 *.out
 *.app
 core
+go.sh
 
 # Distcheck workspace and archives under various possible names
 fty-rest-*/
