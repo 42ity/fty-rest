@@ -218,12 +218,17 @@ bool database_ready;
 
         if (sseManager.messageCommand() == "STREAM DELIVER")
         {
-            fty_proto_t *msgProto = fty_proto_decode (&recv_msg);
             json = "";
 
-            if (msgProto) // proto msg
+            if (fty_proto_is(recv_msg)) // fty proto msg
             {
-                if (fty_proto_id (msgProto) == FTY_PROTO_ALERT)
+                fty_proto_t *msgProto = fty_proto_decode (&recv_msg);
+                
+                if (msgProto == NULL)
+                {
+                    log_debug ("msgProto is NULL");
+                }
+                else if (fty_proto_id (msgProto) == FTY_PROTO_ALERT)
                 {
                     log_debug ("message is FTY_PROTO_ALERT");
                     json = sseManager.changeFtyProtoAlert2Json(msgProto);
@@ -238,6 +243,9 @@ bool database_ready;
                     log_debug ("FTY_PROTO message not handled (id: %d)", 
                         fty_proto_id (msgProto));
                 }
+
+                // cleanup
+                fty_proto_destroy (&msgProto);
             }
             else // generic msg
             {
@@ -245,6 +253,7 @@ bool database_ready;
                 {
                     log_debug ("message is SSE");
                     json = sseManager.changeSseMessage2Json(recv_msg);
+                    //log_debug ("SSE json: %s", json.c_str());
                 }
                 else
                 {
@@ -253,9 +262,6 @@ bool database_ready;
                         sseManager.messageSubject().c_str());
                 }
             }
-
-            // cleanup
-            fty_proto_destroy (&msgProto);
 
             if (!json.empty())
             {

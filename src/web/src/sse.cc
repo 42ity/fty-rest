@@ -382,14 +382,11 @@ std::string Sse::changeFtyProtoAsset2Json(fty_proto_t *asset)
   return json;
 }
 
+// decode a SSE generic message to JSON
 std::string Sse::changeSseMessage2Json(zmsg_t *message)
 {
-  std::string json = "";
-
-  if (message == NULL) {
-    log_error("message is NULL");
-    return json;
-  }
+  if (message == NULL)
+    { log_error("message is NULL"); return ""; }
 
   // pop frames
   std::string topic, jsonPayload, assetID;
@@ -398,11 +395,11 @@ std::string Sse::changeSseMessage2Json(zmsg_t *message)
   aux = zmsg_popstr(message);
   topic = aux ? aux : "";
   zstr_free(&aux);
-
+  
   aux = zmsg_popstr(message);
   jsonPayload = aux ? aux : "";
   zstr_free(&aux);
-
+  
   aux = zmsg_popstr(message);
   assetID = aux ? aux : "";
   zstr_free(&aux);
@@ -414,15 +411,10 @@ std::string Sse::changeSseMessage2Json(zmsg_t *message)
   {
     //NOTE: here, message is (partially) consumed and can't be handled elsewhere on return
     log_debug("skipping due to element_src '%s' not being in the list", assetID.c_str());
-    return json;
+    return "";
   }
 
-  json += "data:{";
-  json += "\"topic\":\"" + topic +"\",";
-  json += "\"payload\":" + jsonPayload;
-  json += "}\n\n";
-
-  return json;
+  return "data:{\"topic\":\"" + topic + "\",\"payload\":" + jsonPayload + "}\n\n";
 }
 
 bool Sse::isAssetInDatacenter(fty_proto_t *asset)
