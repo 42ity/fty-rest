@@ -152,7 +152,7 @@ if (!send_msg) {
 std::string asset_id;
 rv = DBAssets::extname_to_asset_name (checked_element_name, asset_id);
 if (rv == -1) {
-    std::string msg_not_found = TRANSLATE_ME ("Cannot get asset_if for %s", checked_element_name.c_str ());
+    std::string msg_not_found = TRANSLATE_ME ("Cannot get asset ID for %s", checked_element_name.c_str ());
     http_die ("not-found", msg_not_found.c_str ());
 }
 if (rv == -2) {
