@@ -605,10 +605,6 @@ void get_licensing_limitation(LIMITATIONS_STRUCT &limitations)
     if (streq (status, "OK") && streq (reply, "REPLY")) {
         zmsg_t *submsg = zmsg_popmsg(response);
         while (submsg) {
-            zmsg_t *submsg = zmsg_popmsg(response);
-            if (!submsg) {
-                return;
-            }
             fty_proto_t *submetric = fty_proto_decode(&submsg);
             assert (fty_proto_id(submetric) == FTY_PROTO_METRIC);
             if (streq (fty_proto_name(submetric), "rackcontroller-0") && streq (fty_proto_type(submetric), "power_nodes.max_active")) {
@@ -620,6 +616,7 @@ void get_licensing_limitation(LIMITATIONS_STRUCT &limitations)
                 log_debug("limitations.global_configurability set to %i", limitations.global_configurability);
             }
             fty_proto_destroy(&submetric);
+            submsg = zmsg_popmsg(response);
         }
     }
     zstr_free (&reply);
