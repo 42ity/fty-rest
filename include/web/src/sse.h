@@ -124,8 +124,15 @@ public:
   //return the time in second before expiration or -1 if token isn't valid
   long int checkTokenValidity();
 
-  //Check if the message comes from a channel in parameter
+  //Check if the message comes from a channel in parameter,
+  //about command of the latest msg received
   bool isMessageComesFrom(const char * channel);
+  
+  //Returns the message command, for the latest msg received
+  std::string messageCommand();
+
+  //Returns the message subject, for the latest msg received
+  std::string messageSubject();
 
   // get the message from malamate
   zmsg_t * getMessageFromMlm();
@@ -141,6 +148,10 @@ public:
   //Convert an fty_proto_asset message to json
   //Return an empty string if error
   std::string changeFtyProtoAsset2Json(fty_proto_t *asset);
+
+  //Convert generic sse message to json
+  //Return an empty string if error
+  std::string changeSseMessage2Json(zmsg_t *message);
 
 };
 

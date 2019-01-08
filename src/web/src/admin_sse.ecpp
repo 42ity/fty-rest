@@ -71,7 +71,6 @@ bool database_ready;
         http_die ("request-param-required", "datacenter");
     }
 
-
     int64_t dbid =  DBAssets::name_to_asset_id (dc);
     if (dbid == -1) {
             http_die ("element-not-found", dc.c_str ());
@@ -111,15 +110,19 @@ bool database_ready;
     if (!errorMsgMlm.empty ()) {
         http_die ("internal-error", errorMsgMlm.c_str ());
     }
-    //Stream Alert
-    if (-1 == sseManager.consumeStream("ALERTS", ".*")) {
+    //Stream Alerts
+    if (-1 == sseManager.consumeStream(FTY_PROTO_STREAM_ALERTS, ".*")) {
         std::string err = TRANSLATE_ME ("Cannot consume ALERT stream");
         http_die ("internal-error", err.c_str ());
     }
-
-    //Stream Asset
-    if (-1 == sseManager.consumeStream("ASSETS", ".*")) {
+    //Stream Assets
+    if (-1 == sseManager.consumeStream(FTY_PROTO_STREAM_ASSETS, ".*")) {
         std::string err = TRANSLATE_ME ("Cannot consume ASSETS stream");
+        http_die ("internal-error", err.c_str ());
+    }
+    //Stream Sse
+    if (-1 == sseManager.consumeStream("SSE", ".*")) {
+        std::string err = TRANSLATE_ME ("Cannot consume SSE stream");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -128,27 +131,28 @@ bool database_ready;
     reply.setDirectMode();
     reply.out().flush();
 
-    int64_t start = zclock_mono();
-    int64_t sendNextExpTime = 0;
-    int64_t diff = 0;
-    int64_t now = 0;
-
     //get the token from the request
     std::string access_token = gaccess_token;
 
-    if (access_token.empty()){
-      log_error("Token empty");
-      std::string err = TRANSLATE_ME ("Cannot get token value");
-      http_die ("internal-error", err.c_str ());
+    if (access_token.empty())
+    {
+        log_error("Token empty");
+        std::string err = TRANSLATE_ME ("Cannot get token value");
+        http_die ("internal-error", err.c_str ());
     }
 
     sseManager.setToken(access_token);
-    long int tme;
-    unsigned tntRequestTimeout = tnt::TntConfig::it().maxRequestTime * 1000 / 2 ;
 
-    // Every ( connection request time out / 2) minutes we close the connection to avoid a connection timeout which would kill tntnet.
+    // Every ( connection request time out / 2) minutes we close the connection 
+    // to avoid a connection timeout which would kill tntnet.
     // The client will reconnect itself.
+
+    unsigned tntRequestTimeout = tnt::TntConfig::it().maxRequestTime * 1000 / 2 ;
+    int64_t start = zclock_mono();
+    int64_t sendNextExpTime = 0;
+    int64_t diff = 0, now = 0;
     std::string json;
+
     while (diff < tntRequestTimeout) {
 
         //Check if a request shutdown was initiated
@@ -163,7 +167,7 @@ bool database_ready;
 
         //check if token is still valid
         //If valid return the time before the session expiration
-        tme = sseManager.checkTokenValidity();
+        long int tme = sseManager.checkTokenValidity();
         if (-1 == tme)
         {
             log_info ("sse : Token revoked or expired");
@@ -171,83 +175,109 @@ bool database_ready;
         }
 
         // Each minute, send the time before expiration
-        if (now - sendNextExpTime > 60000) {
+        if ((now - sendNextExpTime) > 60000)
+        {
             // send the time before the token is expired
             json = "data:{\"topic\":\"session\",\"payload\":{\"exptime\":" ;
             json +=  std::to_string(tme).c_str();
             json +=  "}}\n\n";
-            reply.out()<<json;
+
+            reply.out() << json;
             if (reply.out().flush().fail())
-            {
-                log_debug ("Error during flush");
-                break;
-            }
+                { log_debug ("Error during flush"); break; }
             sendNextExpTime = now;
         }
 
         // wait for the right message or time-out
-        zmsg_t *recv_msg = NULL;
-
         zsock_t *which = (zsock_t *) zpoller_wait (sseManager.getPoller(), 10000);
-        if (which == sseManager.getPipe()) {
+        zmsg_t *recv_msg = NULL;
+        if (which == sseManager.getPipe())
             recv_msg = sseManager.getMessageFromMlm();
-        }
-        if (!recv_msg ){
+
+        if (!recv_msg)
+        {
             if (zpoller_expired (sseManager.getPoller())) {
                 //Send heartbeat message
                 json = "data:{\"topic\":\"heartbeat\",\"payload\":{}}\n\n";
 
-                reply.out()<<json;
+                reply.out() << json;
                 if (reply.out().flush().fail())
-                {
-                    log_debug ("Error during flush");
-                    break;
-                }
+                    { log_debug ("Error during flush"); break; }
                 continue;
             }
 
-            if (zpoller_terminated(sseManager.getPoller())){
+            if (zpoller_terminated(sseManager.getPoller())) {
                 log_error ("zpoller_wait(timeout = 10000) terminated.");
                 break;
             }
+            
+            continue;
         }
 
-        // Got it
-        //Check if the message comes from stream
-        if (sseManager.isMessageComesFrom("STREAM DELIVER")) {
-            fty_proto_t *msgProto = fty_proto_decode (&recv_msg);
-            if (!msgProto) {
-                log_error ("Can't decode fty_proto from stream");
-                zmsg_destroy (&recv_msg);
-                continue;
-            }
+        // Here recv_msg is valid
 
-            if (fty_proto_id (msgProto) == FTY_PROTO_ALERT) {
-                log_debug ("message id is  FTY_PROTO_ALERT");
-                json = sseManager.changeFtyProtoAlert2Json(msgProto);
-            } else if (fty_proto_id (msgProto) == FTY_PROTO_ASSET) {
-                log_debug ("message id is  FTY_PROTO_ASSET");
-                json = sseManager.changeFtyProtoAsset2Json(msgProto);
-            } else {
-                log_debug ("message id %d is not implemented for sse",fty_proto_id (msgProto));
-                continue;
-            }
+        if (sseManager.messageCommand() == "STREAM DELIVER")
+        {
+            json = "";
 
-            fty_proto_destroy (&msgProto);
-            zmsg_destroy (&recv_msg);
-
-            if (!json.empty()){
-                reply.out()<<json;
-                if (reply.out().flush().fail())
+            if (fty_proto_is(recv_msg)) // fty proto msg
+            {
+                fty_proto_t *msgProto = fty_proto_decode (&recv_msg);
+                
+                if (msgProto == NULL)
                 {
-                    log_debug ("Error during flush");
-                    break;
+                    log_debug ("msgProto is NULL");
+                }
+                else if (fty_proto_id (msgProto) == FTY_PROTO_ALERT)
+                {
+                    log_debug ("message is FTY_PROTO_ALERT");
+                    json = sseManager.changeFtyProtoAlert2Json(msgProto);
+                }
+                else if (fty_proto_id (msgProto) == FTY_PROTO_ASSET)
+                {
+                    log_debug ("message is FTY_PROTO_ASSET");
+                    json = sseManager.changeFtyProtoAsset2Json(msgProto);
+                } 
+                else
+                {
+                    log_debug ("FTY_PROTO message not handled (id: %d)", 
+                        fty_proto_id (msgProto));
+                }
+
+                // cleanup
+                fty_proto_destroy (&msgProto);
+            }
+            else // generic msg
+            {
+                if (sseManager.messageSubject() == "SSE")
+                {
+                    log_debug ("message is SSE");
+                    json = sseManager.changeSseMessage2Json(recv_msg);
+                    //log_debug ("SSE json: %s", json.c_str());
+                }
+                else
+                {
+                    log_debug ("%s message not handled (subject: %s)", 
+                        sseManager.messageCommand().c_str(),
+                        sseManager.messageSubject().c_str());
                 }
             }
-        } else if (sseManager.isMessageComesFrom("MAILBOX DELIVER")) {
-            //not implemented yet
-            zmsg_destroy (&recv_msg);
+
+            if (!json.empty())
+            {
+                reply.out() << json;
+                if (reply.out().flush().fail())
+                    { log_debug ("Error during flush"); break; }
+            }
         }
-    }
+        else
+        {
+            log_debug ("%s message not handled", 
+                sseManager.messageCommand().c_str());
+        }
+
+        // cleanup
+        zmsg_destroy (&recv_msg);
+    }//while
 
 </%cpp>

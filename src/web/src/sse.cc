@@ -109,7 +109,23 @@ long int Sse::checkTokenValidity()
 
 bool Sse::isMessageComesFrom(const char * channel)
 {
-  return streq(mlm_client_command(_clientMlm), channel);
+  if (mlm_client_command(_clientMlm) && channel)
+    return streq(mlm_client_command(_clientMlm), channel);
+  return false;
+}
+
+//Returns the message command, for the latest msg received
+std::string Sse::messageCommand()
+{
+  const char *command = mlm_client_command(_clientMlm);
+  return command ? command : "";
+}
+
+//Returns the message subject, for the latest msg received
+std::string Sse::messageSubject()
+{
+  const char *subject = mlm_client_subject(_clientMlm);
+  return subject ? subject : "";
 }
 
 zmsg_t * Sse::getMessageFromMlm()
@@ -364,6 +380,41 @@ std::string Sse::changeFtyProtoAsset2Json(fty_proto_t *asset)
     }
   }
   return json;
+}
+
+// decode a SSE generic message to JSON
+std::string Sse::changeSseMessage2Json(zmsg_t *message)
+{
+  if (message == NULL)
+    { log_error("message is NULL"); return ""; }
+
+  // pop frames
+  std::string topic, jsonPayload, assetID;
+  char *aux;
+
+  aux = zmsg_popstr(message);
+  topic = aux ? aux : "";
+  zstr_free(&aux);
+  
+  aux = zmsg_popstr(message);
+  jsonPayload = aux ? aux : "";
+  zstr_free(&aux);
+  
+  aux = zmsg_popstr(message);
+  assetID = aux ? aux : "";
+  zstr_free(&aux);
+
+  // check asset (assetID is optional)
+  if (!assetID.empty()
+    && (_assetsOfDatacenter.find(assetID) == _assetsOfDatacenter.end())
+  )
+  {
+    //NOTE: here, message is (partially) consumed and can't be handled elsewhere on return
+    log_debug("skipping due to element_src '%s' not being in the list", assetID.c_str());
+    return "";
+  }
+
+  return "data:{\"topic\":\"" + topic + "\",\"payload\":" + jsonPayload + "}\n\n";
 }
 
 bool Sse::isAssetInDatacenter(fty_proto_t *asset)
