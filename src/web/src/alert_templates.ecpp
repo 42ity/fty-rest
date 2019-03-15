@@ -94,14 +94,14 @@ if (!msg) {
 
 ZstrGuard result (zmsg_popstr (msg));
 if (!result || !streq (result, "LIST")) {
-    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result);
+    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
     std::string err =  TRANSLATE_ME ("LIST template bad response");
     http_die ("internal-error", err.c_str ());
 }
 
 result = zmsg_popstr (msg);
 if (!result || !streq (result, type.c_str())) {
-    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result);
+    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
     std::string err =  TRANSLATE_ME ("LIST template bad response");
     http_die ("internal-error", err.c_str ());
 }
@@ -114,7 +114,7 @@ while(template_name){
     cxxtools::SerializationInfo &si_templat_obj= si.addMember("");
     si_templat_obj.addMember("name") <<= std::string(template_name);
     cxxtools::SerializationInfo &si_templat = si_templat_obj.addMember("template");
-    std::stringstream input (templat);
+    std::stringstream input (templat.get());
     cxxtools::JsonDeserializer  deserializer(input);
     deserializer.deserialize(si_templat);
     //the name should be set after the deserialization

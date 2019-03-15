@@ -128,7 +128,7 @@ UserInfo user;
     if (streq (msg_subject, "SENDMAIL-ERR"))
     {
         status = "Failed";
-        http_die ("upstream-err", err_message);
+        http_die ("upstream-err", err_message.get());
     }
     else
     {
