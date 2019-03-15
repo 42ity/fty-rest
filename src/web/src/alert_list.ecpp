@@ -317,7 +317,7 @@ if (streq (part, "LIST")) {
         std::string err =  TRANSLATE_ME ("Bad message.");
         http_die ("internal-error", err.c_str ());
     }
-    log_debug ("Second frame == '%s' ... OK", part);
+    log_debug ("Second frame == '%s' ... OK", part.get());
     zframe_t *frame = zmsg_pop (recv_msg);
     if (!frame) {
         log_debug ("First `zframe_t *frame = zmsg_pop (recv_msg)` returned NULL.");

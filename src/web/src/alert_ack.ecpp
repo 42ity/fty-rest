@@ -257,8 +257,8 @@ if (streq (part, "ERROR")) {
         std::string msg_param_conflict = TRANSLATE_ME ("Alert identified by rule name = '%s', element name = '%s' can not change state to '%s'.", checked_rule_name.c_str (), checked_element_name.c_str (), checked_state.c_str ());
         http_die ("parameter-conflict", msg_param_conflict.c_str ());
     }
-    log_error ("%s", part);
-    std::string reason = part;
+    log_error ("%s", part.get());
+    std::string reason = part.get();
     std::string msg_unspecified = TRANSLATE_ME ("Error while setting state of alert identified by rule name = '%s', element = '%s' to '%s'", checked_rule_name.c_str (), checked_element_name.c_str (), reason.c_str ());
     http_die ("internal-error",
         msg_unspecified.c_str ());

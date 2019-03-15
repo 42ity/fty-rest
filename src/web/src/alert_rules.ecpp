@@ -207,8 +207,8 @@ if (streq (part, "ERROR")) {
         http_die ("parameter-conflict", msg.c_str());
     }
 
-    log_error ("%s", part);
-    std::string reason = part;
+    log_error ("%s", part.get());
+    std::string reason = part.get();
     std::string err =  TRANSLATE_ME ("Error while retrieving details of rule name = '%s': %s.", checked_name.c_str (), reason.c_str ());
     http_die ("internal-error", err.c_str ());
 }

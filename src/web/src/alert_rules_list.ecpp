@@ -206,8 +206,8 @@ if (streq (part, "ERROR")) {
         http_die ("request-param-bad", "type", std::string ("'").append (checked_type).append ("'").c_str (),
                   expected.c_str ());
     }
-    log_error ("%s", part);
-    std::string reason = part;
+    log_error ("%s", part.get());
+    std::string reason = part.get();
     std::string err =  TRANSLATE_ME ("Error while retrieving list of rules with type = '%s': %s.", checked_type.c_str (), reason.c_str ());
     http_die ("internal-error", err.c_str ());
 }
