@@ -280,7 +280,7 @@ if (!poller) {
 }
 while (true) {
     zsock_t *which = (zsock_t *) zpoller_wait (poller, 5000);
-    if (which == pipe) {
+    if (which) {
         recv_msg = mlm_client_recv (client);
     }
     if (!recv_msg) {
@@ -399,8 +399,8 @@ if (streq (part, "ERROR")) {
         std::string msg = TRANSLATE_ME ("State '%s'", checked_state.c_str ());
         http_die ("not-found", msg.c_str ());
     }
-    log_error ("%s", part);
-    std::string reason = part;
+    log_error ("%s", part.get());
+    std::string reason = part.get();
     std::string err =  TRANSLATE_ME ("Error while requesting list of alerts: %s", reason.c_str ());
     http_die ("internal-error", err.c_str ());
 }
