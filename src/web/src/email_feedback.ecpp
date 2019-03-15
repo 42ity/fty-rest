@@ -315,6 +315,4 @@ UserInfo user;
         "reason" : "<$ err_message $>"
     }
 }
-<%cpp>
 
-</%cpp>
