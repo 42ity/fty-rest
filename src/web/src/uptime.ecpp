@@ -150,11 +150,10 @@ bool database_ready;
                  << "\t\t\t\"outage\" : "<< offline          <<   ",\n"
                  << "\t\t\t\"total\" : " << total            <<    "\n";
             json << "\t\t}"              << (  D < DCNames.size() -1 ? ",\n" : "\n" );
+            zstr_free(&total);
+            zstr_free(&offline);
         }
         json << "\t]\n}\n";
-        
-        zstr_free(&total);
-        zstr_free(&offline);
 
         mlm_client_destroy (&client);
     }
