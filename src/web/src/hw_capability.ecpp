@@ -90,7 +90,9 @@ get_hw_capability (const char *type, std::string &res, std::string& errstr)
         char *resp_type = zmsg_popstr (resp);
         if (streq(resp_type, type)) {
             zstr_free (&resp_type);
-            res = zmsg_popstr (resp);
+            char *popstr = zmsg_popstr (resp);
+            res = popstr;
+            zstr_free(&popstr);
             zmsg_destroy (&resp);
         }
         else {
