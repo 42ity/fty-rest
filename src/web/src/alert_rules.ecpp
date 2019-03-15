@@ -139,7 +139,7 @@ if (!poller) {
 
 while (true) {
     zsock_t *which = (zsock_t *) zpoller_wait (poller, 5000);
-    if (which == pipe) {
+    if (which) {
         recv_msg = mlm_client_recv (client);
     }
     if (!recv_msg) {
