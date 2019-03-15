@@ -163,7 +163,7 @@ if (streq (part, "LIST")) {
     // type received must be equal to type requested
     if (checked_type.compare (part) != 0) {
         log_error ("Unexpected reply from '%s'. Type expected = '%s', received = '%s' . Protocol: rfc-evaluator-rules; message: 1) LIST.",
-            mlm_client_sender (client), checked_type.c_str (), part);
+            mlm_client_sender (client), checked_type.c_str (), part.get());
         std::string err =  TRANSLATE_ME ("Received type != expected one!");
         http_die ("internal-error", err.c_str ());
     }
@@ -171,7 +171,7 @@ if (streq (part, "LIST")) {
     // class received must be equal to type requested
     if (checked_rule_class.compare (part) != 0) {
         log_error ("Unexpected reply from '%s'. rule_class expected = '%s', received = '%s' . Protocol: rfc-evaluator-rules; message: 1) LIST.",
-            mlm_client_sender (client), checked_rule_class.c_str (), part);
+            mlm_client_sender (client), checked_rule_class.c_str (), part.get());
         std::string err =  TRANSLATE_ME ("Received rule_class != expected one!");
         http_die ("internal-error", err.c_str ());
     }
