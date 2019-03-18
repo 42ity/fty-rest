@@ -70,8 +70,8 @@
             } catch (...) {
               //Nothing to do, just keep the default value.
             }
-            zconfig_destroy (&root);
           }
+          zconfig_destroy (&root);
         }
     }
     if (user.profile() == BiosProfile:: Dashboard) {
@@ -151,6 +151,7 @@
                             std::string msg = TRANSLATE_ME ("Cannot save config file ") + it.first;
                             http_die ("internal-error", msg.c_str());
                         }
+                        zconfig_destroy (&config);
                     }
                 } // unlock the config_mux
                 // save the JSON
