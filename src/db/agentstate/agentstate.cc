@@ -99,8 +99,9 @@ static int
         row[0].get(myBlob);
 
         size = myBlob.size();
-        *data = new char[size];
+        *data = malloc ((size + 1) * sizeof (char));
         memcpy(*data, myBlob.data(), size);
+        data [size] = '\0';
         LOG_END;
         return 0;
     }
@@ -154,7 +155,7 @@ int
         const std::string &agent_name,
         std::string       &agent_info)
 {
-    char *data, *data2;
+    char *data;
     size_t size;
     agent_info = "";
 
@@ -164,15 +165,8 @@ int
             // data is empty
             return 0;
         }
-        // data is not empty
-        data2 = (char *)realloc( data, size + 1 );
-        if( data2 ) {
-            data2[size] = 0;
-            agent_info = data2;
-            free(data2);
-        } else {
-            free(data);
-        }
+        agent_info.assign (data);
+        free (data);
     }
     else
         return -1;
