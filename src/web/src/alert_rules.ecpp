@@ -35,6 +35,7 @@
 #include <fty_common_rest_helpers.h>
 #include <fty_common_macros.h>
 #include <fty_common_mlm_utils.h>
+#include <fty_common_mlm_guards.h>
 #include <fty_common_agents.h>
 
 </%pre>
@@ -80,7 +81,7 @@ log_debug ("method = '%s'.", request.getMethod ().c_str ());
 log_debug ("requested rule name = '%s'.", checked_name.c_str ());
 
 // connect to malamute
-mlm_client_t *client = mlm_client_new ();
+MlmClientGuard client(mlm_client_new ());
 if (!client) {
     log_fatal ("mlm_client_new() failed.");
     std::string err =  TRANSLATE_ME ("mlm_client_new() failed.");
@@ -94,7 +95,6 @@ int rv = mlm_client_connect (client, MLM_ENDPOINT, 1000, client_name.c_str ());
 if (rv == -1) {
     log_fatal ("mlm_client_connect (endpoint = '%s', timeout = '%d', address = '%s') failed.",
                     MLM_ENDPOINT, 1000, client_name.c_str ());
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("mlm_client_connect() failed.");
     http_die ("internal-error", err.c_str ());
 }
@@ -123,74 +123,53 @@ if (mlm_client_sendto (client, dest, "rfc-evaluator-rules", NULL, 1000, &send_ms
     log_debug ("mlm_client_sendto (address = '%s', subject = '%s', tracker = NULL, timeout = '%d') failed.",
         dest, "rfc-evaluator-rules", 1000);
     zmsg_destroy (&send_msg);
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("mlm_client_sendto() failed.");
     http_die ("internal-error", err.c_str ());
 }
 
 
 // wait for the right message or time-out
-zmsg_t *recv_msg = NULL;
-zsock_t *pipe = mlm_client_msgpipe (client);
-if (!pipe) {
-    log_fatal ("mlm_client_msgpipe() failed.");
-    mlm_client_destroy (&client);
-    std::string err =  TRANSLATE_ME ("mlm_client_msgpipe() failed.");
-    http_die ("internal-error", err.c_str ());
-}
-
-zpoller_t *poller = zpoller_new (pipe, NULL);
+ZmsgGuard recv_msg;
+ZpollerGuard poller(zpoller_new (mlm_client_msgpipe (client), NULL));
 if (!poller) {
     log_fatal ("zpoller_new() failed.");
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("zpoller_new() failed.");
     http_die ("internal-error", err.c_str ());
 }
 
 while (true) {
     zsock_t *which = (zsock_t *) zpoller_wait (poller, 5000);
-    if (which == pipe) {
+    if (which) {
         recv_msg = mlm_client_recv (client);
     }
     if (!recv_msg) {
         if (zpoller_expired (poller) || zpoller_terminated (poller)) {
             log_error ("zpoller_wait(timeout = 5000) timed out waiting for message.");
-            zpoller_destroy (&poller);
-            mlm_client_destroy (&client);
             std::string err =  TRANSLATE_ME ("Timed out waiting for message.");
             http_die ("internal-error", err.c_str ());
         }
         log_error ("mlm_client_recv() failed.");
-        zpoller_destroy (&poller);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("mlm_client_recv() failed.");
         http_die ("internal-error", err.c_str ());
     }
     if (streq (mlm_client_sender (client), dest))
         break;
-    zmsg_destroy (&recv_msg);
 }
-zpoller_destroy (&poller);
 
 // Got it
 // Check subject
 if (!streq (mlm_client_subject (client), "rfc-evaluator-rules")) {
     log_error ("Unexpected reply from '%s'. Subject expected = '%s', received = '%s'.",
         mlm_client_sender (client), "rfc-evaluator-rules", mlm_client_subject (client));
-    zmsg_destroy (&recv_msg);
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("Bad message.");
     http_die ("internal-error", err.c_str ());
 }
 // Check command. Can be OK or ERROR
-char *part = zmsg_popstr (recv_msg);
+ZstrGuard part (zmsg_popstr (recv_msg));
 if (streq (part, "OK")) {
-    free (part);
     part = zmsg_popstr (recv_msg);
     if (!part) {
         log_error ("Unexpected reply from '%s'. Expected OK/json. Got OK/(null).", mlm_client_sender (client));
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("Bad message.");
         http_die ("internal-error", err.c_str ());
     }
@@ -198,68 +177,44 @@ if (streq (part, "OK")) {
 </%cpp>
 <$$ part $>
 <%cpp>
-    free (part);
-    zmsg_destroy (&recv_msg);
-    mlm_client_destroy (&client);
     return HTTP_OK;
 }
 if (streq (part, "ERROR")) {
-    free (part);
     part = zmsg_popstr (recv_msg);
     if (!part) {
         log_error ("Unexpected reply from '%s'. Expected ERROR/reason. Got ERROR/(null).", mlm_client_sender (client));
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("Bad message.");
         http_die ("internal-error", err.c_str ());
     }
     if (streq (part, "NOT_FOUND")) {
-        free (part);
         log_error ("Rule name '%s' does not exist.", checked_name.c_str ());
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("Rule name '%s'", checked_name.c_str ());
         http_die ("not-found", err.c_str ());
     }
     if (streq (part, "BAD_LUA")) {
-        free (part);
         log_error ("Request document has lua syntax error.");
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("Request document has lua syntax error.");
         http_die ("bad-request-document", err.c_str ());
     }
     if (streq (part, "BAD_JSON") || streq (part, "RULE_HAS_ERRORS")) {
-        free (part);
         log_error ("Request document not valid json or does not adhere to specified schema.");
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("Please check RFC-11 for valid rule json schema description.");
         http_die ("bad-request-document", err.c_str ());
     }
     if (streq (part, "ALREADY_EXISTS")) {
-        free (part);
         std::string msg = TRANSLATE_ME ("Rule with such name (new rule name) already exists");
         log_error("%s", msg.c_str());
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         http_die ("parameter-conflict", msg.c_str());
     }
 
-    log_error ("%s", part);
-    std::string reason = part;
-    free (part);
-    zmsg_destroy (&recv_msg);
-    mlm_client_destroy (&client);
+    log_error ("%s", part.get());
+    std::string reason = part.get();
     std::string err =  TRANSLATE_ME ("Error while retrieving details of rule name = '%s': %s.", checked_name.c_str (), reason.c_str ());
     http_die ("internal-error", err.c_str ());
 }
 // Message does not conform to protocol
-free (part);
 log_error ("Unexptected reply from  '%s'. Does not conform to rfc-evaluator-rules.",
     mlm_client_sender (client));
-zmsg_destroy (&recv_msg);
-mlm_client_destroy (&client);
 std::string err = TRANSLATE_ME ("Bad message.");
 http_die ("internal-error", err.c_str ());
 </%cpp>

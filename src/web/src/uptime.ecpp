@@ -126,14 +126,21 @@ bool database_ready;
             r = mlm_client_recvx (client, &subject, &command, &total, &offline, NULL);
             if (r == -1)
                 throw std::runtime_error ("Can't send the request");
-
+            zstr_free(&subject);
+            zstr_free(&command);
             if (!total || !offline) {
+                if(total)
+                    zstr_free(&total);
+                if(offline)
+                    zstr_free(&offline);    
                 log_error ("Empty reply for DC %s", DCNames[D].c_str());
                 continue;
             }
 
             if (streq (total, "ERROR")) {
                 log_error ("Got ERROR reply from kpi-uptime: %s, skipping DC %s", offline, DCNames[D].c_str());
+                zstr_free(&total);
+                zstr_free(&offline);
                 continue;
             }
 
@@ -143,8 +150,12 @@ bool database_ready;
                  << "\t\t\t\"outage\" : "<< offline          <<   ",\n"
                  << "\t\t\t\"total\" : " << total            <<    "\n";
             json << "\t\t}"              << (  D < DCNames.size() -1 ? ",\n" : "\n" );
+
+            zstr_free(&total);
+            zstr_free(&offline);
         }
         json << "\t]\n}\n";
+        
         mlm_client_destroy (&client);
     }
     catch (const std::exception& e) {

@@ -42,6 +42,7 @@
 #include <fty_common_db_dbpath.h>
 #include <fty_common_db_asset.h>
 #include <fty_common_mlm_utils.h>
+#include <fty_common_mlm_guards.h>
 #include <fty_common_macros.h>
 #include <fty_common_agents.h>
 #include <fty_common_asset_types.h>
@@ -232,7 +233,7 @@ for (auto const& item : desired_elements) {
 log_debug ("=== end ===");
 
 // connect to malamute
-_scoped_mlm_client_t *client = mlm_client_new ();
+MlmClientGuard client(mlm_client_new ());
 if (!client) {
     log_fatal ("mlm_client_new() failed.");
     std::string err =  TRANSLATE_ME ("mlm_client_new() failed.");
@@ -246,7 +247,6 @@ int rv = mlm_client_connect (client, MLM_ENDPOINT, 1000, client_name.c_str ());
 if (rv == -1) {
     log_fatal ("mlm_client_connect (endpoint = '%s', timeout = '%" PRIu32"', address = '%s') failed.",
                     MLM_ENDPOINT, 1000, client_name.c_str ());
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("mlm_client_connect() failed.");
     http_die ("internal-error", err.c_str ());
 }
@@ -266,81 +266,58 @@ if (mlm_client_sendto (client, AGENT_FTY_ALERT_LIST, RFC_ALERTS_LIST, NULL, 1000
     log_debug ("mlm_client_sendto (address = '%s', subject = '%s', tracker = NULL, timeout = '%" PRIu32"') failed.",
         AGENT_FTY_ALERT_LIST, RFC_ALERTS_LIST, 1000);
     zmsg_destroy (&send_msg);
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("mlm_client_sendto() failed.");
     http_die ("internal-error", err.c_str ());
 }
 
 // wait for the right message or time-out
-zmsg_t *recv_msg = NULL;
-zsock_t *pipe = mlm_client_msgpipe (client);
-if (!pipe) {
-    log_fatal ("mlm_client_msgpipe() failed.");
-    mlm_client_destroy (&client);
-    std::string err =  TRANSLATE_ME ("mlm_client_msgpipe() failed.");
-    http_die ("internal-error", err.c_str ());
-}
-
-zpoller_t *poller = zpoller_new (pipe, NULL);
+ZmsgGuard recv_msg;
+ZpollerGuard poller(zpoller_new ( mlm_client_msgpipe (client), NULL));
 if (!poller) {
     log_fatal ("zpoller_new() failed.");
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("zpoller_new() failed.");
     http_die ("internal-error", err.c_str ());
 }
 while (true) {
     zsock_t *which = (zsock_t *) zpoller_wait (poller, 5000);
-    if (which == pipe) {
+    if (which) {
         recv_msg = mlm_client_recv (client);
     }
     if (!recv_msg) {
         if (zpoller_expired (poller) || zpoller_terminated (poller)) {
             log_error ("zpoller_wait(timeout = 5000) timed out waiting for message.");
-            zpoller_destroy (&poller);
-            mlm_client_destroy (&client);
             std::string err =  TRANSLATE_ME ("Timed out waiting for message.");
             http_die ("internal-error", err.c_str ());
         }
         log_error ("mlm_client_recv() failed.");
-        zpoller_destroy (&poller);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("mlm_client_recv() failed.");
         http_die ("internal-error", err.c_str ());
     }
     if (streq (mlm_client_sender (client), AGENT_FTY_ALERT_LIST))
         break;
-    zmsg_destroy (&recv_msg);
 }
-zpoller_destroy (&poller);
-
 
 // Got it
 // Check subject
 if (!streq (mlm_client_subject (client), RFC_ALERTS_LIST)) {
     log_error ("Unexpected reply from '%s'. Subject expected = '%s', received = '%s'.",
         mlm_client_sender (client), RFC_ALERTS_LIST, mlm_client_subject (client));
-    zmsg_destroy (&recv_msg);
-    mlm_client_destroy (&client);
     std::string err =  TRANSLATE_ME ("Bad message.");
     http_die ("internal-error", err.c_str ());
 }
 log_debug (" subject ... OK.");
 log_debug (" number of frames = '%zu.", zmsg_size (recv_msg));
 // Check command. Can be LIST or ERROR
-char *part = zmsg_popstr (recv_msg);
+ZstrGuard part (zmsg_popstr (recv_msg));
 if (streq (part, "LIST")) {
     log_debug ("First frame == LIST ... OK");
-    free (part); part = NULL;
     part = zmsg_popstr (recv_msg);
     if (!part || !streq (part, checked_state.c_str ())) {
         log_error ("Unexpected reply from '%s'. Expected OK/state[/alert_1]...[/alert_N]. Got OK/(null).", mlm_client_sender (client));
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("Bad message.");
         http_die ("internal-error", err.c_str ());
     }
-    log_debug ("Second frame == '%s' ... OK", part);
-    free (part); part = NULL;
+    log_debug ("Second frame == '%s' ... OK", part.get());
     zframe_t *frame = zmsg_pop (recv_msg);
     if (!frame) {
         log_debug ("First `zframe_t *frame = zmsg_pop (recv_msg)` returned NULL.");
@@ -359,14 +336,12 @@ if (streq (part, "LIST")) {
 %   zframe_destroy (&frame);
 %   if (!decoded_zmsg) {
 %       log_error ("Bad frame, skipping");
-%       zmsg_destroy (&recv_msg);
 %       frame = zmsg_pop (recv_msg);
 %       continue;
 %   }
 %   fty_proto_t *decoded = fty_proto_decode (&decoded_zmsg);
 %   if (!decoded) {
 %       log_error ("Can't decode fty_proto");
-%       zmsg_destroy (&recv_msg);
 %       frame = zmsg_pop (recv_msg);
 %       continue;
 %   }
@@ -410,41 +385,28 @@ if (streq (part, "LIST")) {
 % }
 ]
 <%cpp>
-    zmsg_destroy (&recv_msg);
-    mlm_client_destroy (&client);
     return HTTP_OK;
 }
 if (streq (part, "ERROR")) {
-    free (part);
     part = zmsg_popstr (recv_msg);
     if (!part) {
         log_error ("Unexpected reply from '%s'. Expected ERROR/reason. Got ERROR/(null).", mlm_client_sender (client));
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string err =  TRANSLATE_ME ("Bad message.");
         http_die ("internal-error", err.c_str ());
     }
     if (streq (part, "NOT_FOUND")) {
-        free (part);
         log_error ("State = '%s' does not exist.", checked_state.c_str ());
-        zmsg_destroy (&recv_msg);
-        mlm_client_destroy (&client);
         std::string msg = TRANSLATE_ME ("State '%s'", checked_state.c_str ());
         http_die ("not-found", msg.c_str ());
     }
-    log_error ("%s", part);
-    std::string reason = part;
-    free (part); part = NULL;
-    zmsg_destroy (&recv_msg);
-    mlm_client_destroy (&client);
+    log_error ("%s", part.get());
+    std::string reason = part.get();
     std::string err =  TRANSLATE_ME ("Error while requesting list of alerts: %s", reason.c_str ());
     http_die ("internal-error", err.c_str ());
 }
 // Message does not conform to protocol
 log_error ("Unexptected reply from  '%s'. Does not conform to '%s' protocol.",
     mlm_client_sender (client), RFC_ALERTS_LIST);
-zmsg_destroy (&recv_msg);
-mlm_client_destroy (&client);
 std::string err =  TRANSLATE_ME ("Bad message.");
 http_die ("internal-error", err.c_str ());
 </%cpp>

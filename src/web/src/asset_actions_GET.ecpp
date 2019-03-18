@@ -77,9 +77,9 @@ bool database_ready;
     // connect to malamute
     MlmClientGuard client(mlm_client_new( ));
     if (!client) {
-        log_fatal ("mlm_client_new() failed.");
-        std::string err =  TRANSLATE_ME ("mlm_client_new() failed.");
-        http_die ("internal-error", err.c_str ());
+        std::string err = "mlm_client_new() failed.";
+        log_error (err.c_str ());
+        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
     std::string client_name = utils::generate_mlm_client_id ("web.asset_get");
@@ -87,10 +87,9 @@ bool database_ready;
 
     int rv = mlm_client_connect (client, MLM_ENDPOINT, 1000, client_name.c_str ());
     if (rv == -1) {
-        log_fatal ("mlm_client_connect (endpoint = '%s', timeout = '%d', address = '%s') failed.",
-                        MLM_ENDPOINT, 1000, client_name.c_str ());
-        std::string err = TRANSLATE_ME ("mlm_client_connect() failed.");
-        http_die ("internal-error", err.c_str ());
+        std::string err = "mlm_client_connect() failed.";
+        log_error (err.c_str ());
+        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
     // end connect to malamute
 
@@ -101,26 +100,27 @@ bool database_ready;
     zmsg_addstr(rqst, checked_id.c_str());
 
     if (mlm_client_sendto(client, "fty-nut-command", "power-actions", nullptr, 5000, &rqst) != 0) {
-        log_fatal ("failed to send GET_COMMANDS request to fty-nut-command.");
-        std::string err = TRANSLATE_ME ("failed to send request to fty-nut-command.");
-        http_die ("internal-error", err.c_str ());
+        std::string err = "Failed to send request to fty-nut-command.";
+        log_error (err.c_str ());
+        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
     // wait for reply
     ZpollerGuard poller(zpoller_new(mlm_client_msgpipe(client), nullptr));
     if (!zpoller_wait(poller, 5000)) {
-        std::string err = TRANSLATE_ME ("zmq_poll() failed.");
-        http_die ("internal-error", err.c_str ());
+        std::string err = "zmq_poll() failed.";
+        log_error (err.c_str ());
+        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
     ZmsgGuard msg(mlm_client_recv(client));
     ZstrGuard status(zmsg_popstr(msg));
     ZstrGuard uuid(zmsg_popstr(msg));
     if (!streq(status, "OK")) {
-        ZstrGuard errmsg(zmsg_popstr(msg));
-        log_fatal ("request GET_COMMANDS to fty-nut-command failed: %s.", errmsg.get());
-        std::string err = TRANSLATE_ME ("request to fty-nut-command failed.");
-        http_die ("internal-error", err.c_str ());
+        ZstrGuard errMsg(zmsg_popstr(msg));
+        std::string err = std::string("Request to fty-nut-command failed: ") + errMsg.get() + ".";
+        log_error (err.c_str ());
+        http_die ("precondition-failed", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
     ZstrGuard assetDelimiter(zmsg_popstr(msg));
