@@ -26,6 +26,7 @@
 #include <fty_common_macros.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_mlm_tntmlm.h>
+#include <fty_common_mlm_guards.h>
 #include <fty_common_agents.h>
 #include <fty_common_utf8.h>
 #include <stdlib.h>
@@ -93,22 +94,20 @@ UserInfo user;
     }
 
     // send message
-    zuuid_t *uuid = zuuid_new ();
+    ZuuidGuard uuid(zuuid_new ());
     zmsg_t *send = s_smtp_GET_message (checked_email.c_str(), uuid);
     int rv = client->sendto (AGENT_FTY_EMAIL_SENDMAIL_ONLY, "SENDMAIL", 1000, &send);
-
     if (rv == -1)
     {
-        zuuid_destroy (&uuid);
         log_fatal (
                     "Error: client->sendto (address = '%s', subject = '%s', timeout = 1000) failed.",
                         AGENT_FTY_EMAIL_SENDMAIL_ONLY, "SENDMAIL");
         std::string err =  TRANSLATE_ME ("client->sendto () failed");
+        zmsg_destroy(&send);
         http_die ("internal-error", err.c_str ());
     }
 
-    zmsg_t *recieve = client->recv (zuuid_str_canonical (uuid) , _timeout);
-    zuuid_destroy (&uuid);
+    ZmsgGuard recieve (client->recv (zuuid_str_canonical (uuid) , _timeout));
     if (!recieve)
     {
         std::string msg = TRANSLATE_ME ("Error: client-> recv (timeout = '%d') returned NULL", _timeout);
@@ -116,8 +115,8 @@ UserInfo user;
         http_die ("internal-error", msg.c_str ());
     }
 
-    char *err_code = zmsg_popstr (recieve);
-    char *err_message = zmsg_popstr (recieve);
+    ZstrGuard err_code (zmsg_popstr (recieve));
+    ZstrGuard err_message (zmsg_popstr (recieve));
     const char *msg_subject = client->subject();
     std::string status;
 
@@ -129,7 +128,7 @@ UserInfo user;
     if (streq (msg_subject, "SENDMAIL-ERR"))
     {
         status = "Failed";
-        http_die ("upstream-err", err_message);
+        http_die ("upstream-err", err_message.get());
     }
     else
     {
@@ -139,8 +138,6 @@ UserInfo user;
         http_die ("internal-error", err.c_str ());
     }
 
-    zmsg_destroy(&recieve);
-    zmsg_destroy(&send);
 </%cpp>
 {
     "test_status" :
@@ -150,8 +147,4 @@ UserInfo user;
         "reason" : "<$ err_message $>"
     }
 }
-<%cpp>
 
-    zstr_free(&err_code);
-    zstr_free(&err_message);
-</%cpp>

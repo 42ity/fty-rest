@@ -26,6 +26,7 @@
 <%pre>
 #include <malamute.h>
 #include <fty_common_mlm_tntmlm.h>
+#include <fty_common_mlm_guards.h>
 #include <fty_common_rest.h>
 #include <fty_common_macros.h>
 #include <cxxtools/split.h>
@@ -72,12 +73,11 @@ if (!client.getPointer ()) {
     http_die ("internal-error", err.c_str ());
 }
 
-zuuid_t *uuid = zuuid_new ();
+ZuuidGuard uuid (zuuid_new ());
 zmsg_t *req_list = s_request_LIST (uuid,type.c_str());
 
 int rv = client->sendto ("fty-autoconfig", "rfc-evaluator-rules", 1000, &req_list);
 if (rv == -1) {
-    zuuid_destroy (&uuid);
     log_fatal (
             "client->sendto (address = '%s', subject = '%s', timeout = 1000) failed.",
             "fty-autoconfig", "rfc-evaluator-rules");
@@ -85,43 +85,36 @@ if (rv == -1) {
     http_die ("internal-error", err.c_str ());
 }
 
-zmsg_t *msg = client->recv (zuuid_str_canonical (uuid), 5);
-zuuid_destroy (&uuid);
+ZmsgGuard msg(client->recv (zuuid_str_canonical (uuid), 5));
 if (!msg) {
     log_fatal ("client->recv (timeout = '5') returned NULL");
     std::string err =  TRANSLATE_ME ("client->recv () returned NULL");
     http_die ("internal-error", err.c_str ());
 }
 
-char *result = zmsg_popstr (msg);
+ZstrGuard result (zmsg_popstr (msg));
 if (!result || !streq (result, "LIST")) {
-    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result);
-    zstr_free (&result);
-    zmsg_destroy (&msg);
+    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
     std::string err =  TRANSLATE_ME ("LIST template bad response");
     http_die ("internal-error", err.c_str ());
 }
-zstr_free (&result);
 
 result = zmsg_popstr (msg);
 if (!result || !streq (result, type.c_str())) {
-    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result);
-    zstr_free (&result);
-    zmsg_destroy (&msg);
+    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
     std::string err =  TRANSLATE_ME ("LIST template bad response");
     http_die ("internal-error", err.c_str ());
 }
-zstr_free (&result);
 cxxtools::SerializationInfo si;
 si.setCategory(cxxtools::SerializationInfo::Category::Array);
-char* template_name = zmsg_popstr (msg);
-char* templat = zmsg_popstr (msg);
-char* asset_list = zmsg_popstr (msg);
+ZstrGuard template_name (zmsg_popstr (msg));
+ZstrGuard templat (zmsg_popstr (msg));
+ZstrGuard asset_list (zmsg_popstr (msg));
 while(template_name){
     cxxtools::SerializationInfo &si_templat_obj= si.addMember("");
     si_templat_obj.addMember("name") <<= std::string(template_name);
     cxxtools::SerializationInfo &si_templat = si_templat_obj.addMember("template");
-    std::stringstream input (templat);
+    std::stringstream input (templat.get());
     cxxtools::JsonDeserializer  deserializer(input);
     deserializer.deserialize(si_templat);
     //the name should be set after the deserialization
@@ -138,9 +131,6 @@ while(template_name){
            it++;
        }
     }
-    zstr_free (&template_name);
-    zstr_free (&templat);
-    zstr_free (&asset_list);
     template_name = zmsg_popstr (msg);
     templat = zmsg_popstr (msg);
     asset_list = zmsg_popstr (msg);

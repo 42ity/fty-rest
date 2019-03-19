@@ -26,6 +26,7 @@
 #include <string>
 #include <fty_common_macros.h>
 #include <fty_common_mlm_tntmlm.h>
+#include <fty_common_mlm_guards.h>
 #include <fty_common_rest_helpers.h>
 #include <cxxtools/jsondeserializer.h>
 
@@ -72,32 +73,27 @@ stop_scan()
         return -2;
     }
 
-    zmsg_t *resp = client->recv (zuuid_str_canonical (uuid), 5);
+    ZmsgGuard resp(client->recv (zuuid_str_canonical (uuid), 5));
     zuuid_destroy (&uuid);
     if (!resp)
     {
         log_fatal ("stop_scan: client->recv (timeout = '20') returned NULL");
         return -3;
     }
-    char *result = zmsg_popstr (resp);
+    ZstrGuard result (zmsg_popstr (resp));
     if (result) {
         if (streq (result, "OK")) {
-                zstr_free (&result);
                 return 0;
             }
         else if (streq (result, "ERROR")) {
-            zstr_free (&result);
             return -4;
         }
         else {
-            zstr_free (&result);
             return -5;
         }
     }
     else
         return -5;
-    zstr_free (&result);
-    zmsg_destroy(&resp);
     return 0;
 }
 
