@@ -72,16 +72,16 @@ static int
     select_agent_info(
         tntdb::Connection &conn,
         const std::string &agent_name,
-        void             **data,
+        void             **data_ptr,
         size_t            &size
         )
 {
     LOG_START;
 
-    if ( data == NULL )
+    if ( data_ptr == NULL )
         return 5;
     try{
-        *data = NULL;
+        *data_ptr = NULL;
         size = 0;
         tntdb::Statement st = conn.prepareCached(
             " SELECT "
@@ -99,15 +99,18 @@ static int
         row[0].get(myBlob);
 
         size = myBlob.size();
-        *data = malloc ((size + 1) * sizeof (char));
-        memcpy(*data, myBlob.data(), size);
-        data [size] = '\0';
+        *data_ptr = malloc ((size + 2) * sizeof (char));
+        // This is inefficient, but we can't do
+        // *data_ptr + size + 1 = '\0'
+        // and still pass -Werror
+        memset(*data_ptr, '\0', size + 2);
+        memcpy(*data_ptr, myBlob.data(), size);
         LOG_END;
         return 0;
     }
     catch (const tntdb::NotFound &e) {
         log_debug ("end: nothing was found");
-        *data = NULL;
+        *data_ptr = NULL;
         size = 0;
         return 0;
     }
