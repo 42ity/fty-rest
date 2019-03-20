@@ -106,7 +106,6 @@ int
         const std::string &agent_name,
         std::string       &agent_info)
 {
-    char *data = NULL;
     size_t size = 0;
     agent_info = "";
 
@@ -138,7 +137,6 @@ int
     }
     catch (const tntdb::NotFound &e) {
         log_debug ("end: nothing was found");
-        data = NULL;
         size = 0;
         return 0;
     }
