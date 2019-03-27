@@ -68,55 +68,6 @@ static int
     }
 }
 
-static int
-    select_agent_info(
-        tntdb::Connection &conn,
-        const std::string &agent_name,
-        void             **data,
-        size_t            &size
-        )
-{
-    LOG_START;
-
-    if ( data == NULL )
-        return 5;
-    try{
-        *data = NULL;
-        size = 0;
-        tntdb::Statement st = conn.prepareCached(
-            " SELECT "
-            "   v.info "
-            " FROM "
-            "   v_bios_agent_info v "
-            " WHERE "
-            "   v.agent_name = :name "
-        );
-
-        tntdb::Row row = st.set("name", agent_name).
-                            selectRow();
-
-        tntdb::Blob myBlob;
-        row[0].get(myBlob);
-
-        size = myBlob.size();
-        *data = malloc ((size + 1) * sizeof (char));
-        memcpy(*data, myBlob.data(), size);
-        data [size] = '\0';
-        LOG_END;
-        return 0;
-    }
-    catch (const tntdb::NotFound &e) {
-        log_debug ("end: nothing was found");
-        *data = NULL;
-        size = 0;
-        return 0;
-    }
-    catch (const std::exception &e) {
-        LOG_END_ABNORMAL(e);
-        return -1;
-    }
-}
-
 //=========================
 //highlevel-functions
 //=========================
@@ -155,24 +106,45 @@ int
         const std::string &agent_name,
         std::string       &agent_info)
 {
-    char *data;
-    size_t size;
+    size_t size = 0;
     agent_info = "";
 
-    if( select_agent_info(conn, agent_name, (void **)&data, size) == 0 ) {
-        if( ! data )
-        {
+    try {
+        tntdb::Statement st = conn.prepareCached(
+            " SELECT "
+            "   v.info "
+            " FROM "
+            "   v_bios_agent_info v "
+            " WHERE "
+            "   v.agent_name = :name "
+        );
+
+        tntdb::Row row = st.set("name", agent_name).
+                            selectRow();
+
+        tntdb::Blob myBlob;
+        row[0].get(myBlob);
+
+        size = myBlob.size();
+        std::string data (myBlob.data (), size);
+        if (data.empty ()) {
             // data is empty
             return 0;
         }
-        agent_info.assign (data);
-        free (data);
+        agent_info = data;
+        LOG_END;
+        return 0;
     }
-    else
+    catch (const tntdb::NotFound &e) {
+        log_debug ("end: nothing was found");
+        size = 0;
+        return 0;
+    }
+    catch (const std::exception &e) {
+        LOG_END_ABNORMAL(e);
         return -1;
-    return 0;
+    }
 }
-
 
 int
     load_agent_info(
