@@ -136,6 +136,7 @@ class LineCsvSerializer {
 void
     export_asset_csv
         (std::ostream& out,
+         int64_t dc_id,
          bool generate_bom
         )
 {
@@ -344,9 +345,17 @@ void
 
     };
 
-    rv = DBAssets::select_asset_element_all(
-            conn,
-            process_v_web_asset_element_row);
+    if (dc_id > 0) {
+        rv = DBAssets::select_asset_element_by_dc(
+                conn,
+                dc_id,
+                process_v_web_asset_element_row);
+    }
+    else {
+        rv = DBAssets::select_asset_element_all(
+                conn,
+                process_v_web_asset_element_row);
+    }
     if (rv != 0)
         throw std::runtime_error(msg.c_str());
     transaction.commit();

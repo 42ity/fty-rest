@@ -51,8 +51,18 @@ bool database_ready;
             };
     CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
 
-    // Silence the warning about unused "request" variable
-    request.keepAlive();
+    // sanity checks
+    std::string dc = request.getArg("dc");
+    int64_t dc_id = -1;
+    if (!dc.empty ()) {
+        // check if element exists and is a DC
+        dc_id = DBAssets::name_to_asset_id_check_type (dc, persist::type_to_typeid ("datacenter"));
+        if (dc_id < 0) {
+            std::string expected = TRANSLATE_ME ("not a datacenter");
+            std::string received = TRANSLATE_ME ("existing asset which is a datacenter");
+            http_die ("request-param-bad", "dc", expected.c_str (), received.c_str ());
+        }
+    }
 
     char buf[21] = {0x00};
     int r = calendar_to_datetime(time(NULL), buf, 21);
@@ -71,9 +81,13 @@ bool database_ready;
         *c = '-';
     }
 
-    reply.setHeader(tnt::httpheader::contentDisposition, "attachment; filename=\"asset_export" + std::string{buf} + ".csv\"");
+    if (!dc.empty())
+        reply.setHeader(tnt::httpheader::contentDisposition, "attachment; filename=\"asset_export_" + dc + "_" + std::string{buf} + ".csv\"");
+    else
+        reply.setHeader(tnt::httpheader::contentDisposition, "attachment; filename=\"asset_export" + std::string{buf} + ".csv\"");
+
     try {
-        persist::export_asset_csv(reply.out());
+        persist::export_asset_csv(reply.out(), dc_id);
     }
     catch (const std::exception &e) {
         LOG_END_ABNORMAL(e);
