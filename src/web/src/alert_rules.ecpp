@@ -67,8 +67,8 @@ std::string checked_name;
     checked_name = name;
 
     if (request.getMethod () == "PUT" && name.empty() ) {
-        std::string received = TRANSLATE_ME ("<empty>");
-        std::string expected = TRANSLATE_ME ("<non_empty_name>");
+        std::string received = TRANSLATE_ME ("empty value");
+        std::string expected = TRANSLATE_ME ("non-empty value");
         http_die ("request-param-bad", "name", received.c_str (), expected.c_str ());
     }
     if (request.getMethod () == "POST" && !name.empty ()) {

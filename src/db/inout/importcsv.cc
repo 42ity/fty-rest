@@ -725,8 +725,13 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
 
     auto ename = cm.get(row_i, "name");
     if (ename.empty ()) {
-        std::string received = TRANSLATE_ME ("<empty>");
-        std::string expected = TRANSLATE_ME ("<unique, non empty value>");
+        std::string received = TRANSLATE_ME ("empty value");
+        std::string expected = TRANSLATE_ME ("unique, non empty value");
+        bios_throw("request-param-bad", "name", received.c_str (), expected.c_str ());
+    }
+    if (ename.length() > 50) {
+        std::string received = TRANSLATE_ME ("too long string");
+        std::string expected = TRANSLATE_ME ("unique string from 1 to 50 characters");
         bios_throw("request-param-bad", "name", received.c_str (), expected.c_str ());
     }
     std::string iname;
@@ -741,7 +746,7 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
     auto type = cm.get_strip(row_i, "type");
     log_debug ("type = '%s'", type.c_str());
     if ( TYPES.find(type) == TYPES.end() ) {
-        std::string received = type.empty() ? TRANSLATE_ME ("<empty>") : JSONIFY (type.c_str());
+        std::string received = type.empty() ? TRANSLATE_ME ("empty value") : JSONIFY (type.c_str());
         std::string expected = JSONIFY(utils::join_keys_map(TYPES, ", ").c_str());
         bios_throw("request-param-bad", "type", received.c_str (), expected.c_str ());
     }
@@ -751,7 +756,7 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
     auto status = cm.get_strip(row_i, "status");
     log_debug ("status = '%s'", status.c_str());
     if ( STATUSES.find(status) == STATUSES.end() ) {
-        std::string received = status.empty() ? TRANSLATE_ME ("<empty>") : JSONIFY (status.c_str());
+        std::string received = status.empty() ? TRANSLATE_ME ("empty value") : JSONIFY (status.c_str());
         std::string expected = JSONIFY(cxxtools::join(STATUSES.cbegin(), STATUSES.cend(), ", ").c_str());
         bios_throw ("request-param-bad", "status", received.c_str (), expected.c_str ());
     }
@@ -759,9 +764,9 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
 
     auto asset_tag =  unused_columns.count("asset_tag") ? cm.get(row_i, "asset_tag") : "";
     log_debug ("asset_tag = '%s'", asset_tag.c_str());
-    if ( ( !asset_tag.empty() ) && ( asset_tag.length() > 50 ) ){
-        std::string received = TRANSLATE_ME ("<too long>");
-        std::string expected = TRANSLATE_ME ("<unique string from 1 to 50 characters>");
+    if (asset_tag.length() > 50) {
+        std::string received = TRANSLATE_ME ("too long string");
+        std::string expected = TRANSLATE_ME ("unique string from 1 to 50 characters");
         bios_throw("request-param-bad", "asset_tag", received.c_str (), expected.c_str ());
     }
     unused_columns.erase("asset_tag");
@@ -809,7 +814,7 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
     log_debug ("subtype = '%s'", subtype.c_str());
     if ( ( type == "device" ) &&
          ( local_SUBTYPES.find(subtype) == local_SUBTYPES.cend() ) ) {
-        std::string received = subtype.empty() ? TRANSLATE_ME ("<empty>") : JSONIFY (subtype.c_str());
+        std::string received = subtype.empty() ? TRANSLATE_ME ("empty value") : JSONIFY (subtype.c_str());
         std::string expected = JSONIFY(utils::join_keys_map(SUBTYPES, ", ").c_str());
         bios_throw("request-param-bad", "subtype", received.c_str (), expected.c_str ());
     }
