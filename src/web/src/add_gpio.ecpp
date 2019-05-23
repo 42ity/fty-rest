@@ -184,7 +184,7 @@ UserInfo user;
     }
     else
     if (rv == -5) {
-        std::string err = TRANSLATE_ME ("fty-discovery returned malformed or unexpected message.");
+        std::string err = TRANSLATE_ME ("fty-sensor-gpio returned malformed or unexpected message.");
         http_die ("internal-error", err.c_str ());
     }
     else
