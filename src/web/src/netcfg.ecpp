@@ -35,6 +35,7 @@
 
 #include "shared/augtool.h"
 #include "shared/cidr.h"
+#include "web/src/iface.h"
 #include <fty_common_macros.h>
 #include <fty_common_mlm_subprocess.h>
 #include <fty_common_rest_helpers.h>
@@ -74,20 +75,31 @@ if(!nil.empty()) {
 // Are we asked to just list possible configurations?
 static cxxtools::Regex rex_ncfg("^.*/netcfgs$");
 if(rex_ncfg.match(request.getUrl())) {
-    std::string in;
-    in = augeas->get_cmd_out("match /files/etc/network/interfaces/iface[*]",
-							 true, "\", \"",
+    std::string all_interfaces_str = augeas->get_cmd_out("match /files/etc/network/interfaces/iface[*]",
+							 true, ",",
 							 [](const std::string iface) -> bool {
 							 	return iface == "lo";
 							 }
 							);
-    if(in.empty()) {
+    if(all_interfaces_str.empty()) {
         std::string err =  TRANSLATE_ME ("No configurable interfaces found");
         http_die ("internal-error", err.c_str ());
     }
 
+    std::set<std::string> active_interfaces = get_ifaces ();
+    std::vector<std::string> all_interfaces;
+    cxxtools::split(",", all_interfaces_str, std::back_inserter(all_interfaces));
+
+    std::string out;
+    for (std::string iface : all_interfaces) {
+        if (active_interfaces.find (iface) != active_interfaces.end ()) {
+            out += "\"" + iface + "\",";
+        }
+    }
+    // remove trailing comma
+    out.pop_back ();
 </%cpp>
-{ "netcfgs": [ "<$$ in $>" ] }
+{ "netcfgs": [ <$$ out $> ] }
 <%cpp>
     return HTTP_OK;
 }
