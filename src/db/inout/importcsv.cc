@@ -1166,7 +1166,7 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
                 bios_throw ("request-param-bad", "location_u_pos", ("'" + value + "'").c_str (), expected.c_str ());
             }
             if (ul == 0 || ul > 52) {
-                std::string expected = TRANSLATE_ME ("value must be between <1, rack size>, where rack size must be <= 52.");
+                std::string expected = TRANSLATE_ME ("value must be between <1, 52>.");
                 bios_throw ("request-param-bad", "location_u_pos", ("'" + value + "'").c_str (), expected.c_str ());
             }
         }
@@ -1188,7 +1188,7 @@ static std::pair<db_a_elmnt_t, persist::asset_operation>
                 bios_throw ("request-param-bad", "u_size", ("'" + value + "'").c_str (), expected.c_str ());
             }
             if (ul == 0 || ul > 52) {
-                std::string expected = TRANSLATE_ME ("value must be between <1, rack size>, where rack size must be <= 52.");
+                std::string expected = TRANSLATE_ME ("value must be between <1, 52>.");
                 bios_throw ("request-param-bad", "u_size", ("'" + value + "'").c_str (), expected.c_str ());
             }
         }
