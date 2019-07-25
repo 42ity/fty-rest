@@ -46,6 +46,7 @@ bool database_ready;
     if (!database_ready) {
         log_debug ("Database is not ready yet.");
         std::string err =  TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
+        log_info_audit ("Request DELETE asset FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -53,7 +54,8 @@ bool database_ready;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "D"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg = std::string ("Request DELETE asset FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
     std::string checked_id; // user-friendly identifier
 
     // sanity check

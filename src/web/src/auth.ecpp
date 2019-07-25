@@ -51,7 +51,11 @@ std::string checked_token;
 {
     // sanitize token
     std::string token = qparam.param ("token");
-    check_regex_text_or_die ("token", token, checked_token, "^[-/._~+/a-z0-9]{0,255}={0,10}$");
+    std::string audit_msg;
+    if (request.getMethod () == "POST")
+        audit_msg = std::string ("Request POST auth username ") + username + " FAILED";
+    check_regex_text_or_die ("token", token, checked_token, "^[-/._~+/a-z0-9]{0,255}={0,10}$",
+            audit_msg.empty () ? nullptr : audit_msg.c_str ());
     // sanitize token end
 }
 
@@ -122,9 +126,15 @@ std::string checked_token;
         http_die ("method-not-allowed", "");
     }
 
-    check_regex_text_or_die ("username", username, checked_username, "^[-_.a-z0-9]{0,50}$");
-    check_regex_text_or_die ("password", password, checked_password, "^.{0,150}$");
-    check_regex_text_or_die ("grant_type", grant_type, checked_grant_type, "^(password|)$");
+    std::string audit_msg;
+    if (method == "POST")
+        audit_msg = std::string ("Request POST auth username ") + username + " FAILED";
+    check_regex_text_or_die ("username", username, checked_username, "^[-_.a-z0-9]{0,50}$",
+            audit_msg.empty () ? nullptr : audit_msg.c_str ());
+    check_regex_text_or_die ("password", password, checked_password, "^.{0,150}$",
+            audit_msg.empty () ? nullptr : audit_msg.c_str ());
+    check_regex_text_or_die ("grant_type", grant_type, checked_grant_type, "^(password|)$",
+            audit_msg.empty () ? nullptr : audit_msg.c_str ());
     // sanitize other params end
 }
 

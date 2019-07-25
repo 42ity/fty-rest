@@ -51,7 +51,8 @@ std::string name = request.getArg ("name");
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "CU"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg = std::string ("Request ") + request.getMethod () + " alert rule FAILED";
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     // sanity check
     if (request.getMethod () != "POST" && request.getMethod () != "PUT") {

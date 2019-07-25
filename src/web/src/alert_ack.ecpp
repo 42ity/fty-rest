@@ -59,6 +59,8 @@ bool database_ready;
     if (!database_ready) {
         log_debug ("Database is not ready yet.");
         std::string err = TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
+        if (request.getMethod () == "PUT")
+            log_info_audit ("Request PUT alert ack FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -66,7 +68,10 @@ bool database_ready;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "RU"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg;
+    if (request.getMethod () == "PUT")
+        audit_msg = std::string ("Request PUT alert ack FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
 // checked input arguments
 std::string checked_rule_name;

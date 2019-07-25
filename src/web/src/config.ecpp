@@ -110,7 +110,10 @@ UserInfo user;
     {
         {BiosProfile::Admin,     "CR"}
     };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg;
+    if (request.getMethod () == "POST")
+        audit_msg = std::string ("Request POST config FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     std::string key_format_string = "^[-._a-zA-Z0-9]+$";
     cxxtools::Regex key_format (key_format_string);

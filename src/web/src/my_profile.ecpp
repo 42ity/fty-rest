@@ -47,7 +47,10 @@
             {BiosProfile::Dashboard, "RU"},
             {BiosProfile::Admin,     "RU"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg;
+    if (request.getMethod () == "PUT")
+        audit_msg = std::string ("Request PUT my_profile FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     std::string method = request.getMethod ();
     std::string uid = std::to_string (user.uid ());

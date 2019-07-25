@@ -120,7 +120,8 @@ UserInfo user;
             {BiosProfile::Admin,         "C"},
             {BiosProfile::Dashboard,     "C"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg = std::string ("Request POST email_feedback FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     std::string checked_to;
     std::string checked_reply;

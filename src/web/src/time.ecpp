@@ -46,7 +46,10 @@ UserInfo user;
             {BiosProfile::Dashboard, "R"},
             {BiosProfile::Admin,     "RE"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg;
+    if (request.getMethod () == "POST")
+        audit_msg = std::string ("Request POST time FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     // BLOCK 1
     // input argument sanitization

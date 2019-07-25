@@ -165,7 +165,12 @@ UserInfo user;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "CD"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg;
+    if (request.getMethod () == "DELETE")
+        audit_msg = std::string ("Request DELETE scan_run FAILED");
+    if (request.getMethod () == "POST")
+        audit_msg = std::string ("Request POST scan_run FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     //std::string config = request.getArg ("config");
     //std::string range = request.getArg ("range");

@@ -52,7 +52,10 @@ UserInfo user;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "RU"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg;
+    if (request.getMethod () == "PUT")
+        audit_msg = std::string ("Request PUT netcfg FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
 augtool* augeas = augtool::get_instance ();
 if (!augeas) {
@@ -124,7 +127,11 @@ std::string checked_iface;
             log_info_audit ("Request PUT netcfg FAILED");
         http_die ("request-param-required", "iface");
     }
-    check_regex_text_or_die ("iface", iface, checked_iface, "^[[:alpha:]][[:alnum:]]{0,14}$");
+    std::string audit_msg;
+    if (request.getMethod () == "PUT")
+        audit_msg = std::string ("Request PUT netcfg FAILED");
+    check_regex_text_or_die_audit ("iface", iface, checked_iface, "^[[:alpha:]][[:alnum:]]{0,14}$",
+            audit_msg.empty () ? nullptr : audit_msg.c_str ());
 }
 
 // Where is the tree reflecting the interface?
@@ -138,7 +145,7 @@ if (address.empty ()) {
     http_die ("element-not-found", checked_iface.c_str ());
 }
 
-#define AUG_GET(NAME, VAL) \
+#define AUG_GET (NAME, VAL) \
     VAL = augeas->get_cmd_out ("get " + address + "/" NAME);
 
 std::string method;
@@ -169,7 +176,7 @@ if (request.getMethod () == "PUT") {
 
 
 // Gets configuration from json and sets it in config while verifying it matches regexp
-#define AUG_SET(NAME, CHECK)         \
+#define AUG_SET (NAME, CHECK)         \
     if (it.name () == NAME) { \
         it.getValue (val); \
         if (! CHECK ) { \

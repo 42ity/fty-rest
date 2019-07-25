@@ -265,7 +265,10 @@ UserInfo user;
             {BiosProfile::Dashboard, "R"},
             {BiosProfile::Admin,     "CR"}
             };
-    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    std::string audit_msg;
+    if (request.getMethod () == "POST")
+        audit_msg = std::string ("Request POST conf_scan FAILED");
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     int rv = 0;
     std::string output;
