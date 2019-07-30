@@ -92,7 +92,7 @@ UserInfo user;
             http_die ("request-param-required", expected.c_str ());
         }
 
-        static cxxtools::Regex t_rex ("^[1-9][0-9][0-9][0-9]-(0[1-9]|10|11|12)-([0-2][0-9]|30|31)T ([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z$");
+        static cxxtools::Regex t_rex ("^[1-9][0-9][0-9][0-9]-(0[1-9]|10|11|12)-([0-2][0-9]|30|31)T([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]Z$");
         if (!time.empty ()) {
             if (!t_rex.match (time)) {
                 http_die ("request-param-bad", "time", time.c_str (), "format <YYYY>-<MM>-<DD>T<hh>:<mm>:<ss>Z (ISO 8601).");

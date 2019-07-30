@@ -339,7 +339,11 @@ UserInfo user;
         http_die ("bad-request-document", err.c_str ());
     }
     else
+    { // Proceed to output
         if (request.getMethod () == "POST")
             log_info_audit ("Request POST conf_scan SUCCESS");
 </%cpp>
 <$$ output $>
+<%cpp>
+    }
+</%cpp>

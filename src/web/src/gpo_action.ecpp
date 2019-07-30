@@ -211,6 +211,10 @@ UserInfo user;
         http_die ("internal-error", err.c_str ());
     }
     else
+    { // proceed to output
         log_info_audit ("Request POST gpo_action sensor %s SUCCESS", checked_sensor.c_str ());
 </%cpp>
 {}
+<%cpp>
+    }
+</%cpp>
