@@ -169,7 +169,7 @@ UserInfo user;
     if (request.getMethod () == "DELETE")
         audit_msg = std::string ("Request DELETE scan_run FAILED");
     if (request.getMethod () == "POST")
-        audit_msg = std::string ("Request POST scan_run FAILED");
+        audit_msg = std::string ("Request CREATE scan_run FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     //std::string config = request.getArg ("config");
@@ -192,45 +192,45 @@ UserInfo user;
 
     if (rv == -1) {
         std::string err =  TRANSLATE_ME ("mlmpool.get () failed.");
-        log_info_audit ("Request %s scan_run FAILED", request.getMethod ().c_str ());
+        log_error_audit ("Request %s scan_run FAILED", request.getMethod () == "POST" ? "CREATE" : "DELETE");
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -2) {
         std::string err =  TRANSLATE_ME ("client->sendto () failed.");
-        log_info_audit ("Request %s scan_run FAILED", request.getMethod ().c_str ());
+        log_error_audit ("Request %s scan_run FAILED", request.getMethod () == "POST" ? "CREATE" : "DELETE");
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -3) {
         std::string err =  TRANSLATE_ME ("client->recv () failed.");
-        log_info_audit ("Request %s scan_run FAILED", request.getMethod ().c_str ());
+        log_error_audit ("Request %s scan_run FAILED", request.getMethod () == "POST" ? "CREATE" : "DELETE");
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -4) {
         std::string err =  TRANSLATE_ME ("fty-discovery returned error.");
-        log_info_audit ("Request %s scan_run FAILED", request.getMethod ().c_str ());
+        log_error_audit ("Request %s scan_run FAILED", request.getMethod () == "POST" ? "CREATE" : "DELETE");
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -5) {
         std::string err =  TRANSLATE_ME ("fty-discovery returned malformed or unexpected message.");
-        log_info_audit ("Request %s scan_run FAILED", request.getMethod ().c_str ());
+        log_error_audit ("Request %s scan_run FAILED", request.getMethod () == "POST" ? "CREATE" : "DELETE");
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -6) {
         std::string err =  TRANSLATE_ME ("fty-discovery precedent scan currently stopping.");
-        log_info_audit ("Request %s scan_run FAILED", request.getMethod ().c_str ());
+        log_error_audit ("Request %s scan_run FAILED", request.getMethod () == "POST" ? "CREATE" : "DELETE");
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -7) {
         std::string err =  TRANSLATE_ME ("fty-discovery already have a scan running.");
-        log_info_audit ("Request %s scan_run FAILED", request.getMethod ().c_str ());
+        log_error_audit ("Request %s scan_run FAILED", request.getMethod () == "POST" ? "CREATE" : "DELETE");
         http_die ("internal-error", err.c_str ());
     }
     else
-        log_info_audit ("Request %s scan_run SUCCESS", request.getMethod ().c_str ());
+        log_info_audit ("Request %s scan_run SUCCESS", request.getMethod () == "POST" ? "CREATE" : "DELETE");
 </%cpp>

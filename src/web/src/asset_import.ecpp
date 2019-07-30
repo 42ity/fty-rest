@@ -46,8 +46,9 @@ bool database_ready;
     if (!database_ready) {
         log_debug ("Database is not ready yet.");
         std::string err =  TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST asset_import FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE asset_import FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
 
@@ -57,7 +58,7 @@ bool database_ready;
             };
     std::string audit_msg;
     if (request.getMethod () == "POST")
-        audit_msg = std::string ("Request POST asset_import FAILED");
+        audit_msg = std::string ("Request CREATE asset_import FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
 if (request.getMethod () != "POST") {
@@ -70,7 +71,7 @@ if (request.getMethod () != "POST") {
 // real memory requirements are ~640kB
 // Content size = body + something. So max size of body is about 125k
 if (request.getContentSize () > 128*1024) {
-    log_info_audit ("Request POST asset_import FAILED");
+    log_error_audit ("Request CREATE asset_import FAILED");
     http_die ("content-too-big", "125k");
 }
 
@@ -78,7 +79,7 @@ if (request.getContentSize () > 128*1024) {
 const tnt::Multipart& mp = request.getMultipart ();
 tnt::Multipart::const_iterator it = mp.find ("assets");
 if (it == mp.end ()) {
-    log_info_audit ("Request POST asset_import FAILED");
+    log_error_audit ("Request CREATE asset_import FAILED");
     http_die ("request-param-required", "file=assets");
 }
 
@@ -90,21 +91,21 @@ catch (const std::logic_error &e) {
     LOG_END_ABNORMAL (e);
     if (!path_p.empty ())
         ::unlink (path_p.c_str ());
-    log_info_audit ("Request POST asset_import FAILED");
+    log_error_audit ("Request CREATE asset_import FAILED");
     http_die ("bad-request-document", e.what ());
 }
 catch (const std::runtime_error &e) {
     LOG_END_ABNORMAL (e);
     if (!path_p.empty ())
         ::unlink (path_p.c_str ());
-    log_info_audit ("Request POST asset_import FAILED");
+    log_error_audit ("Request CREATE asset_import FAILED");
     http_die ("internal-error", e.what ());
 }
 catch (const std::exception &e) {
     LOG_END_ABNORMAL (e);
     if (!path_p.empty ())
         ::unlink (path_p.c_str ());
-    log_info_audit ("Request POST asset_import FAILED");
+    log_error_audit ("Request CREATE asset_import FAILED");
     http_die ("internal-error", e.what ());
 }
 
@@ -151,15 +152,15 @@ try{
 catch (const BiosError &e) {
     if (!path_p.empty ())
         ::unlink (path_p.c_str ());
-    log_info_audit ("Request POST asset_import FAILED");
+    log_error_audit ("Request CREATE asset_import FAILED");
     http_die_idx (e.idx, e.what ());
 }
 catch (const std::exception &e) {
     LOG_END_ABNORMAL (e);
     if (!path_p.empty ())
         ::unlink (path_p.c_str ());
-    log_info_audit ("Request POST asset_import FAILED");
+    log_error_audit ("Request CREATE asset_import FAILED");
     http_die ("internal-error", e.what ());
 }
-log_info_audit ("Request POST asset_import SUCCESS");
+log_info_audit ("Request CREATE asset_import SUCCESS");
 </%cpp>

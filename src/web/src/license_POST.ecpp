@@ -55,20 +55,20 @@ bool database_ready;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "C"}
             };
-    std::string audit_msg = std::string ("Request POST license FAILED");
+    std::string audit_msg = std::string ("Request CREATE license FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     char *license_file = get_current_license_file ();
     if ( license_file == NULL ) {
         std::string err =  TRANSLATE_ME ("Cannot get the path to the text of the current license");
-        log_info_audit ("Request POST license FAILED");
+        log_error_audit ("Request CREATE license FAILED");
         http_die ("internal-error", err.c_str ());
     }
     char *current_license_version = get_current_license_version (license_file);
     if ( current_license_version == NULL ) {
         free (license_file); license_file = NULL;
         std::string err =  TRANSLATE_ME ("Cannot get version of the text of the current license");
-        log_info_audit ("Request POST license FAILED");
+        log_error_audit ("Request CREATE license FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -77,7 +77,7 @@ bool database_ready;
         free (current_license_version); current_license_version = NULL;
         free (license_file); license_file = NULL;
         std::string err =  TRANSLATE_ME ("Cannot get the path to the actual status of the accepted license");
-        log_info_audit ("Request POST license FAILED");
+        log_error_audit ("Request CREATE license FAILED");
         http_die ("internal-error", err.c_str ());
     }
     log_debug ("variable accepted_license_file == '%s'", accepted_license_file);
@@ -87,7 +87,7 @@ bool database_ready;
         free (current_license_version); current_license_version = NULL;
         free (license_file); license_file = NULL;
         std::string err =  TRANSLATE_ME ("Cannot open file with actual information about accepted license");
-        log_info_audit ("Request POST license FAILED");
+        log_error_audit ("Request CREATE license FAILED");
         http_die ("internal-error", err.c_str ());
     }
     uint64_t tme = ::time (NULL);
@@ -128,7 +128,7 @@ bool database_ready;
                 "/usr/libexec/fty/start-db-services", rv_svc, proc_out.c_str (), proc_err.c_str ());
             if (rv_svc > 0) {
                 std::string err =  TRANSLATE_ME ("Starting of start-db-services have failed. Consult system logs");
-                log_info_audit ("Request POST license FAILED");
+                log_error_audit ("Request CREATE license FAILED");
                 http_die ("internal-error", err.c_str ());
             }
             // Negative return means killed by signal, typically by our
@@ -148,7 +148,7 @@ bool database_ready;
                         + std::to_string (rv) + "', stderr = '" + proc_err + "'." ;
                     log_error ("%s", message.c_str ());
                     std::string err =  TRANSLATE_ME ("Database software service is not running");
-                    log_info_audit ("Request POST license FAILED");
+                    log_error_audit ("Request CREATE license FAILED");
                     http_die ("internal-error", err.c_str ());
                 } else {
                     // Not quite an error, but we want this message at the same logging level
@@ -170,7 +170,7 @@ bool database_ready;
                         + std::to_string (rv) + "', stderr = '" + proc_err + "'." ;
                     log_error ("%s", message.c_str ());
                     std::string err =  TRANSLATE_ME ("Database schema was not installed or verified successfully");
-                    log_info_audit ("Request POST license FAILED");
+                    log_error_audit ("Request CREATE license FAILED");
                     http_die ("internal-error", err.c_str ());
                 } else {
                     // Not quite an error, but we want this message at the same logging level
@@ -190,7 +190,7 @@ bool database_ready;
                 message = TRANSLATE_ME ("Database password file is missing");
             }
             log_error ("%s", message.c_str ());
-            log_info_audit ("Request POST license FAILED");
+            log_error_audit ("Request CREATE license FAILED");
             http_die ("internal-error", message.c_str ());
         }
     } else {
@@ -199,7 +199,7 @@ bool database_ready;
         log_info ("db services were already started and set up, re-reading password just in case ...");
         if (!DBConn::dbreadcredentials ()) {
             std::string err =  TRANSLATE_ME ("Database password file is missing");
-            log_info_audit ("Request POST license FAILED");
+            log_error_audit ("Request CREATE license FAILED");
             http_die ("internal-error", err.c_str ());
         }
     }
@@ -239,9 +239,9 @@ bool database_ready;
         log_error ("Database connection test failed: %s", e.what ());
         database_ready = false;
         std::string err =  TRANSLATE_ME ("Database connection test failed");
-        log_info_audit ("Request POST license FAILED");
+        log_error_audit ("Request CREATE license FAILED");
         http_die ("internal-error", err.c_str ());
     }
-    log_info_audit ("Request POST license SUCCESS");
+    log_info_audit ("Request CREATE license SUCCESS");
 }
 </%cpp>

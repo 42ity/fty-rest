@@ -150,7 +150,7 @@ UserInfo user;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "C"}
             };
-    std::string audit_msg = std::string ("Request POST add_gpio FAILED");
+    std::string audit_msg = std::string ("Request CREATE add_gpio FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     if (request.getMethod () != "POST") {
@@ -165,40 +165,41 @@ UserInfo user;
 
     if (json.empty ()) {
         std::string err =  TRANSLATE_ME ("<JSON object with keys part_number, manufacturer, type, normal_state, gpx_direction, gpx_power_source, alarm_message, alarm_severity>");
-        log_info_audit ("Request POST add_gpio part_number %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE add_gpio part_number %s FAILED", item.c_str ());
         http_die ("request-param-required", err.c_str ());
     }
 
     int rv = add_gpio (json);
     if (rv == -1) {
         std::string err = TRANSLATE_ME ("mlmpool.get () failed.");
-        log_info_audit ("Request POST add_gpio part_number %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE add_gpio part_number %s FAILED", item.c_str ());
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -2) {
         std::string err = TRANSLATE_ME ("client->sendto () failed.");
-        log_info_audit ("Request POST add_gpio part_number %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE add_gpio part_number %s FAILED", item.c_str ());
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -3) {
         std::string err = TRANSLATE_ME ("client->recv () failed.");
-        log_info_audit ("Request POST add_gpio part_number %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE add_gpio part_number %s FAILED", item.c_str ());
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -4) {
         std::string err = TRANSLATE_ME ("<JSON object with keys part_number, manufacturer, type, normal_state, gpx_direction, gpx_power_source, alarm_message, alarm_severity>");
-        log_info_audit ("Request POST add_gpio part_number %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE add_gpio part_number %s FAILED", item.c_str ());
         http_die ("request-param-required", err.c_str ());
     }
     else
     if (rv == -5) {
         std::string err = TRANSLATE_ME ("fty-sensor-gpio returned malformed or unexpected message.");
-        log_info_audit ("Request POST add_gpio part_number %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE add_gpio part_number %s FAILED", item.c_str ());
         http_die ("internal-error", err.c_str ());
     }
-    else
-        log_info_audit ("Request POST add_gpio part_number %s SUCCESS", item.c_str ());
+    else {
+        log_info_audit ("Request CREATE add_gpio part_number %s SUCCESS", item.c_str ());
+    }
 </%cpp>

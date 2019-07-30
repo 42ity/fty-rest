@@ -56,7 +56,7 @@ UserInfo user;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "C"}
             };
-    std::string audit_msg = std::string ("Request POST email_test FAILED");
+    std::string audit_msg = std::string ("Request CREATE email_test FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     std::string checked_email;
@@ -68,13 +68,13 @@ UserInfo user;
             email = qparam.param ("email");
 
         if (email.empty ()) {
-            log_info_audit ("Request POST email_test FAILED");
+            log_error_audit ("Request CREATE email_test FAILED");
             http_die ("request-param-required", "to");
         }
 
         if (email.find ('@', 0) == std::string::npos) {
             std::string expected =  TRANSLATE_ME ("valid email address");
-            log_info_audit ("Request POST email_test FAILED");
+            log_error_audit ("Request CREATE email_test FAILED");
             http_die ("request-param-bad", "to", email.c_str (), expected.c_str ());
         }
 
@@ -95,7 +95,7 @@ UserInfo user;
     if (!client.getPointer ()) {
         log_fatal ("Error: mlm_pool.get () failed.");
         std::string err =  TRANSLATE_ME ("mlm_pool.get () failed.");
-        log_info_audit ("Request POST email_test FAILED");
+        log_error_audit ("Request CREATE email_test FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -110,7 +110,7 @@ UserInfo user;
                         AGENT_FTY_EMAIL_SENDMAIL_ONLY, "SENDMAIL");
         std::string err =  TRANSLATE_ME ("client->sendto () failed");
         zmsg_destroy (&send);
-        log_info_audit ("Request POST email_test FAILED");
+        log_error_audit ("Request CREATE email_test FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -119,7 +119,7 @@ UserInfo user;
     {
         std::string msg = TRANSLATE_ME ("Error: client-> recv (timeout = '%d') returned NULL", _timeout);
         log_error ("%s", msg.c_str ());
-        log_info_audit ("Request POST email_test FAILED");
+        log_error_audit ("Request CREATE email_test FAILED");
         http_die ("internal-error", msg.c_str ());
     }
 
@@ -136,7 +136,7 @@ UserInfo user;
     if (streq (msg_subject, "SENDMAIL-ERR"))
     {
         status = "Failed";
-        log_info_audit ("Request POST email_test FAILED");
+        log_error_audit ("Request CREATE email_test FAILED");
         http_die ("upstream-err", err_message.get ());
     }
     else
@@ -144,10 +144,10 @@ UserInfo user;
         status = "Failed";
         log_fatal ("Error: message recieved with invalid subject.");
         std::string err =  TRANSLATE_ME ("client->recv () invalid message subject");
-        log_info_audit ("Request POST email_test FAILED");
+        log_error_audit ("Request CREATE email_test FAILED");
         http_die ("internal-error", err.c_str ());
     }
-    log_info_audit ("Request POST email_test SUCCESS");
+    log_info_audit ("Request CREATE email_test SUCCESS");
 
 </%cpp>
 {

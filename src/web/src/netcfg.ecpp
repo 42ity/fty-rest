@@ -54,14 +54,15 @@ UserInfo user;
             };
     std::string audit_msg;
     if (request.getMethod () == "PUT")
-        audit_msg = std::string ("Request PUT netcfg FAILED");
+        audit_msg = std::string ("Request CREATE OR UPDATE netcfg FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
 augtool* augeas = augtool::get_instance ();
 if (!augeas) {
     std::string err =  TRANSLATE_ME ("Cannot communicate with augtool. Is it installed or properly configured?");
-    if (request.getMethod () == "PUT")
-        log_info_audit ("Request PUT netcfg FAILED");
+    if (request.getMethod () == "PUT") {
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
+    }
     http_die ("internal-error", err.c_str ());
 }
 std::string nil;
@@ -70,15 +71,17 @@ std::string nil;
 nil = augeas->get_cmd_out ("ls /augeas/files/etc/network/interfaces/error");
 if (!nil.empty ()) {
     std::string err =  TRANSLATE_ME ("Syntax error in /etc/network/interfaces config file");
-    if (request.getMethod () == "PUT")
-        log_info_audit ("Request PUT netcfg FAILED");
+    if (request.getMethod () == "PUT") {
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
+    }
     http_die ("internal-error", err.c_str ());
 }
 nil = augeas->get_cmd_out ("ls /augeas/files/etc/resolv.conf/error");
 if (!nil.empty ()) {
     std::string err =  TRANSLATE_ME ("Syntax error in /etc/resolv.conf config file");
-    if (request.getMethod () == "PUT")
-        log_info_audit ("Request PUT netcfg FAILED");
+    if (request.getMethod () == "PUT") {
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
+    }
     http_die ("internal-error", err.c_str ());
 }
 
@@ -93,8 +96,9 @@ if (rex_ncfg.match (request.getUrl ())) {
 							);
     if (all_interfaces_str.empty ()) {
         std::string err =  TRANSLATE_ME ("No configurable interfaces found");
-        if (request.getMethod () == "PUT")
-            log_info_audit ("Request PUT netcfg FAILED");
+        if (request.getMethod () == "PUT") {
+            log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
 
@@ -113,8 +117,9 @@ if (rex_ncfg.match (request.getUrl ())) {
 </%cpp>
 { "netcfgs": [ <$$ out $> ] }
 <%cpp>
-    if (request.getMethod () == "PUT")
-        log_info_audit ("Request PUT netcfg SUCCESS");
+    if (request.getMethod () == "PUT") {
+        log_info_audit ("Request CREATE OR UPDATE netcfg SUCCESS");
+    }
     return HTTP_OK;
 }
 
@@ -123,13 +128,15 @@ std::string checked_iface;
 {
     std::string iface = request.getArg ("iface");
     if (iface.empty ()) {
-        if (request.getMethod () == "PUT")
-            log_info_audit ("Request PUT netcfg FAILED");
+        if (request.getMethod () == "PUT") {
+            log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
+        }
         http_die ("request-param-required", "iface");
     }
     std::string audit_msg;
-    if (request.getMethod () == "PUT")
-        audit_msg = std::string ("Request PUT netcfg FAILED");
+    if (request.getMethod () == "PUT") {
+        audit_msg = std::string ("Request CREATE OR UPDATE netcfg FAILED");
+    }
     check_regex_text_or_die_audit ("iface", iface, checked_iface, "^[[:alpha:]][[:alnum:]]{0,14}$",
             audit_msg.empty () ? nullptr : audit_msg.c_str ());
 }
@@ -140,8 +147,9 @@ std::string address = augeas->get_cmd_out (
 					  false);
 if (address.empty ()) {
     // Not perfect, but bad enough to create another message?
-    if (request.getMethod () == "PUT")
-        log_info_audit ("Request PUT netcfg FAILED");
+    if (request.getMethod () == "PUT") {
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
+    }
     http_die ("element-not-found", checked_iface.c_str ());
 }
 
@@ -162,7 +170,7 @@ if (request.getMethod () == "PUT") {
         deserializer.deserialize (si);
     } catch (const std::exception& e) {
         std::string msg = TRANSLATE_ME ("Expected valid json document: %s", JSONIFY (e.what ()).c_str ());
-        log_info_audit ("Request PUT netcfg FAILED");
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
         http_die ("bad-request-document",  msg.c_str ());
     }
 
@@ -170,19 +178,20 @@ if (request.getMethod () == "PUT") {
         rsi = si.getMember (checked_iface);
     } catch (const std::exception& e) {
         std::string msg = TRANSLATE_ME ("No configuration for interface '%s' provided", checked_iface.c_str ());
-        log_info_audit ("Request PUT netcfg FAILED");
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
         http_die ("bad-request-document", msg.c_str ());
     }
 
 
 // Gets configuration from json and sets it in config while verifying it matches regexp
-#define AUG_SET (NAME, CHECK)         \
+#define AUG_SET(NAME, CHECK)         \
     if (it.name () == NAME) { \
         it.getValue (val); \
         if (! CHECK ) { \
             std::string msg = TRANSLATE_ME ("Wrong value for '%s' setting or setting not expected for method %s.", NAME, method.c_str ()); \
-            if (request.getMethod () == "PUT")\
-                log_info_audit ("Request PUT netcfg FAILED");\
+            if (request.getMethod () == "PUT") { \
+                log_error_audit ("Request CREATE OR UPDATE netcfg FAILED"); \
+            } \
             http_die ("parameter-conflict", msg.c_str ()); \
         } \
         augeas->run_cmd ("set " + address + "/" NAME " " + val); \
@@ -212,7 +221,7 @@ if (request.getMethod () == "PUT") {
             }else{
                 if (! CIDRAddress (val).valid () ) {
                     std::string msg = TRANSLATE_ME ("Wrong value for 'gateway' setting or setting not expected for method %s.", method.c_str ());
-                    log_info_audit ("Request PUT netcfg FAILED");
+                    log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
                     http_die ("parameter-conflict", msg.c_str ());
                 }
                 augeas->run_cmd ("set " + address + "/gateway " + val);
@@ -224,7 +233,7 @@ if (request.getMethod () == "PUT") {
         if (it.name () == "nameservers") {
             if (it.category () != cxxtools::SerializationInfo::Category::Array) {
                 std::string err =  TRANSLATE_ME ("Wrong value for DNS setting - array expected");
-                log_info_audit ("Request PUT netcfg FAILED");
+                log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
                 http_die ("bad-request-document", err.c_str ());
             }
             // get all interface from /etc/network/interfaces
@@ -238,7 +247,7 @@ if (request.getMethod () == "PUT") {
                 i.getValue (val);
                 if (!CIDRAddress (val).valid ()) {
                     std::string err =  TRANSLATE_ME ("Wrong value for DNS setting - array of IPs expected") ;
-                    log_info_audit ("Request PUT netcfg FAILED");
+                    log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
                     http_die ("bad-request-document", err.c_str ());
                 }
                 if (ns_list.length ()>0){
@@ -275,7 +284,7 @@ if (request.getMethod () == "PUT") {
         }
         if (!handled) {
             std::string msg = TRANSLATE_ME ("Invalid option '%s'", it.name ().c_str ());
-            log_info_audit ("Request PUT netcfg FAILED");
+            log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
             http_die ("bad-request-document", msg.c_str ());
         }
     }
@@ -287,17 +296,17 @@ if (request.getMethod () == "PUT") {
 	nil = augeas->get_cmd_out ("ls /augeas/files/etc/network/interfaces/error");
     if (!nil.empty ()) {
         std::string err =  TRANSLATE_ME ("Syntax error in /etc/network/interfaces config file");
-        log_info_audit ("Request PUT netcfg FAILED");
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
         http_die ("internal-error", err.c_str ());
     }
 	nil = augeas->get_cmd_out ("ls /augeas/files/etc/resolv.conf/error");
     if (!nil.empty ()) {
         std::string err =  TRANSLATE_ME ("Syntax error in /etc/resolv.conf config file");
-        log_info_audit ("Request PUT netcfg FAILED");
+        log_error_audit ("Request CREATE OR UPDATE netcfg FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
-    log_info_audit ("Request PUT netcfg SUCCESS");
+    log_info_audit ("Request CREATE OR UPDATE netcfg SUCCESS");
 }
 
 std::string ip, netmask, gateway, dns;

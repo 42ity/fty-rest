@@ -49,7 +49,7 @@
             };
     std::string audit_msg;
     if (request.getMethod () == "PUT")
-        audit_msg = std::string ("Request PUT my_profile FAILED");
+        audit_msg = std::string ("Request CREATE OR UPDATE my_profile FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     std::string method = request.getMethod ();
@@ -153,7 +153,7 @@
                         if (rv == -1) {
                             utils::config::roots_destroy (roots);
                             std::string msg = TRANSLATE_ME ("Cannot save config file ") + it.first;
-                            log_info_audit ("Request PUT my_profile FAILED");
+                            log_error_audit ("Request CREATE OR UPDATE my_profile FAILED");
                             http_die ("internal-error", msg.c_str ());
                         }
                         zconfig_destroy (&config);
@@ -180,7 +180,7 @@
                 log_debug ("my_profile: database is ready though...");
             }
         }
-        log_info_audit ("Request PUT my_profile SUCCESS");
+        log_info_audit ("Request CREATE OR UPDATE my_profile SUCCESS");
 </%cpp>
 {
 "login" : "<$ user.login () $>",

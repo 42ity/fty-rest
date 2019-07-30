@@ -46,7 +46,7 @@ bool database_ready;
     if (!database_ready) {
         log_debug ("Database is not ready yet.");
         std::string err =  TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
-        log_info_audit ("Request DELETE asset FAILED");
+        log_error_audit ("Request DELETE asset FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -62,13 +62,13 @@ bool database_ready;
     std::string id = request.getArg ("id");
     {
         if ( id.empty () ) {
-            log_info_audit ("Request DELETE asset FAILED");
+            log_error_audit ("Request DELETE asset FAILED");
             http_die ("request-param-required", "id");
         }
 
         if ( !persist::is_ok_name (id.c_str ()) ) {
             std::string err = TRANSLATE_ME ("valid asset name");
-            log_info_audit ("Request DELETE asset id %s FAILED", id.c_str ());
+            log_error_audit ("Request DELETE asset id %s FAILED", id.c_str ());
             http_die ("request-param-bad", "id", id.c_str (), err.c_str ());
         }
         checked_id = id;
@@ -78,12 +78,12 @@ bool database_ready;
     // get id by name
     int64_t dbid = DBAssets::name_to_asset_id (checked_id);
     if (dbid == -1) {
-        log_info_audit ("Request DELETE asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request DELETE asset id %s FAILED", id.c_str ());
         http_die ("element-not-found", checked_id.c_str ());
     }
     if (dbid == -2) {
         std::string err =  TRANSLATE_ME ("Database failure");
-        log_info_audit ("Request DELETE asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request DELETE asset id %s FAILED", id.c_str ());
         http_die ("internal-error", err.c_str ());
     }
 
@@ -92,12 +92,12 @@ bool database_ready;
     auto ret = asset_mgr.delete_item (dbid, row);
     if ( ret.status == 0 ) {
         if ( ret.errsubtype == DB_ERROR_NOTFOUND ) {
-            log_info_audit ("Request DELETE asset id %s FAILED", id.c_str ());
+            log_error_audit ("Request DELETE asset id %s FAILED", id.c_str ());
             http_die ("element-not-found", checked_id.c_str ());
         }
         else {
             std::string reason = TRANSLATE_ME ("Asset is in use, remove children/power source links first.");
-            log_info_audit ("Request DELETE asset id %s FAILED", id.c_str ());
+            log_error_audit ("Request DELETE asset id %s FAILED", id.c_str ());
             http_die ("data-conflict",  checked_id.c_str (), reason.c_str ());
         }
     }
@@ -121,7 +121,7 @@ bool database_ready;
     catch (const std::runtime_error &e) {
         log_error ("%s", e.what ());
         std::string msg = TRANSLATE_ME ("Error during configuration sending of asset change notification. Consult system log.");
-        log_info_audit ("Request DELETE asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request DELETE asset id %s FAILED", id.c_str ());
         http_die ("internal-error", msg.c_str ());
     }
 }

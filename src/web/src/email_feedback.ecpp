@@ -120,7 +120,7 @@ UserInfo user;
             {BiosProfile::Admin,         "C"},
             {BiosProfile::Dashboard,     "C"}
             };
-    std::string audit_msg = std::string ("Request POST email_feedback FAILED");
+    std::string audit_msg = std::string ("Request CREATE email_feedback FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     std::string checked_to;
@@ -143,7 +143,7 @@ UserInfo user;
 
         if (to.find ('@', 0) == std::string::npos) {
             std::string expected = TRANSLATE_ME ("valid email address");
-            log_info_audit ("Request POST email_feedback FAILED");
+            log_error_audit ("Request CREATE email_feedback FAILED");
             http_die ("request-param-bad", "to", to.c_str (), expected.c_str ());
         }
 
@@ -152,13 +152,13 @@ UserInfo user;
         std::string _reply = qparam.param ("reply");
 
         if (_reply.empty ()) {
-            log_info_audit ("Request POST email_feedback FAILED");
+            log_error_audit ("Request CREATE email_feedback FAILED");
             http_die ("request-param-required", "reply");
         }
 
         if (_reply.find ('@', 0) == std::string::npos) {
             std::string expected = TRANSLATE_ME ("valid email address");
-            log_info_audit ("Request POST email_feedback FAILED");
+            log_error_audit ("Request CREATE email_feedback FAILED");
             http_die ("request-param-bad", "reply", _reply.c_str (), expected.c_str ());
         }
 
@@ -166,7 +166,7 @@ UserInfo user;
 
         std::string message = qparam.param ("message");
         if (message.empty ()) {
-            log_info_audit ("Request POST email_feedback FAILED");
+            log_error_audit ("Request CREATE email_feedback FAILED");
             http_die ("request-param-required", "message");
         }
 
@@ -174,7 +174,7 @@ UserInfo user;
 
         std::string context = qparam.param ("context");
         if (context.empty ()) {
-            log_info_audit ("Request POST email_feedback FAILED");
+            log_error_audit ("Request CREATE email_feedback FAILED");
             http_die ("request-param-required", "context");
         }
 
@@ -204,7 +204,7 @@ UserInfo user;
     temp_dir = mkdtemp (temp_dir);
     if (!temp_dir){
         std::string err =  TRANSLATE_ME ("Can't create temporary directory");
-        log_info_audit ("Request POST email_feedback FAILED");
+        log_error_audit ("Request CREATE email_feedback FAILED");
         http_die ("internal-error", err.c_str ());
     }
     chmod (temp_dir, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
@@ -224,7 +224,7 @@ UserInfo user;
                 (intmax_t) max_size,
                 (intmax_t) current_size
                 );
-            log_info_audit ("Request POST email_feedback FAILED");
+            log_error_audit ("Request CREATE email_feedback FAILED");
             http_die ("internal-error", err.c_str ());
         }
 
@@ -237,7 +237,7 @@ UserInfo user;
         if (!out_file) {
             s_rm_rf (paths, &temp_dir);
             std::string err =  TRANSLATE_ME ("Cannot process attachment");
-            log_info_audit ("Request POST email_feedback FAILED");
+            log_error_audit ("Request CREATE email_feedback FAILED");
             http_die ("internal-error", err.c_str ());
         }
 
@@ -258,7 +258,7 @@ UserInfo user;
         log_fatal ("Error: mlm_pool.get () failed.");
         s_rm_rf (paths, &temp_dir);
         std::string err =  TRANSLATE_ME ("mlm_pool.get () failed.");
-        log_info_audit ("Request POST email_feedback FAILED");
+        log_error_audit ("Request CREATE email_feedback FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -284,7 +284,7 @@ UserInfo user;
         s_rm_rf (paths, &temp_dir);
         std::string err =  TRANSLATE_ME ("client->sendto () failed");
         zmsg_destroy (&send);
-        log_info_audit ("Request POST email_feedback FAILED");
+        log_error_audit ("Request CREATE email_feedback FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -294,7 +294,7 @@ UserInfo user;
         std::string msg = TRANSLATE_ME ("Error: client-> recv (timeout = '%d') returned NULL", _timeout);
         log_error ("%s", msg.c_str ());
         s_rm_rf (paths, &temp_dir);
-        log_info_audit ("Request POST email_feedback FAILED");
+        log_error_audit ("Request CREATE email_feedback FAILED");
         http_die ("internal-error", msg.c_str ());
     }
 
@@ -312,7 +312,7 @@ UserInfo user;
     if (streq (msg_subject, "SENDMAIL-ERR"))
     {
         status = "Failed";
-        log_info_audit ("Request POST email_feedback FAILED");
+        log_error_audit ("Request CREATE email_feedback FAILED");
         http_die ("upstream-err", err_message.get ());
     }
     else
@@ -320,10 +320,10 @@ UserInfo user;
         status = "Failed";
         log_fatal ("Error: message recieved with invalid subject.");
         std::string err =  TRANSLATE_ME ("client->recv () invalid message subject");
-        log_info_audit ("Request POST email_feedback FAILED");
+        log_error_audit ("Request CREATE email_feedback FAILED");
         http_die ("internal-error", err.c_str ());
     }
-    log_info_audit ("Request POST email_feedback SUCCESS");
+    log_info_audit ("Request CREATE email_feedback SUCCESS");
 
 </%cpp>
 {

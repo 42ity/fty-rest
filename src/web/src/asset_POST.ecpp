@@ -47,7 +47,7 @@ bool database_ready;
     if (!database_ready) {
         log_debug ("Database is not ready yet.");
         std::string err =  TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
-        log_info_audit ("Request POST asset FAILED");
+        log_error_audit ("Request CREATE asset FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -55,7 +55,7 @@ bool database_ready;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "C"}
             };
-    std::string audit_msg = std::string ("Request POST asset FAILED");
+    std::string audit_msg = std::string ("Request CREATE asset FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     // cache the manipulated asset name
@@ -68,7 +68,7 @@ bool database_ready;
     }
     catch (const std::exception& e) {
         LOG_END_ABNORMAL (e);
-        log_info_audit ("Request POST asset <undefined> FAILED");
+        log_error_audit ("Request CREATE asset <undefined> FAILED");
         http_die ("bad-request-document", e.what ());
     }
 
@@ -82,7 +82,7 @@ bool database_ready;
     }
     catch (const std::exception& e) {
         LOG_END_ABNORMAL (e);
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die ("bad-request-document", e.what ());
     }
     shared::CsvMap cm;
@@ -93,30 +93,30 @@ bool database_ready;
     }
     catch (const std::invalid_argument &e) {
         log_error ("%s", e.what ());
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die ("bad-request-document", e.what ());
     }
     catch (const std::exception& e) {
         LOG_END_ABNORMAL (e);
         std::string err =  TRANSLATE_ME ("See logs for more details");
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die ("internal-error", err.c_str ());
     }
 
     if (cm.cols () == 0 || cm.rows () == 0) {
         std::string err =  TRANSLATE_ME ("Cannot import empty document.");
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die ("bad-request-document", err.c_str ());
     }
     // in underlying functions like update_device
     if (!cm.hasTitle ("type")) {
         std::string err =  TRANSLATE_ME ("type");
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die ("request-param-required", err.c_str ());
     }
     if (cm.hasTitle ("id")) {
         std::string err =  TRANSLATE_ME ("key 'id' is forbidden to be used");
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die ("bad-request-document", err.c_str ());
     }
 
@@ -139,7 +139,7 @@ bool database_ready;
         catch (const std::runtime_error &e) {
             log_error ("%s", e.what ());
             std::string msg = TRANSLATE_ME ("Error during configuration sending of asset change notification. Consult system log.");
-            log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+            log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
             http_die ("internal-error", msg.c_str ());
         }
         // no unexpected errors was detected
@@ -147,22 +147,22 @@ bool database_ready;
         std::pair<std::string,std::string> foo =  DBAssets::id_to_name_ext_name (row.first.id);
         if (foo.first.empty () && foo.second.empty ()) {
             std::string err =  TRANSLATE_ME ("Database failure");
-            log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+            log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
             http_die ("internal-error", err.c_str ());
         }
 </%cpp>
 {<$$ utils::json::jsonify ("id", foo.first) $>}
 <%cpp>
-        log_info_audit ("Request POST asset %s SUCCESS", item.c_str ());
+        log_info_audit ("Request CREATE asset %s SUCCESS", item.c_str ());
         return HTTP_OK;
     }
     catch (const BiosError& e) {
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die_idx (e.idx, e.what ());
     }
     catch (const std::exception& e) {
         LOG_END_ABNORMAL (e);
-        log_info_audit ("Request POST asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset %s FAILED", item.c_str ());
         http_die ("internal-error", "");
     }
 }

@@ -47,7 +47,7 @@ bool database_ready;
     if (!database_ready) {
         log_debug ("Database is not ready yet.");
         std::string err =  TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
-        log_info_audit ("Request PUT asset FAILED");
+        log_error_audit ("Request CREATE OR UPDATE asset FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -55,12 +55,12 @@ bool database_ready;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "U"}
             };
-    std::string audit_msg = std::string ("Request PUT asset FAILED");
+    std::string audit_msg = std::string ("Request CREATE OR UPDATE asset FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
     std::string id = request.getArg ("id");
 
     if (id.empty () || !persist::is_ok_name (id.c_str ())) {
-        log_info_audit ("Request PUT asset FAILED");
+        log_error_audit ("Request CREATE OR UPDATE asset FAILED");
         http_die ("request-param-bad", id.c_str ());
     }
 
@@ -85,7 +85,7 @@ bool database_ready;
                 persist::is_container (type)){
                 log_debug ("Element %s cannot be inactivated.", si_id);
                 std::string err =  TRANSLATE_ME ("Inactivation of this asset");
-                log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+                log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
                 http_die ("action-forbidden", err.c_str ());
             }
         }
@@ -96,7 +96,7 @@ bool database_ready;
     catch (const std::exception& e) {
         LOG_END_ABNORMAL (e);
         std::string err = JSONIFY (e.what ());
-        log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
         http_die ("bad-request-document", err.c_str ());
     }
     shared::CsvMap cm;
@@ -112,13 +112,13 @@ bool database_ready;
     catch (const std::invalid_argument &e) {
         log_error ("%s", e.what ());
         std::string err = JSONIFY (e.what ());
-        log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
         http_die ("bad-request-document", err.c_str ());
     }
     catch (const std::exception& e) {
         LOG_END_ABNORMAL (e);
         std::string err =  TRANSLATE_ME ("See log for more details");
-        log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
         http_die ("internal-error", err.c_str ());
     }
 
@@ -127,12 +127,12 @@ bool database_ready;
     // empty document
     if (cm.cols () == 0 || cm.rows () == 0) {
         std::string err =  TRANSLATE_ME ("Cannot import empty document.");
-        log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
         http_die ("bad-request-document", err.c_str ());
     }
     if (!cm.hasTitle ("type")) {
         std::string err =  TRANSLATE_ME ("type");
-        log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
         http_die ("request-param-required", err.c_str ());
     }
 
@@ -157,7 +157,7 @@ bool database_ready;
         catch (const std::runtime_error &e) {
             log_error ("%s", e.what ());
             std::string msg = TRANSLATE_ME ("Error during configuration sending of asset change notification. Consult system log.");
-            log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+            log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
             http_die ("internal-error", msg.c_str ());
         }
         // no unexpected errors was detected
@@ -165,25 +165,25 @@ bool database_ready;
         std::pair<std::string, std::string> asset_names = DBAssets::id_to_name_ext_name (row.first.id);
         if (asset_names.first.empty () && asset_names.second.empty ()) {
             std::string err =  TRANSLATE_ME ("Database failure");
-            log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+            log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
             http_die ("internal-error", err.c_str ());
         }
 
 </%cpp>
 {<$$ utils::json::jsonify ("id", asset_names.first) $>}
 <%cpp>
-        log_info_audit ("Request PUT asset id %s SUCCESS", id.c_str ());
+        log_info_audit ("Request CREATE OR UPDATE asset id %s SUCCESS", id.c_str ());
         return HTTP_OK;
     }
     catch (const BiosError& e) {
         LOG_END_ABNORMAL (e);
-        log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
         http_die_idx (e.idx, e.what ());
     }
     catch (const std::exception& e) {
         LOG_END_ABNORMAL (e);
         std::string err =  TRANSLATE_ME ("Consult system log");
-        log_info_audit ("Request PUT asset id %s FAILED", id.c_str ());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
         http_die ("internal-error", err.c_str ());
     }
 }

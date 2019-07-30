@@ -112,7 +112,7 @@ UserInfo user;
     };
     std::string audit_msg;
     if (request.getMethod () == "POST")
-        audit_msg = std::string ("Request POST config FAILED");
+        audit_msg = std::string ("Request CREATE config FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     std::string key_format_string = "^[-._a-zA-Z0-9]+$";
@@ -205,7 +205,7 @@ UserInfo user;
                 if (rv == -1) {
                     utils::config::roots_destroy (roots);
                     std::string msg = TRANSLATE_ME ("Cannot save config file ") + it.first;
-                    log_info_audit ("Request POST config FAILED");
+                    log_error_audit ("Request CREATE config FAILED");
                     http_die ("internal-error", msg.c_str ());
                 }
             }
@@ -214,16 +214,16 @@ UserInfo user;
 {}
 <%cpp>
         utils::config::roots_destroy (roots);
-        log_info_audit ("Request POST config SUCCESS");
+        log_info_audit ("Request CREATE config SUCCESS");
         return HTTP_OK;
         }
         catch (const BiosError &e) {
             utils::config::roots_destroy (roots);
-            log_info_audit ("Request POST config FAILED");
+            log_error_audit ("Request CREATE config FAILED");
             http_die_idx (e.idx, e.what ());
         }
         catch (const std::exception &e) {
-            log_info_audit ("Request POST config FAILED");
+            log_error_audit ("Request CREATE config FAILED");
             http_die ("bad-request-document", e.what ());
         }
     }

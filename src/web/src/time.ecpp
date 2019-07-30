@@ -48,7 +48,7 @@ UserInfo user;
             };
     std::string audit_msg;
     if (request.getMethod () == "POST")
-        audit_msg = std::string ("Request POST time FAILED");
+        audit_msg = std::string ("Request CREATE time FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     // BLOCK 1
@@ -120,7 +120,7 @@ UserInfo user;
     if (!augeas) {
         std::string err =  TRANSLATE_ME ("Cannot communicate with augtool. Is it installed or properly configured?");
         if (request.getMethod () == "POST")
-            log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+            log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
         http_die ("internal-error", err.c_str ());
     }
 
@@ -130,19 +130,19 @@ UserInfo user;
             MlmSubprocess::Argv proc_cmd_ntp1 {"sudo", "systemctl", "stop", "ntp"};
             if ( MlmSubprocess::call (proc_cmd_ntp1) != 0 ) {
                 std::string err =  TRANSLATE_ME ("Cannot stop ntp service");
-                log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+                log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
             MlmSubprocess::Argv proc_cmd_ntp2 {"sudo", "systemctl", "disable", "ntp"};
             if ( MlmSubprocess::call (proc_cmd_ntp2) != 0 ) {
                 std::string err =  TRANSLATE_ME ("Cannot disable ntp service");
-                log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+                log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
             MlmSubprocess::Argv proc_cmd_ntp3 {"sudo", "systemctl", "mask", "ntp"};
             if ( MlmSubprocess::call (proc_cmd_ntp3) != 0 ) {
                 std::string err =  TRANSLATE_ME ("Cannot mask away ntp service");
-                log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+                log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
@@ -162,13 +162,13 @@ UserInfo user;
             MlmSubprocess::Argv proc_cmd_dateset {"sudo", "date", "-s", checked_time};
             if ( MlmSubprocess::call (proc_cmd_dateset) != 0 ) {
                 std::string err =  TRANSLATE_ME ("Can't set requested OS time.");
-                log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+                log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
             MlmSubprocess::Argv proc_cmd_hwclock {"sudo", "hwclock", "--systohc"};
             if ( MlmSubprocess::call (proc_cmd_hwclock) != 0 ) {
                 std::string err =  TRANSLATE_ME ("Can't set requested HW time.");
-                log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+                log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
         }
@@ -184,13 +184,13 @@ UserInfo user;
             MlmSubprocess::Argv proc_cmd_ntp1 {"sudo", "systemctl", "enable", "ntp"};
             if ( MlmSubprocess::call (proc_cmd_ntp1) != 0 ) {
                 std::string err =  TRANSLATE_ME ("Cannot enable ntp service");
-                log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+                log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
             MlmSubprocess::Argv proc_cmd_ntp2 {"sudo", "systemctl", "restart", "ntp"};
             if ( MlmSubprocess::call (proc_cmd_ntp2) != 0 ) {
                 std::string err =  TRANSLATE_ME ("Cannot start ntp service");
-                log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+                log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
         }
@@ -200,12 +200,12 @@ UserInfo user;
     if (calendar_to_datetime (time (NULL), buff, 32) == -1) {
         std::string err =  TRANSLATE_ME ("calendar_to_datetime () failed.");
         if (request.getMethod () == "POST")
-            log_info_audit ("Request POST time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
+            log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
         http_die ("internal-error", err.c_str ());
     }
     std::string ntp_out = augeas->get_cmd_out ("get /files/etc/ntp.conf/server[1]");
     if (request.getMethod () == "POST")
-        log_info_audit ("Request POST time %s %s SUCCESS", checked_time.c_str (), checked_ntp.c_str ());
+        log_info_audit ("Request CREATE time %s %s SUCCESS", checked_time.c_str (), checked_ntp.c_str ());
 </%cpp>
 {
     <$$ utils::json::jsonify ("time", buff) $>,

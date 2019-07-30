@@ -266,8 +266,9 @@ UserInfo user;
             {BiosProfile::Admin,     "CR"}
             };
     std::string audit_msg;
-    if (request.getMethod () == "POST")
-        audit_msg = std::string ("Request POST conf_scan FAILED");
+    if (request.getMethod () == "POST") {
+        audit_msg = std::string ("Request CREATE conf_scan FAILED");
+    }
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     int rv = 0;
@@ -285,63 +286,72 @@ UserInfo user;
 
     if (rv == -1) {
         std::string err = TRANSLATE_ME ("mlmpool.get () failed.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -2) {
         std::string err = TRANSLATE_ME ("client->sendto () failed.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -3) {
         std::string err = TRANSLATE_ME ("client->recv () failed.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -4) {
         std::string err = TRANSLATE_ME ("<range>");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("request-param-required", err.c_str ());
     }
     else
     if (rv == -5) {
         std::string err = TRANSLATE_ME ("fty-discovery returned malformed or unexpected message.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -6) {
         std::string err = TRANSLATE_ME ("fty-discovery precedent scan currently stopping.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -7) {
         std::string err = TRANSLATE_ME ("fty-discovery already have a scan running.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("internal-error", err.c_str ());
     }
     else
     if (rv == -8) {
         std::string err = TRANSLATE_ME ("Please check RFC-11 for valid json schema description.");
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan FAILED");
+        if (request.getMethod () == "POST") {
+            log_error_audit ("Request CREATE conf_scan FAILED");
+        }
         http_die ("bad-request-document", err.c_str ());
     }
     else
     { // Proceed to output
-        if (request.getMethod () == "POST")
-            log_info_audit ("Request POST conf_scan SUCCESS");
+        if (request.getMethod () == "POST") {
+            log_info_audit ("Request CREATE conf_scan SUCCESS");
+        }
 </%cpp>
 <$$ output $>
 <%cpp>

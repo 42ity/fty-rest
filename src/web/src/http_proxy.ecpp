@@ -46,7 +46,7 @@ UserInfo user;
             };
     std::string audit_msg;
     if (request.getMethod () == "PUT")
-        audit_msg = std::string ("Request PUT http_proxy FAILED");
+        audit_msg = std::string ("Request CREATE OR UPDATE http_proxy FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
 
     // The file is formatted as is:
@@ -75,7 +75,7 @@ UserInfo user;
         catch (const std::exception& e) {
             log_debug ("Bad request document - invalid json: %s", e.what ());
             std::string err =  TRANSLATE_ME ("Please check RFC-11 for valid json schema description.");
-            log_info_audit ("Request PUT http_proxy %s FAILED", proxy_line.c_str ());
+            log_error_audit ("Request CREATE OR UPDATE http_proxy %s FAILED", proxy_line.c_str ());
             http_die ("bad-request-document", err.c_str ());
         }
         log_debug ("proxy_line = '%s'", proxy_line.c_str ());
@@ -91,7 +91,7 @@ UserInfo user;
         std::ofstream out_file (path);
         if (!out_file) {
             std::string err =  TRANSLATE_ME ("open HTTP proxy file for writing");
-            log_info_audit ("Request PUT http_proxy %s FAILED", proxy_line.c_str ());
+            log_error_audit ("Request CREATE OR UPDATE http_proxy %s FAILED", proxy_line.c_str ());
             http_die ("internal-error", err.c_str ());
         }
 
@@ -108,8 +108,9 @@ UserInfo user;
     std::ifstream in_file (path);
     if (!in_file) {
         std::string err =  TRANSLATE_ME ("Cannot open HTTP proxy file for reading");
-        if (request.getMethod () == "PUT")
-            log_info_audit ("Request PUT http_proxy %s FAILED", proxy_line.c_str ());
+        if (request.getMethod () == "PUT") {
+            log_error_audit ("Request CREATE OR UPDATE http_proxy %s FAILED", proxy_line.c_str ());
+        }
         http_die ("internal-error", err.c_str ());
     }
 
@@ -120,8 +121,9 @@ UserInfo user;
         checked_http_proxy = proxy_line.substr (proxy_line.find ("=") + 1);
         checked_http_proxy.erase (std::remove (checked_http_proxy.begin (), checked_http_proxy.end (), '"'), checked_http_proxy.end ());
     }
-    if (request.getMethod () == "PUT")
-        log_info_audit ("Request PUT http_proxy %s SUCCESS", checked_http_proxy.c_str ());
+    if (request.getMethod () == "PUT") {
+        log_info_audit ("Request CREATE OR UPDATE http_proxy %s SUCCESS", checked_http_proxy.c_str ());
+    }
 </%cpp>
 {
     "url" : "<$ checked_http_proxy $>"

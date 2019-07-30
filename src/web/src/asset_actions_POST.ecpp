@@ -49,7 +49,7 @@ bool database_ready;
     if (!database_ready) {
         log_debug ("Database is not ready yet.");
         std::string err =  TRANSLATE_ME ("Database is not ready yet, please try again after a while.");
-        log_info_audit ("Request POST asset_actions FAILED");
+        log_error_audit ("Request CREATE asset_actions FAILED");
         http_die ("internal-error", err.c_str ());
     }
 
@@ -57,7 +57,7 @@ bool database_ready;
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
             {BiosProfile::Admin,     "C"}
             };
-    std::string audit_msg = std::string ("Request POST asset_actions FAILED");
+    std::string audit_msg = std::string ("Request CREATE asset_actions FAILED");
     CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
     std::string checked_id; // user-friendly identifier
 
@@ -65,13 +65,13 @@ bool database_ready;
     {
         std::string id = request.getArg ("id");
         if ( id.empty () ) {
-            log_info_audit ("Request POST asset_actions FAILED");
+            log_error_audit ("Request CREATE asset_actions FAILED");
             http_die ("request-param-required", "id");
         }
 
         if ( !persist::is_ok_name (id.c_str ()) ) {
             std::string err = TRANSLATE_ME ("valid asset name");
-            log_info_audit ("Request POST asset_actions id %s FAILED", id.c_str ());
+            log_error_audit ("Request CREATE asset_actions id %s FAILED", id.c_str ());
             http_die ("request-param-bad", "id", id.c_str (), err.c_str ());
         }
         checked_id = id;
@@ -85,7 +85,7 @@ bool database_ready;
     if (!client) {
         std::string err = "mlm_client_new () failed.";
         log_error (err.c_str ());
-        log_info_audit ("Request POST asset_actions asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset_actions asset %s FAILED", item.c_str ());
         http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
@@ -96,7 +96,7 @@ bool database_ready;
     if (rv == -1) {
         std::string err = "mlm_client_connect () failed.";
         log_error (err.c_str ());
-        log_info_audit ("Request POST asset_actions asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset_actions asset %s FAILED", item.c_str ());
         http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
     // end connect to malamute
@@ -128,7 +128,7 @@ bool database_ready;
     catch (const std::exception& e) {
         std::string err = std::string ("Error while parsing document: ") + e.what () + ".";
         log_error (err.c_str ());
-        log_info_audit ("Request POST asset_actions asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset_actions asset %s FAILED", item.c_str ());
         http_die ("bad-request-document", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
@@ -145,7 +145,7 @@ bool database_ready;
     if (mlm_client_sendto (client, "fty-nut-command", "power-actions", nullptr, 5000, &rqst) != 0) {
         std::string err = "Failed to send request to fty-nut-command.";
         log_error (err.c_str ());
-        log_info_audit ("Request POST asset_actions asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset_actions asset %s FAILED", item.c_str ());
         http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
@@ -154,7 +154,7 @@ bool database_ready;
     if (!zpoller_wait (poller, 5000)) {
         std::string err = "zmq_poll () failed.";
         log_error (err.c_str ());
-        log_info_audit ("Request POST asset_actions asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset_actions asset %s FAILED", item.c_str ());
         http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
@@ -165,8 +165,8 @@ bool database_ready;
         ZstrGuard errMsg (zmsg_popstr (msg));
         std::string err = std::string ("Request to fty-nut-command failed: ") + errMsg.get () + ".";
         log_error (err.c_str ());
-        log_info_audit ("Request POST asset_actions asset %s FAILED", item.c_str ());
+        log_error_audit ("Request CREATE asset_actions asset %s FAILED", item.c_str ());
         http_die ("precondition-failed", TRANSLATE_ME (err.c_str ()).c_str ());
     }
-    log_info_audit ("Request POST asset_actions asset %s SUCCESS", item.c_str ());
+    log_info_audit ("Request CREATE asset_actions asset %s SUCCESS", item.c_str ());
 </%cpp>
