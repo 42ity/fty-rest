@@ -153,7 +153,7 @@ if (address.empty ()) {
     http_die ("element-not-found", checked_iface.c_str ());
 }
 
-#define AUG_GET (NAME, VAL) \
+#define AUG_GET(NAME, VAL) \
     VAL = augeas->get_cmd_out ("get " + address + "/" NAME);
 
 std::string method;

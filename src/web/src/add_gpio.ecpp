@@ -151,7 +151,7 @@ UserInfo user;
             {BiosProfile::Admin,     "C"}
             };
     std::string audit_msg = std::string ("Request CREATE add_gpio FAILED");
-    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? nullptr : audit_msg.c_str ());
+    CHECK_USER_PERMISSIONS_OR_DIE_AUDIT (PERMISSIONS, audit_msg.empty () ? (char *)nullptr : audit_msg.c_str ());
 
     if (request.getMethod () != "POST") {
         http_die ("method-not-allowed", request.getMethod ().c_str () );
