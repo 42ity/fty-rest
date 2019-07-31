@@ -83,7 +83,7 @@ UserInfo user;
         if (!proxy_line.empty ()) {
             // Sanity check
             // Append "http://" if not already present
-            static cxxtools::Regex url_scheme ("^http (.?)://(.*)");
+            static cxxtools::Regex url_scheme ("^http(.?)://(.*)");
             if (!url_scheme.match (proxy_line))
                 proxy_line = "http://" + proxy_line;
         }
