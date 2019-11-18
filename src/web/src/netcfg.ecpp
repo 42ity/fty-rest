@@ -314,7 +314,29 @@ AUG_GET ("method", method);
 AUG_GET ("address", ip);
 AUG_GET ("netmask", netmask);
 AUG_GET ("gateway", gateway);
-dns = augeas->get_cmd_out ("match /files/etc/resolv.conf/nameserver", true, "\", \"");
+
+if (request.getMethod() == "PUT")
+{
+    std::string dnsRawData = augeas->get_cmd_out ("match /files/etc/network/interfaces/iface[*]/dns-nameservers", true, " ");
+
+    std::set<std::string> dnsSet;
+    cxxtools::split (" ", dnsRawData, std::inserter (dnsSet, dnsSet.end()));
+
+    std::string dnsStr;
+    for (auto ip : dnsSet)
+    {
+        dnsStr += "\"";
+        dnsStr += ip;
+        dnsStr += "\"";
+        dnsStr += ",";
+    }
+    // remove trailing punctuation
+    dns = dnsStr.substr(1, dnsStr.size() -3);
+}
+else
+{
+    dns = augeas->get_cmd_out ("match /files/etc/resolv.conf/nameserver", true, "\", \"");
+}
 
 </%cpp>
 { "<$ checked_iface $>":

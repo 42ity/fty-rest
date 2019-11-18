@@ -35,8 +35,11 @@
 #include "shared/configure_inform.h"
 #include "src/db/inout.h"
 #include <fty_common_rest_audit_log.h>
+#include <fty_asset_activator.h>
 
- </%pre>
+#define AGENT_ASSET_ACTIVATOR "etn-licensing-credits"
+
+</%pre>
 <%request scope="global">
 UserInfo user;
 bool database_ready;
@@ -64,11 +67,12 @@ bool database_ready;
         http_die ("request-param-bad", id.c_str ());
     }
 
+    std::string asset_json (request.getBody());
     // Read json, transform to csv, use existing functionality
     cxxtools::SerializationInfo si;
     // read json a deserialize it
     try {
-        std::stringstream input (request.getBody (), std::ios_base::in);
+        std::stringstream input (asset_json, std::ios_base::in);
         cxxtools::JsonDeserializer deserializer (input);
         deserializer.deserialize (si);
         auto si_id = si.findMember ("id");
@@ -78,27 +82,50 @@ bool database_ready;
         si.getMember ("type") >>= type;
 
         if ( si_id == NULL ) {
-            si.addMember ("id") <<= id;
+            si.addMember("id") <<= id;
         }
         else if (status  == "nonactive") {
             if (id == "rackcontroller-0"     ||
                 persist::is_container (type)){
                 log_debug ("Element %s cannot be inactivated.", si_id);
-                std::string err =  TRANSLATE_ME ("Inactivation of this asset");
                 log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
+                std::string err =  TRANSLATE_ME ("Inactivation of this asset");
                 http_die ("action-forbidden", err.c_str ());
             }
         }
         else {
-            si_id->setValue (id);
+            si_id->setValue(id);
         }
     }
     catch (const std::exception& e) {
-        LOG_END_ABNORMAL (e);
-        std::string err = JSONIFY (e.what ());
+        LOG_END_ABNORMAL(e);
         log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
-        http_die ("bad-request-document", err.c_str ());
+        std::string err = JSONIFY (e.what());
+        http_die("bad-request-document", err.c_str ());
     }
+
+    try
+    {
+        fty::FullAsset asset;
+        si >>= asset;
+
+        if (asset.isPowerAsset () && asset.getStatusString() == "active")
+        {
+            mlm::MlmSyncClient client (AGENT_FTY_ASSET, AGENT_ASSET_ACTIVATOR);
+            fty::AssetActivator activationAccessor (client);
+            if (!activationAccessor.isActivable (asset))
+            {
+                throw new std::runtime_error ("Asset cannot be activated");
+            }
+        }
+    }
+    catch (const std::exception &e)
+    {
+        std::string err = JSONIFY (e.what());
+        log_error_audit ("Request CREATE OR UPDATE asset id %s FAILED", id.c_str ());
+        http_die ("licensing-err", err.c_str ());
+    }
+
     shared::CsvMap cm;
     try{
         cm = shared::CsvMap_from_serialization_info (si);
