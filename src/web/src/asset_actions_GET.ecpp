@@ -33,7 +33,9 @@
 #include "web/src/asset_computed_impl.h"
 #include <fty_common_rest_helpers.h>
 #include <fty_common_asset_types.h>
+#include <fty_common_dto.h>
 #include <fty_common_mlm.h>
+#include <fty_common_messagebus.h>
 #include <fty_common_mlm_utils.h>
 #include <fty_common_macros.h>
 #include <cxxtools/serializationinfo.h>
@@ -74,68 +76,47 @@ bool database_ready;
     }
     // end sanity checks
 
-    // connect to malamute
-    MlmClientGuard client(mlm_client_new( ));
-    if (!client) {
-        std::string err = "mlm_client_new() failed.";
-        log_error (err.c_str ());
-        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
-    }
+    auto msgbus = std::unique_ptr<messagebus::MessageBus>(messagebus::MlmMessageBus(MLM_ENDPOINT, messagebus::getClientId("tntnet")));
+    msgbus->connect();
 
-    std::string client_name = utils::generate_mlm_client_id ("web.asset_get");
-    log_debug ("malamute client name = '%s'.", client_name.c_str ());
+    dto::commands::GetCommandsQueryDto queryDto;
+    queryDto.asset = checked_id;
 
-    int rv = mlm_client_connect (client, MLM_ENDPOINT, 1000, client_name.c_str ());
-    if (rv == -1) {
-        std::string err = "mlm_client_connect() failed.";
-        log_error (err.c_str ());
-        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
-    }
-    // end connect to malamute
+    messagebus::Message msgRequest;
+    msgRequest.metaData()[messagebus::Message::COORELATION_ID] = messagebus::generateUuid();
+    msgRequest.metaData()[messagebus::Message::TO] = "fty-nut-command";
+    msgRequest.metaData()[messagebus::Message::SUBJECT] = "GetCommands";
+    msgRequest.userData() << queryDto;
+    auto msgReply = msgbus->request("ETN.Q.IPMCORE.POWERACTION", msgRequest, 10);
 
-    // send request
-    zmsg_t *rqst = zmsg_new();
-    zmsg_addstr(rqst, "GET_COMMANDS");
-    zmsg_addstr(rqst, "");
-    zmsg_addstr(rqst, checked_id.c_str());
-
-    if (mlm_client_sendto(client, "fty-nut-command", "power-actions", nullptr, 5000, &rqst) != 0) {
-        std::string err = "Failed to send request to fty-nut-command.";
-        log_error (err.c_str ());
-        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
-    }
-
-    // wait for reply
-    ZpollerGuard poller(zpoller_new(mlm_client_msgpipe(client), nullptr));
-    if (!zpoller_wait(poller, 5000)) {
-        std::string err = "zmq_poll() failed.";
-        log_error (err.c_str ());
-        http_die ("internal-error", TRANSLATE_ME (err.c_str ()).c_str ());
-    }
-
-    ZmsgGuard msg(mlm_client_recv(client));
-    ZstrGuard status(zmsg_popstr(msg));
-    ZstrGuard uuid(zmsg_popstr(msg));
-    if (!streq(status, "OK")) {
-        ZstrGuard errMsg(zmsg_popstr(msg));
-        std::string err = std::string("Request to fty-nut-command failed: ") + errMsg.get() + ".";
+    if (msgReply.metaData()[messagebus::Message::STATUS] != "ok") {
+        std::string err = "Request to fty-nut-command failed.";
         log_error (err.c_str ());
         http_die ("precondition-failed", TRANSLATE_ME (err.c_str ()).c_str ());
     }
 
-    ZstrGuard assetDelimiter(zmsg_popstr(msg));
-    ZstrGuard assetName(zmsg_popstr(msg));
-
+    dto::commands::GetCommandsReplyDto replyDto;
+    msgReply.userData() >> replyDto;
     cxxtools::SerializationInfo replySi;
     replySi.setCategory(cxxtools::SerializationInfo::Category::Array);
 
-    while (zmsg_size(msg)) {
-        ZstrGuard cmdlabel(zmsg_popstr(msg));
-        ZstrGuard cmddesc(zmsg_popstr(msg));
-        cxxtools::SerializationInfo cmd;
-        cmd.addValue("command", cmdlabel.get());
-        cmd.addValue("description", cmddesc.get());
-        replySi.addMember("") <<= cmd;
+    for (const auto& command : replyDto) {
+        cxxtools::SerializationInfo commandSi;
+        commandSi.setCategory(cxxtools::SerializationInfo::Category::Object);
+        commandSi.addValue("command", command.command);
+        commandSi.addValue("description", command.description);
+
+        cxxtools::SerializationInfo targetsSi;
+        targetsSi.setName("targets");
+        if (!command.targets.empty()) {
+            targetsSi.setCategory(cxxtools::SerializationInfo::Category::Array);
+            for (const auto& target : command.targets) {
+                targetsSi.addMember("") <<= target;
+            }
+        }
+
+        commandSi.addMember("targets") <<= targetsSi;
+        replySi.addMember("") <<= commandSi;
     }
 
     // Serialize reply.
