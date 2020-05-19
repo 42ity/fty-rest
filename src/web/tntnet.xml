@@ -614,11 +614,13 @@
   <!-- listen to a port (empty string means any local interface) -->
   <listeners>
     <listener>
+      <ip>127.0.0.1</ip>
       <port>8000</port>
     </listener>
   <!-- a certificate enables ssl -->
   <!-- ssl start
     <listener>
+      <ip>127.0.0.1</ip>
       <port>8443</port>
       <certificate>/etc/tntnet/bios.pem</certificate>
     </listener>
