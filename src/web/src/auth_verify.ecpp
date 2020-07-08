@@ -69,6 +69,13 @@ if(!checked_access_token.empty()) {
         user.gid (gid);
         user.login (user_name);
         delete[] user_name; user_name = NULL;
+
+        // Some of our code expects re-authentication for sensitive requests,
+        // if implemented by a third-party extended authentication module that
+        // would handle auth token processing and verification with higher
+        // priority than this code. In builds using *this* module, default to
+        // pretending the re-auth happened successfully if the session is OK.
+        user.reauth (true);
     } else {
         http_die("not-authorized", "");
     }
