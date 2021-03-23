@@ -44,31 +44,44 @@ std::string gaccess_token;
     //       this is where the token is actually verified and user info
     //       fill'ed
 
-    // sanitize check
     std::string access_token;
     gauth_by_cookie = false;
 
     access_token = qparam.param ("access_token");
 
-    if (access_token.empty() || access_token == "null") /* GET/POST params override a cookie, if any */
+    /* GET/POST params override a cookie, if any */
+    if (access_token.empty() || access_token == "null") {
         if (request.hasCookie("eaton_token")) {
             gauth_by_cookie = true;
             access_token = request.getCookie("eaton_token").getValue();
-            if (access_token == "null") /* Avoid set but invalid cookies */
+            if (access_token == "null") { /* Avoid set but invalid cookies */
                 access_token = "";
-        }
+            }
 
-    if(request.hasHeader(tnt::httpheader::authorization)) {
-         gauth_by_cookie = false;
-        /* Auth header overrides GET/POST parameters even if header is wrong */
+            // HOTFIX on cookie
+            // restore '+' signs that was automa(gic)tically replaced by spaces
+            do {
+                std::size_t pos = access_token.find(" ");
+                if (pos == std::string::npos)
+                    break;
+                access_token.replace(pos, 1, "+");
+            } while(1);
+        }
+    }
+
+    /* Auth header overrides GET/POST parameters even if header is wrong */
+    if (request.hasHeader(tnt::httpheader::authorization)) {
+        gauth_by_cookie = false;
         access_token = request.getHeader(tnt::httpheader::authorization);
 
         if(access_token.compare(0,7,"Bearer ")) {
             access_token = "";
-        } else {
+        }
+        else {
             access_token = access_token.substr(7);
         }
     }
+
     gaccess_token = access_token;
 
     /* Go on to next module in tntnet.xml */
