@@ -35,6 +35,7 @@
 
 </%pre>
 <%request scope="global">
+bool gauth_by_cookie;
 std::string gaccess_token;
 </%request>
 <%cpp>
@@ -45,17 +46,20 @@ std::string gaccess_token;
 
     // sanitize check
     std::string access_token;
+    gauth_by_cookie = false;
 
     access_token = qparam.param ("access_token");
 
     if (access_token.empty() || access_token == "null") /* GET/POST params override a cookie, if any */
         if (request.hasCookie("eaton_token")) {
+            gauth_by_cookie = true;
             access_token = request.getCookie("eaton_token").getValue();
             if (access_token == "null") /* Avoid set but invalid cookies */
                 access_token = "";
         }
 
     if(request.hasHeader(tnt::httpheader::authorization)) {
+         gauth_by_cookie = false;
         /* Auth header overrides GET/POST parameters even if header is wrong */
         access_token = request.getHeader(tnt::httpheader::authorization);
 
