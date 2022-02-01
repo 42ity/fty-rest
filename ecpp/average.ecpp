@@ -259,10 +259,10 @@ bool database_ready;
                 http_die ("internal-error", err.c_str ());
             }
 
-            zmsg_t *recv_msg = client->recv (zuuid_str_canonical (uuid), 30);
+            zmsg_t *recv_msg = client->recv (zuuid_str_canonical (uuid), 60);
             zuuid_destroy (&uuid);
             if (!recv_msg) {
-                log_fatal ("client->recv (timeout = '30') returned NULL");
+                log_fatal ("client->recv (timeout = '60') returned NULL");
                 std::string err = TRANSLATE_ME ("client->recv () returned NULL");
                 http_die ("internal-error", err.c_str ());
             }
@@ -390,10 +390,10 @@ bool database_ready;
             http_die ("internal-error", err.c_str ());
         }
 
-        zmsg_t *recv_msg = client->recv (zuuid_str_canonical (uuid), 30);
+        zmsg_t *recv_msg = client->recv (zuuid_str_canonical (uuid), 240);
         zuuid_destroy (&uuid);
         if (!recv_msg) {
-            log_fatal ("client->recv (timeout = '30') returned NULL");
+            log_fatal ("client->recv (timeout = '240') returned NULL");
             std::string err = TRANSLATE_ME ("client->recv () returned NULL");
             http_die ("internal-error", err.c_str ());
         }
