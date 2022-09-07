@@ -1,6 +1,6 @@
 <#
  #
- # Copyright (C) 2016 - 2020 Eaton
+ # Copyright (C) 2016 - 2022 Eaton
  #
  # This program is free software; you can redistribute it and/or modify
  # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
  * \file email_feedback.ecpp
  * \author Barbora Stepankova <BarboraStepankova@Eaton.com>
  * \author Michal Vyskocil <MichalVyskocil@Eaton.com>
+ * \author Arnaud Quette <ArnaudQuette@Eaton.com>
  * \brief Sends feedback email.
  */
  #><%pre>
@@ -36,6 +37,47 @@
 #include <fstream>
 #include <libgen.h> //POSIX version of basename!!
 #include <fty_common_rest_audit_log.h>
+#include <cxxtools/jsondeserializer.h>
+
+// TODO: put in fty-common-rest
+static const char* BRANDING_INFO = "/etc/etn-ipm2-branding.conf";
+
+static cxxtools::SerializationInfo* s_load_branding_info()
+{
+    cxxtools::SerializationInfo* si = new cxxtools::SerializationInfo();
+    try {
+        std::ifstream              f(BRANDING_INFO);
+        std::string                json_string(std::istreambuf_iterator<char>(f), {});
+        std::stringstream          s(json_string);
+        cxxtools::JsonDeserializer json(s);
+        json.deserialize(*si);
+        log_info("email_feedback: load %s OK", BRANDING_INFO);
+    } catch (const std::exception& e) {
+        log_error("Error while parsing JSON: %s", e.what());
+    }
+    return si;
+}
+
+static char* s_get_branding_info(cxxtools::SerializationInfo* si, const char* key, const char* dfl)
+{
+    std::string value;
+    try {
+        si->getMember(key) >>= value;
+    } catch (const std::exception& e) {
+        log_info("Problem with getting %s in JSON: %s", key, e.what());
+        if (dfl) {
+            return strdup(dfl);
+        } else {
+            return NULL;
+        }
+    }
+    if (value.empty() && dfl) {
+        log_debug("%s: can't get value. Using default '%s'", __func__, dfl);
+        return strdup(dfl);
+    }
+    return strdup(value.c_str());
+}
+// end-of TODO: put in fty-common-rest
 
 // encode GET message for smtp agent
 static zmsg_t*
@@ -129,15 +171,26 @@ UserInfo user;
     bool attach_system_state = false;
     bool participate = false;
     unsigned _timeout = 60;
+    char *feedback_email = NULL;
     {
-
         std::string to = qparam.param ("to");
         if (to.empty ()) {
             const char* c_to = getenv ("BIOS_FEEDBACK_EMAIL");
             if (c_to)
                 to = std::string {c_to};
-            else
-                to = std::string {"EatonProductFeedback@Eaton.com"};
+            else {
+                // Get Product feedback mail from branding info
+                cxxtools::SerializationInfo* bi =  s_load_branding_info();
+                feedback_email = s_get_branding_info(bi, "feedback_email", "EatonProductFeedback@Eaton.com");
+                if (bi) {
+                    delete bi;
+                    bi = nullptr;
+                }
+                if (feedback_email) {
+                    to = std::string {feedback_email};
+                    zstr_free (&feedback_email);
+                }
+            }
         }
 
         if (to.find ('@', 0) == std::string::npos) {
@@ -147,6 +200,7 @@ UserInfo user;
         }
 
         checked_to = to;
+        logInfo("Using Product Feedback email address '{}'", checked_to.c_str());
 
         std::string _reply = qparam.param ("reply");
 
@@ -322,7 +376,7 @@ UserInfo user;
         log_error_audit ("Request CREATE email_feedback FAILED");
         http_die ("internal-error", err.c_str ());
     }
-    log_info_audit ("Request CREATE email_feedback SUCCESS");
+    log_info_audit ("Request CREATE email_feedback SUCCESS (using %s)", checked_to.c_str());
 
 </%cpp>
 {
