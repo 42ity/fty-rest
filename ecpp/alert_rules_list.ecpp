@@ -188,7 +188,7 @@ if (streq (part, "LIST")) {
         http_die ("internal-error", err.c_str ());
     }
     part = zmsg_popstr (recv_msg);
-
+    
     cxxtools::SerializationInfo si;
     si.setCategory(cxxtools::SerializationInfo::Category::Array);
 
@@ -199,7 +199,7 @@ if (streq (part, "LIST")) {
     log_debug ("Collecting the data:");
 
     while (part) {
-
+        
         const char *internalCat = "\"CAT_INTERNAL\"";
         const char *automationCat = "\"CAT_AUTOMATION\"";
 
@@ -295,7 +295,7 @@ if (streq (part, "LIST")) {
                 {
                     //ignore the change and continue
                     log_error ("Error during replacement of ename: %s", e.what());
-                }
+                }  
             }
 
             //deserialize the new data to add it in the answer json
