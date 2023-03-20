@@ -21,12 +21,13 @@
 /// @file   augtool.h
 /// @author Michal Hrusecky <MichalHrusecky@Eaton.com>
 /// @brief  Not yet documented file
+
 #pragma once
+
 #include <fty/process.h>
 #include <functional>
 #include <mutex>
 #include <string>
-
 
 /// Simple class abstraction over augtool
 class augtool
@@ -73,7 +74,9 @@ protected:
     /// Ensures we are in reasonably clean state
     augtool(bool sudoer) noexcept;
     bool init(bool sudoer) noexcept;
-    bool initialized();
+    bool initialized() noexcept;
+    void deinit() noexcept;
+    ~augtool();
 
     void load();
 };

@@ -83,7 +83,7 @@ std::string augtool::get_cmd_out(
         lines.pop_back();
 
         // built ret
-        for (auto line : lines) {
+        for (auto& line : lines) {
             auto pos = line.find_first_of("=");
             if (pos != std::string::npos) {
                 // extract value (right of '=' leaving 1st space)
@@ -117,20 +117,20 @@ augtool* augtool::get_instance(bool sudoer)
 {
     static augtool instance_sudoer(true); // privileges escalation
     static augtool instance_nopriv(false); // no escalation
-    
+
     logInfo("Augtool get_instance(), sudoer: {}", sudoer);
 
     //get the correct instance ()
     auto instance = sudoer ? &instance_sudoer : &instance_nopriv;
-    
+
     //Run the init
     logInfo("Check that Augeas is initialise");
-    
-    if(!instance->init(sudoer)) {
-        logError("Augeas could not be initilized");
+
+    if (!instance->init(sudoer)) {
+        logError("Augeas could not be initialized");
         return nullptr;
     }
-    
+
     /// refresh instance before returning it
     instance->load();
 
@@ -140,6 +140,11 @@ augtool* augtool::get_instance(bool sudoer)
 augtool::augtool(bool sudoer) noexcept
 {
     init(sudoer);
+}
+
+augtool::~augtool() noexcept
+{
+    deinit();
 }
 
 bool augtool::init(bool sudoer) noexcept
@@ -178,14 +183,19 @@ bool augtool::init(bool sudoer) noexcept
         logFatal("augtool init (sudoer: {}) caught exception (e: {})", sudoer, e.what());
     }
 
+    deinit();
+    return false;
+}
+
+void augtool::deinit() noexcept
+{
     if (m_process) {
         delete m_process;
         m_process = nullptr;
     }
-    return false;
 }
 
-bool augtool::initialized()
+bool augtool::initialized() noexcept
 {
     return (m_process != nullptr);
 }
