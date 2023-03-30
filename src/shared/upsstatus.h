@@ -30,8 +30,8 @@ namespace shared {
 /// following definition is taken as it is from network ups tool project (dummy-ups.h)
 typedef struct
 {
-    const char* status_str;   //!< ups.status string
-    int         status_value; //!< ups.status flag bit
+    const char* status_str{nullptr};    //!< ups.status string
+    int         status_value{0};        //!< ups.status flag bit
 } status_lkp_t;
 
 #define STATUS_CAL     (1 << 0)  //!< calibration

@@ -266,7 +266,7 @@ void export_asset_csv(std::ostream& out, int64_t dc_id, bool generate_bom)
             r["status"].get(status);
             lcs.add(status);
 
-            uint32_t priority;
+            uint32_t priority{1};
             r["priority"].get(priority);
             lcs.add("P" + std::to_string(priority));
 
@@ -437,7 +437,7 @@ void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
             r["status"].get(status);
             si_asset.addMember("status") <<= status;
 
-            uint32_t priority;
+            uint32_t priority{1};
             r["priority"].get(priority);
             si_asset.addMember("priority") <<= ("P" + std::to_string(priority));
 

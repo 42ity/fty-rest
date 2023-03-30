@@ -83,7 +83,7 @@ CIDRAddress::CIDRAddress(CIDRAddress&& other)
 {
     _cidr = nullptr;
     setCidrPtr(other._cidr);
-    ;
+
     other._cidr = nullptr;
 }
 
@@ -92,11 +92,10 @@ CIDRAddress& CIDRAddress::operator++()
     if (!valid())
         return *this;
 
-    struct in_addr  inaddr;
-    struct in6_addr in6addr;
-
     // do nothing for networks?
     if (cidr_get_proto(_cidr) == CIDR_IPV4) {
+        struct in_addr inaddr;
+        memset(&inaddr, 0, sizeof(inaddr));
         cidr_to_inaddr(_cidr, &inaddr);
         unsigned char* bytes = reinterpret_cast<unsigned char*>(&inaddr.s_addr);
         for (int i = 3; i >= 0; i--) {
@@ -108,6 +107,8 @@ CIDRAddress& CIDRAddress::operator++()
         setCidrPtr(cidr_from_inaddr(&inaddr));
     }
     if (cidr_get_proto(_cidr) == CIDR_IPV6) {
+        struct in6_addr in6addr;
+        memset(&in6addr, 0, sizeof(in6addr));
         cidr_to_in6addr(_cidr, &in6addr);
         for (int i = 15; i >= 0; i--) {
             in6addr.s6_addr[i]++;
@@ -125,11 +126,10 @@ CIDRAddress& CIDRAddress::operator--()
     if (!valid())
         return *this;
 
-    struct in_addr  inaddr;
-    struct in6_addr in6addr;
-
     // do nothing for networks?
     if (cidr_get_proto(_cidr) == CIDR_IPV4) {
+        struct in_addr inaddr;
+        memset(&inaddr, 0, sizeof(inaddr));
         cidr_to_inaddr(_cidr, &inaddr);
         unsigned char* bytes = reinterpret_cast<unsigned char*>(&inaddr.s_addr);
         for (int i = 3; i >= 0; i--) {
@@ -141,6 +141,8 @@ CIDRAddress& CIDRAddress::operator--()
         setCidrPtr(cidr_from_inaddr(&inaddr));
     }
     if (cidr_get_proto(_cidr) == CIDR_IPV6) {
+        struct in6_addr in6addr;
+        memset(&in6addr, 0, sizeof(in6addr));
         cidr_to_in6addr(_cidr, &in6addr);
         for (int i = 15; i >= 0; i--) {
             in6addr.s6_addr[i]--;
@@ -235,10 +237,9 @@ bool CIDRAddress::valid() const
     if (_cidr == nullptr)
         return false;
 
-    in_addr  in_addr4;
-    in6_addr in_addr6;
-
     if (cidr_get_proto(_cidr) == CIDR_IPV4) {
+        struct in_addr in_addr4;
+        memset(&in_addr4, 0, sizeof(in_addr4));
         if (cidr_to_inaddr(_cidr, &in_addr4)) {
             return (in_addr4.s_addr != 0); // 0.0.0.0 address
         } else {
@@ -246,6 +247,8 @@ bool CIDRAddress::valid() const
         }
     }
     if (cidr_get_proto(_cidr) == CIDR_IPV6) {
+        struct in6_addr in_addr6;
+        memset(&in_addr6, 0, sizeof(in_addr6));
         if (cidr_to_in6addr(_cidr, &in_addr6)) {
             for (int i = 0; i < 16; i++) {
                 if (in_addr6.s6_addr[i] != 0) {
@@ -393,9 +396,8 @@ std::string CIDRAddress::toString() const
 
 std::string CIDRAddress::toString(CIDROptions opt) const
 {
-    std::string addr       = "";
-    bool        showprefix = true;
-    char*       cstr;
+    std::string addr = "";
+    bool showprefix = true;
 
     if (opt == CIDR_WITHOUT_PREFIX) {
         showprefix = false;
@@ -409,6 +411,7 @@ std::string CIDRAddress::toString(CIDROptions opt) const
                 showprefix = false;
             }
         }
+        char* cstr = nullptr;
         if (showprefix) {
             cstr = cidr_to_str(_cidr, CIDR_NOFLAGS);
         } else {
@@ -424,12 +427,6 @@ std::string CIDRAddress::toString(CIDROptions opt) const
 
 int CIDRAddress::compare(const CIDRAddress& a2) const
 {
-    struct in_addr  inaddr1, inaddr2;
-    struct in6_addr in6addr1, in6addr2;
-    unsigned char * bytes1, *bytes2;
-    int             i;
-    int             proto1, proto2;
-
     if ((!valid()) && (!a2.valid())) {
         // both are invalid, equal
         return 0;
@@ -437,19 +434,25 @@ int CIDRAddress::compare(const CIDRAddress& a2) const
     if ((!valid()) || (!a2.valid())) {
         if (valid()) {
             // im valid, im bigger
-            return 1;
+            return +1;
         } else {
             return -1;
         }
     }
-    proto1 = cidr_get_proto(_cidr);
-    proto2 = cidr_get_proto(a2._cidr);
+
+    int proto1 = cidr_get_proto(_cidr);
+    int proto2 = cidr_get_proto(a2._cidr);
+
     if ((proto1 == CIDR_IPV4) && (proto2 == CIDR_IPV4)) {
+        struct in_addr inaddr1, inaddr2;
+        memset(&inaddr1, 0, sizeof(inaddr1));
+        memset(&inaddr2, 0, sizeof(inaddr2));
+
         cidr_to_inaddr(_cidr, &inaddr1);
         cidr_to_inaddr(a2._cidr, &inaddr2);
-        bytes1 = reinterpret_cast<unsigned char*>(&inaddr1.s_addr);
-        bytes2 = reinterpret_cast<unsigned char*>(&inaddr2.s_addr);
-        for (i = 0; i <= 3; i++) {
+        unsigned char* bytes1 = reinterpret_cast<unsigned char*>(&inaddr1.s_addr);
+        unsigned char* bytes2 = reinterpret_cast<unsigned char*>(&inaddr2.s_addr);
+        for (int i = 0; i <= 3; i++) {
             if (bytes1[i] < bytes2[i])
                 return -1; // im smaller
             if (bytes1[i] > bytes2[i])
@@ -457,12 +460,17 @@ int CIDRAddress::compare(const CIDRAddress& a2) const
         }
         return 0; // we are equal
     }
+
     if ((proto1 == CIDR_IPV6) && (proto2 == CIDR_IPV6)) {
+        struct in6_addr in6addr1, in6addr2;
+        memset(&in6addr1, 0, sizeof(in6addr1));
+        memset(&in6addr2, 0, sizeof(in6addr2));
+
         cidr_to_in6addr(_cidr, &in6addr1);
         cidr_to_in6addr(a2._cidr, &in6addr2);
-        bytes1 = reinterpret_cast<unsigned char*>(&in6addr1.s6_addr);
-        bytes2 = reinterpret_cast<unsigned char*>(&in6addr2.s6_addr);
-        for (i = 0; i <= 15; i++) {
+        unsigned char* bytes1 = reinterpret_cast<unsigned char*>(&in6addr1.s6_addr);
+        unsigned char* bytes2 = reinterpret_cast<unsigned char*>(&in6addr2.s6_addr);
+        for (int i = 0; i <= 15; i++) {
             if (bytes1[i] < bytes2[i])
                 return -1; // im smaller
             if (bytes1[i] > bytes2[i])
@@ -470,6 +478,7 @@ int CIDRAddress::compare(const CIDRAddress& a2) const
         }
         return 0; // we are equal
     }
+
     if ((proto1 == CIDR_IPV6) && (proto2 == CIDR_IPV4)) {
         // i'm IPv6, i'm bigger
         return +1;
@@ -565,20 +574,20 @@ bool CIDRList::_nextSimple(CIDRAddress& address)
 
 bool CIDRList::next(CIDRAddress& address)
 {
-    int filtered, iprefix, eprefix;
+    int filtered{0};
     do {
         filtered = 0;
         _nextSimple(address);
         if (!address.valid()) {
             break;
         }
-        iprefix = bestNetworkPrefixFor(address);
+        int iprefix = bestNetworkPrefixFor(address);
         if (iprefix == -1) {
             // out of scope
             _skipToNextPool(address);
             filtered = 1;
         } else {
-            eprefix = bestExcludePrefixFor(address);
+            int eprefix = bestExcludePrefixFor(address);
             if (eprefix > iprefix) {
                 // excluded
                 _skipToExcludeEnd(address);
@@ -668,12 +677,12 @@ CIDRAddress CIDRList::lastAddress() const
 
 CIDRAddress CIDRList::bestNetworkFor(CIDRAddress& address) const
 {
-    int         prefix, bestprefix = -1;
+    int         bestprefix = -1;
     CIDRAddress net;
 
     for (unsigned int i = 0; i < _networks.size(); i++) {
         if (_networks[i].contains(address)) {
-            prefix = _networks[i].prefix();
+            int prefix = _networks[i].prefix();
             if (prefix > bestprefix) {
                 bestprefix = prefix;
                 net        = _networks[i];
@@ -734,11 +743,11 @@ int CIDRList::bestNetworkPrefixFor(CIDRAddress& address) const
 
 CIDRAddress CIDRList::bestExcludeFor(CIDRAddress& address) const
 {
-    int         prefix, bestprefix = -1;
+    int         bestprefix = -1;
     CIDRAddress net;
     for (unsigned int i = 0; i < _excludedNetworks.size(); i++) {
         if (_excludedNetworks[i].contains(address)) {
-            prefix = _excludedNetworks[i].prefix();
+            int prefix = _excludedNetworks[i].prefix();
             if (prefix > bestprefix) {
                 bestprefix = prefix;
                 net        = _excludedNetworks[i];

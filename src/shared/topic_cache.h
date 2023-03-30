@@ -53,7 +53,7 @@ public:
 
 private:
     std::map<std::string, int> _cache;
-    size_t                     _max;
+    size_t                     _max{0};
 };
 
 } // namespace persist

@@ -130,9 +130,7 @@ UserInfo user;
             break;
         }
     }
-    
 
-     
     if (!augeas) {
         std::string err =  TRANSLATE_ME ("Cannot communicate with augtool. Is it installed or properly configured?");
         if (request.getMethod () == "POST")
