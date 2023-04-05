@@ -96,17 +96,19 @@ int Sse::consumeStream(std::string stream, std::string pattern)
 
 long int Sse::checkTokenValidity()
 {
-  long int tme;
-  long int uid;
-  long int gid;
-  char * user_name;
+  long int tme = 0;
+  long int uid = 0;
+  long int gid = 0;
+  char * user_name = nullptr;
 
   if (BiosProfile::Anonymous == tokens::get_instance()->verify_token(_token, &tme, &uid, &gid, &user_name))
   {
     log_info("sse : Token revoked or expired");
     return -1;
   }
-  free (user_name);
+  if (user_name) {
+    free (user_name);
+  }
   return tme;
 }
 

@@ -311,7 +311,7 @@ public:
     ~CIDRAddress();
 
 private:
-    CIDR* _cidr; //!< private pointer to libcidr structure
+    CIDR* _cidr{nullptr}; //!< private pointer to libcidr structure
 
     /// set cidr pointer to new value, free old one.
     /// @param newcidr (CIDR *) pointer to newly allocated CIDR structure;

@@ -979,14 +979,20 @@ static std::pair<db_a_elmnt_t, persist::asset_operation> process_row(
             log_debug("%s", e.what());
         }
 
+        bool one_link_pushed{false};
         if (one_link.src != 0) // if first column was ok
         {
             if (type == "device") {
                 one_link.type = 1; // TODO remove hardcoded constant
                 links.push_back(one_link);
+                one_link_pushed = true; // here we have potential memleaks (src_out and dest_in)
             } else {
                 log_warning("information about power sources is ignored for type '%s'", type.c_str());
             }
+        }
+        if (!one_link_pushed) {
+            if (one_link.src_out) delete[] one_link.src_out;
+            if (one_link.dest_in) delete[] one_link.dest_in;
         }
     }
 

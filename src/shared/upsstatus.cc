@@ -69,7 +69,7 @@ uint16_t upsstatus_to_int(const char* status)
     int           result = 0;
     _scoped_char* buff   = strdup(status);
     char*         b      = buff;
-    char*         e;
+    char*         e      = nullptr;
 
     if (!buff) {
         return 0;

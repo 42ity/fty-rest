@@ -23,8 +23,8 @@
  * \author Nicolas DAVIET <nicolasdaviet@Eaton.com>
  * \brief  some helpers for json message format generation
  */
-#ifndef SRC_SHARED_WEB_JSON_H_
-#define SRC_SHARED_WEB_JSON_H_
+
+#pragma once
 
 #include <malamute.h>
 #include <fty_proto.h>
@@ -36,6 +36,3 @@ std::string getJsonAlert(tntdb::Connection connection, fty_proto_t *alert);
 
 //Return an Asset with a json format
 std::string getJsonAsset(mlm_client_t * clientMlm, int64_t elemId);
-
-
-#endif // SRC_SHARED_WEB_UTILS_H_

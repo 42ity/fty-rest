@@ -32,7 +32,7 @@ static zhash_t* s_map2zhash(const std::map<std::string, std::string>& m)
     zhash_t* ret = zhash_new();
     zhash_autofree(ret);
     for (const auto& it : m) {
-        zhash_insert(ret, ::strdup(it.first.c_str()), ::strdup(it.second.c_str()));
+        zhash_insert(ret, it.first.c_str(), const_cast<char*>(it.second.c_str()));
     }
     return ret;
 }
@@ -56,6 +56,7 @@ void send_configure(
         mlm_client_destroy(&client);
         throw std::runtime_error(" mlm_client_set_producer () failed.");
     }
+
     tntdb::Connection conn = tntdb::connect(DBConn::url);
     for (const auto& oneRow : rows) {
 
@@ -108,36 +109,41 @@ void send_configure(
 
         zmsg_t* msg = fty_proto_encode_asset(aux, oneRow.first.name.c_str(), operation2str(oneRow.second).c_str(), ext);
 
+        zhash_destroy(&aux);
+        zhash_destroy(&ext);
+
         r = mlm_client_send(client, subject.c_str(), &msg);
+        zmsg_destroy(&msg);
         if (r != 0) {
             mlm_client_destroy(&client);
             throw std::runtime_error("mlm_client_send () failed.");
         }
 
-        zhash_destroy(&aux);
-        zhash_destroy(&ext);
-
         // ask fty-asset to republish so we would get UUID
         if (streq(operation2str(oneRow.second).c_str(), FTY_PROTO_ASSET_OP_CREATE) ||
             streq(operation2str(oneRow.second).c_str(), FTY_PROTO_ASSET_OP_UPDATE)) {
-            zmsg_t* republish = zmsg_new();
-            zmsg_addstr(republish, s_asset_name.c_str());
-            mlm_client_sendto(client, "asset-agent", "REPUBLISH", NULL, 5000, &republish);
+            msg = zmsg_new();
+            zmsg_addstr(msg, s_asset_name.c_str());
+            mlm_client_sendto(client, "asset-agent", "REPUBLISH", NULL, 5000, &msg);
+            zmsg_destroy(&msg);
+            // no response expected
         }
 
         // data for uptime
         if (oneRow.first.subtype_id == persist::asset_subtype::UPS) {
-            zhash_t* aux1 = zhash_new();
-
-            if (!DBUptime::get_dc_upses(dc_name.c_str(), aux1))
+            aux = zhash_new();
+            if (!DBUptime::get_dc_upses(dc_name.c_str(), aux)) {
                 log_error("Cannot read upses for dc with id = %s", dc_name.c_str());
+            }
+            zhash_update(aux, "type", const_cast<char*>("datacenter"));
 
-            zhash_update(aux1, "type", const_cast<char*>("datacenter"));
-            zmsg_t*     msg1     = fty_proto_encode_asset(aux1, dc_name.c_str(), "inventory", NULL);
-            std::string subject1 = "datacenter.unknown@";
-            subject1.append(dc_name);
-            r = mlm_client_send(client, subject1.c_str(), &msg1);
-            zhash_destroy(&aux1);
+            msg = fty_proto_encode_asset(aux, dc_name.c_str(), "inventory", NULL);
+
+            zhash_destroy(&aux);
+
+            std::string subject1 = "datacenter.unknown@" + dc_name;
+            r = mlm_client_send(client, subject1.c_str(), &msg);
+            zmsg_destroy(&msg);
             if (r != 0) {
                 mlm_client_destroy(&client);
                 throw std::runtime_error("mlm_client_send () failed.");
