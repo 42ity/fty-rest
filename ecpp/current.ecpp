@@ -20,7 +20,6 @@
  #><%pre>
 #include <cxxtools/split.h>
 #include <cxxtools/regex.h>
-#include <cxxtools/jsonserializer.h>
 #include <stdlib.h>
 #include <vector>
 #include <map>
@@ -33,6 +32,7 @@
 #include <fty_common_db_asset.h>
 #include <fty_common_asset_types.h>
 #include <fty_common_macros.h>
+#include <fty_common_json.h>
 #include <fty_proto.h>
 #include <fty_shm.h>
 
@@ -344,10 +344,5 @@ bool database_ready;
     }//for
 
     // serialize json response
-    std::ostringstream response(std::ios_base::out);
-    cxxtools::JsonSerializer serializer(response);
-    serializer.inputUtf8(true);
-    serializer.serialize(siRoot).finish();
-
-    reply.out() << response.str();
+    reply.out() << JSON::writeToString(siRoot, true);
 </%cpp>

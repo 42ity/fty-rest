@@ -27,9 +27,8 @@
     #include <fty_common_rest_helpers.h>
     #include <sstream>
     #include <functional>
-    #include <cxxtools/jsondeserializer.h>
-    #include <cxxtools/jsonserializer.h>
     #include <fty_common_rest_audit_log.h>
+    #include <fty_common_json.h>
 
     #include "db/agentstate/agentstate.h"
 
@@ -136,14 +135,12 @@
         std::string profile = request.getBody ();
         log_debug ("user profile: '''%s'''", profile.c_str ());
 
-        std::stringstream input (profile, std::ios_base::in);
         cxxtools::SerializationInfo si;
-        cxxtools::JsonDeserializer deserializer (input);
 
         std::string preferences = "";
         // check, if we got a correct JSON
         try {
-            deserializer.deserialize (si);
+            JSON::readFromString(profile, si);
             // JSON is correct, try to save it
             cxxtools::SerializationInfo *preferences_si = si.findMember ("preferences");
             if ( preferences_si == NULL ) {
@@ -175,11 +172,7 @@
                     }
                 } // unlock the config_mux
                 // save the JSON
-                std::stringstream s;
-                cxxtools::JsonSerializer js (s);
-                js.beautify (false);
-                js.serialize (*preferences_si).finish ();
-                preferences = s.str ();
+                preferences = JSON::writeToString(*preferences_si, false);
                 int rv = persist::save_agent_info (uid, preferences);
                 if ( rv != 0 ) {
                     log_debug ("my_profile: Cannot save changes");

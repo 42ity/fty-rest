@@ -27,10 +27,10 @@
 #include <fty_common_macros.h>
 #include <fty_common_mlm_pool.h>
 #include <fty_common_rest_helpers.h>
-#include <cxxtools/jsondeserializer.h>
 #include <fty_common_rest_audit_log.h>
+#include <fty_common_json.h>
 
-static zmsg_t* req_setconf (zuuid_t *uuid, std::string json)
+static zmsg_t* req_setconf (zuuid_t *uuid, const std::string& json)
 {
     zmsg_t *msg = zmsg_new ();
     zmsg_addstr (msg, "SETCONFIG");
@@ -38,10 +38,8 @@ static zmsg_t* req_setconf (zuuid_t *uuid, std::string json)
 
     //parsing json
     try {
-        std::stringstream input (json);
-        cxxtools::JsonDeserializer deserializer (input);
         cxxtools::SerializationInfo request_doc;
-        deserializer.deserialize (request_doc);
+        JSON::readFromString(json, request_doc);
 
         std::string scanType;
         if (!request_doc.getMember ("scan_type", scanType)) {

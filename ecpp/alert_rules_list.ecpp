@@ -28,9 +28,8 @@
 #include <fty_common_mlm_guards.h>
 #include <fty_common_db_dbpath.h>
 #include <fty_common_db_asset.h>
-#include <cxxtools/jsonserializer.h>
+#include <fty_common_json.h>
 #include <cxxtools/serializationinfo.h>
-#include <cxxtools/jsondeserializer.h>
 #include <vector>
 #include <string>
 #include <regex>
@@ -257,9 +256,7 @@ bool database_ready;
 
                             //unserialize the section
                             cxxtools::SerializationInfo siEname;
-                            std::stringstream input(enameData);
-                            cxxtools::JsonDeserializer deserializer(input);
-                            deserializer.deserialize(siEname);
+                            JSON::readFromString(enameData, siEname);
 
                             //recover assetLink
                             const cxxtools::SerializationInfo& siAssetLink = siEname.getMember("assetLink");
@@ -301,10 +298,8 @@ bool database_ready;
 
                             //ensure we are able to unserialize newData
                             {
-                                std::stringstream inputTmp(newData);
-                                cxxtools::JsonDeserializer deserializerTmp(inputTmp);
                                 cxxtools::SerializationInfo siTmp;
-                                deserializerTmp.deserialize(siTmp);
+                                JSON::readFromString(newData, siTmp);
                             }
 
                             data = newData;
@@ -317,9 +312,7 @@ bool database_ready;
 
                     // deserialize the new data to add it in siReply
                     cxxtools::SerializationInfo& siRule = siReply.addMember("");
-                    std::stringstream input(data);
-                    cxxtools::JsonDeserializer deserializer(input);
-                    deserializer.deserialize(siRule);
+                    JSON::readFromString(data, siRule);
                 }
 
                 part = zmsg_popstr (recv_msg); // next rule
@@ -350,7 +343,5 @@ bool database_ready;
     }//for(destination)
 
     // Here all rules are stored in siReply. Serialize it in reply.out().
-    cxxtools::JsonSerializer serializer(reply.out());
-    serializer.beautify(false);
-    serializer.serialize(siReply).finish();
+    reply.out() << JSON::writeToString(siReply, false);
 </%cpp>

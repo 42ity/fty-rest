@@ -33,8 +33,7 @@
 #include <fty_common_db.h>
 #include <fty_common.h>
 #include <fty_common_macros.h>
-
-#include <cxxtools/jsonserializer.h>
+#include <fty_common_json.h>
 
 #include "shared/data.h"
 </%pre>
@@ -73,9 +72,8 @@ bool database_ready;
 
         // Send reply.
         reply.setContentType("application/json;charset=UTF-8");
-
-        cxxtools::JsonSerializer serializer(reply.out());
-        serializer.serialize(si);
+        
+        reply.out() << JSON::writeToString(si, false);
     }
     catch (const tntdb::Error& e)
     {
