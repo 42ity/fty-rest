@@ -1,6 +1,5 @@
 #
 #    fty-rest - Common core REST API for 42ity project
-# Note: this file is customized after zproject generation, be sure to keep it
 #
 #    Copyright (C) 2014 - 2020 Eaton
 #
@@ -21,7 +20,7 @@
 Source:         fty-rest
 Section:        net
 Priority:       optional
-Maintainer:     fty-rest Developers <eatonipcopensource@eaton.com>
+Maintainer:     fty-rest Developers <opensource@eaton.com>
 Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     cmake (>=3.0),
