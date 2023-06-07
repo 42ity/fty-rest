@@ -22,6 +22,7 @@
 #include "shared/ic.h"
 #include "shared/utilspp.h"
 #include <fty_asset_activator.h>
+#include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db.h>
 #include <fty_common_macros.h>

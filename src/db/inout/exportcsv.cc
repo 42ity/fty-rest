@@ -30,6 +30,7 @@
 #include <cxxtools/csvserializer.h>
 #include <cxxtools/jsonserializer.h>
 #include <cxxtools/regex.h>
+#include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db_asset.h>
 #include <fty_common_db_dbpath.h>
