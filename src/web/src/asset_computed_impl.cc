@@ -22,6 +22,7 @@
 #include <functional>
 #include <tntdb/connection.h>
 #include <tntdb/row.h>
+#include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db_dbpath.h>
 #include <fty_common_db_asset.h>
