@@ -20,6 +20,7 @@
 
 #include "db/agentstate/agentstate.h"
 #include "shared/utils.h"
+#include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db_dbpath.h>
 #include <inttypes.h>

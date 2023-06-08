@@ -27,6 +27,7 @@
 #include <cerrno>
 #include <fstream>
 #include <fty/process.h>
+#include <fty_log.h>
 #include <fty_common.h>
 #include <magic.h>
 #include <sstream>

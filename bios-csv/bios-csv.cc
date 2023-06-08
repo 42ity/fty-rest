@@ -38,6 +38,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cxxtools/inifile.h>
+#include <fty_log.h>
 
 #include "db/inout.h"
 #include "shared/csv.h"
