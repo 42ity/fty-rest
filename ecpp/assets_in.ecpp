@@ -37,7 +37,6 @@
 #include <fty_common_json.h>
 #include "shared/utilspp.h"
 #include "db/inout.h"
-#include "cxxtools/serializationinfo.h"
 
 class Asset {
 public:

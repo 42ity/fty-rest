@@ -34,6 +34,7 @@
 #include <fty_common.h>
 #include <fty_common_macros.h>
 #include <fty_common_json.h>
+#include <cxxtools/serializationinfo.h>
 
 #include "shared/data.h"
 </%pre>

@@ -35,6 +35,7 @@
 #include <fty_common_json.h>
 #include <fty_proto.h>
 #include <fty_shm.h>
+#include <cxxtools/serializationinfo.h>
 
 #include "shared/upsstatus.h"
 #include "shared/data.h"
