@@ -29,10 +29,9 @@
 #include <fty_common_mlm_guards.h>
 #include <fty_common_rest.h>
 #include <fty_common_macros.h>
+#include <fty_common_json.h>
 #include <cxxtools/split.h>
-#include <cxxtools/jsonserializer.h>
 #include <cxxtools/serializationinfo.h>
-#include <cxxtools/jsondeserializer.h>
 
 // encode metric GET request
 static zmsg_t* s_request_LIST ( zuuid_t *uuid, const char* type)
@@ -112,9 +111,7 @@ while(template_name){
     cxxtools::SerializationInfo &si_templat_obj= si.addMember("");
     si_templat_obj.addMember("name") <<= std::string(template_name);
     cxxtools::SerializationInfo &si_templat = si_templat_obj.addMember("template");
-    std::stringstream input (templat.get());
-    cxxtools::JsonDeserializer  deserializer(input);
-    deserializer.deserialize(si_templat);
+    JSON::readFromString(templat.get(), si_templat);
     //the name should be set after the deserialization
     si_templat.setName("template");
 
@@ -133,10 +130,8 @@ while(template_name){
     templat = zmsg_popstr (msg);
     asset_list = zmsg_popstr (msg);
 }
-std::ostringstream outJsonStream(std::ios_base::out);
-cxxtools::JsonSerializer serializer(outJsonStream);
-serializer.beautify (true);
-serializer.serialize(si).finish();
-std::string json = outJsonStream.str().c_str();
+
+std::string json = JSON::writeToString(si, true);
+
 </%cpp>
 <$$ json $>

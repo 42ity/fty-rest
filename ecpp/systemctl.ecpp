@@ -25,8 +25,6 @@
  */
  #><%pre>
 #include <cxxtools/serializationinfo.h>
-#include <cxxtools/jsondeserializer.h>
-
 #include <stdexcept>
 #include <vector>
 #include <string>
@@ -35,6 +33,7 @@
 #include <fty_common_macros.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_rest_audit_log.h>
+#include <fty_common_json.h>
 #include <fty/process.h>
 #include <fty/string-utils.h>
 
@@ -184,10 +183,8 @@ UserInfo user;
                 http_die ("bad-request-document", msg.c_str ());
             }
             try {
-                std::stringstream input (request.getBody (), std::ios_base::in);
-                cxxtools::JsonDeserializer deserializer (input);
                 cxxtools::SerializationInfo si;
-                deserializer.deserialize (si);
+                JSON::readFromString(request.getBody(), si);
                 if (si.category () != cxxtools::SerializationInfo::Object) {
                     throw cxxtools::SerializationError ("Received document's root is not json object.");
                 }

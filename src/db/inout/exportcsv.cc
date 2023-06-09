@@ -28,7 +28,6 @@
 #include "shared/utilspp.h"
 #include <algorithm>
 #include <cxxtools/csvserializer.h>
-#include <cxxtools/jsonserializer.h>
 #include <cxxtools/regex.h>
 #include <fty_log.h>
 #include <fty_common.h>
@@ -377,8 +376,6 @@ void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
     }
     tntdb::Transaction transaction{conn, true};
 
-    cxxtools::JsonSerializer serializer(out);
-
     cxxtools::SerializationInfo si;
     si.setCategory(cxxtools::SerializationInfo::Category::Array);
     // 2. FOR EACH ROW from v_web_asset_element / t_bios_asset_element do ...
@@ -673,7 +670,7 @@ void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
     if (rv != 0)
         throw std::runtime_error(msg.c_str());
 
-    serializer.serialize(si).finish();
+    out << JSON::writeToString(si, false);
     transaction.commit();
 }
 
