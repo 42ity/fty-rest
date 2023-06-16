@@ -120,13 +120,13 @@ bool database_ready;
 
     // check user permissions
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
-            {BiosProfile::Dashboard, "R"},
-            {BiosProfile::Admin,     "R"}
-            };
+        {BiosProfile::Dashboard, "R"},
+        {BiosProfile::Admin,     "R"}
+    };
     CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
 
     // check if method is allowed
-    if ( !request.isMethodGET() ) {
+    if (!request.isMethodGET() ) {
         http_die ("method-not-allowed", request.getMethod().c_str());
     }
 
@@ -221,27 +221,31 @@ bool database_ready;
         std::string err = JSONIFY (e.what ());
         http_die ("internal-error", err.c_str ());
     }
+
     // do the stuff
     Assets assets;
     try {
         assets = assets_in_container(connection, checked_id, checked_types, checked_subtypes, checked_capabilities, without, status, configured);
-    } catch (std::exception &e) {
+    }
+    catch (const std::exception &e) {
         std::string err = JSONIFY (e.what());
         http_die ("internal-error", err.c_str ());
     }
 
-    if (!details.empty() && details == "true") {
-      std::set<std::string> listElements;
-      for(auto const& asset: assets) {
-        listElements.insert(asset.getId());
-      }
-      persist::export_asset_json (reply.out (), &listElements);
-    } else {
-      for(const auto& i : assets) {
+    if (details == "true") {
+        std::set<std::string> listElements;
+        for (auto const& asset : assets) {
+            listElements.insert(asset.getId());
+        }
+        persist::export_asset_json(reply.out(), &listElements);
+    }
+    else {
         cxxtools::SerializationInfo si;
-        si <<= i;
+        si.setCategory(cxxtools::SerializationInfo::Category::Array);
+        for (const auto& asset : assets) {
+            si.addMember("") <<= asset;
+        }
         reply.out() << JSON::writeToString(si, true);
-      }
     }
 
     return HTTP_OK;
