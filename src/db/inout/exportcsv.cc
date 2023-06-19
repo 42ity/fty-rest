@@ -364,9 +364,10 @@ std::string getOutletNumber(const std::string& extAttributeName)
 void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
 {
     asset_manager asset_mgr;
+
     // 0.) tntdb connection
     tntdb::Connection conn;
-    std::string       msg{"no connection to database"};
+    std::string msg{"no connection to database"};
     try {
         conn = tntdb::connect(DBConn::url);
     } catch (...) {
@@ -378,6 +379,7 @@ void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
 
     cxxtools::SerializationInfo si;
     si.setCategory(cxxtools::SerializationInfo::Category::Array);
+
     // 2. FOR EACH ROW from v_web_asset_element / t_bios_asset_element do ...
     std::function<void(const tntdb::Row&)> process_v_web_asset_element_row_json = [&conn, &si, &msg, &asset_mgr,
                                                                                    listElements](const tntdb::Row& r) {
@@ -458,8 +460,7 @@ void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
             // TODO : groups
             cxxtools::SerializationInfo& si_asset_groups = si_asset.addMember("groups");
             si_asset_groups.setCategory(cxxtools::SerializationInfo::Category::Array);
-            /*
-            // 2.5.4        groups
+            /* // 2.5.4        groups
             for (uint32_t i = 0; i != groups.size(); i++) {
                 if (i >= groups.size())
                     lcs.add("");
@@ -470,8 +471,7 @@ void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
                         throw std::runtime_error(msg.c_str());
                     lcs.add(extname);
                 }
-            }
-    */
+            } */
             std::string subtype_name = "";
             // subtype for groups is stored as ext/type
             if (type_name == "group") {
@@ -664,7 +664,7 @@ void export_asset_json(std::ostream& out, std::set<std::string>* listElements)
                 }
             }
         }
-    };
+    }; //function
 
     int rv = DBAssets::select_asset_element_all(conn, process_v_web_asset_element_row_json);
     if (rv != 0)

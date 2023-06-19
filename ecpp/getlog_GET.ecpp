@@ -805,7 +805,6 @@ UserInfo user;
                 const std::string path_name("/usr/share/bios/maintenance-report-conf.json");
                 try {
                     cxxtools::SerializationInfo si;
-
                     JSON::readFromFile(path_name, si);
 
                     std::string version; // read but not processed

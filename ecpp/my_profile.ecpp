@@ -136,12 +136,12 @@
         std::string profile = request.getBody ();
         log_debug ("user profile: '''%s'''", profile.c_str ());
 
-        cxxtools::SerializationInfo si;
+        std::string preferences; // empty
 
-        std::string preferences = "";
         // check, if we got a correct JSON
         try {
-            JSON::readFromString(profile, si);
+           cxxtools::SerializationInfo si;
+           JSON::readFromString(profile, si);
             // JSON is correct, try to save it
             cxxtools::SerializationInfo *preferences_si = si.findMember ("preferences");
             if ( preferences_si == NULL ) {

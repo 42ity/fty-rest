@@ -521,9 +521,7 @@ UserInfo user;
         ////////////////////
         else if (request.isMethodPOST ()) {
             cxxtools::SerializationInfo request_doc;
-            {
-                JSON::readFromString(request.getBody(), request_doc);
-            }
+            JSON::readFromString(request.getBody(), request_doc);
 
             if (request_doc.category() != cxxtools::SerializationInfo::Object) {
                 bios_throw("bad-request-document", "Request document must be an object.");
