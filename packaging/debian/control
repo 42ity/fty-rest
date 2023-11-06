@@ -21,7 +21,7 @@
 Source:         fty-rest
 Section:        net
 Priority:       optional
-Maintainer:     fty-rest Developers <eatonipcopensource@eaton.com>
+Maintainer:     fty-rest Developers <opensource@eaton.com>
 Standards-Version: 4.0.1.0
 Build-Depends: debhelper (>= 9),
     cmake (>=3.0),
