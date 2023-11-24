@@ -186,20 +186,23 @@ UserInfo user;
 
         if (!checked_ntp.empty ()) {
 
-            augeas->run_cmd ("set /files/etc/ntp.conf/server[1] " + checked_ntp);
+            const std::string ntpConfFile{"/etc/ntpsec/ntp.conf"}; // VS "/etc/ntp.conf"
+            const std::string ntpServiceName{"ntpsec"}; // VS "ntp"
+
+            augeas->run_cmd ("set /files" + ntpConfFile + "/server[1] " + checked_ntp);
             augeas->save ();
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "unmask", "ntp"}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"systemctl", "unmask", ntpServiceName}); !ret || *ret) {
                 log_debug ("Cannot unmask ntp service, maybe it was never masked away yet?");
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "enable", "ntp"}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"systemctl", "enable", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot enable ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "restart", "ntp"}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"systemctl", "restart", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot start ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
