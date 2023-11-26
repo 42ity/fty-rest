@@ -22,6 +22,7 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>
+#include <fty_log.h>
 #include <fty_common.h>
 #include "shared/utilspp.h"
 

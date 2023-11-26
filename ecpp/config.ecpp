@@ -30,14 +30,13 @@
 #include <cstdlib>
 #include <mutex>
 #include <cxxtools/serializationinfo.h>
-#include <cxxtools/jsondeserializer.h>
-#include <cxxtools/jsonserializer.h>
 #include <cxxtools/regex.h>
 #include <fty_common_macros.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_rest_utils_web.h>
 #include <fty_common_rest_audit_log.h>
 #include <fty_common_quote_codec.h>
+#include <fty_common_json.h>
 
 /**
  * FIXME: Move that file into the file-system and maybe split it per components.
@@ -512,9 +511,7 @@ UserInfo user;
             cxxtools::SerializationInfo si;
             si.addMember("") <<= configSi;
 
-            cxxtools::JsonSerializer serializer(reply.out());
-            serializer.beautify(true);
-            serializer.serialize(si).finish();
+            reply.out() << JSON::writeToString(si, true);
 
             return HTTP_OK;
         }
@@ -524,11 +521,7 @@ UserInfo user;
         ////////////////////
         else if (request.isMethodPOST ()) {
             cxxtools::SerializationInfo request_doc;
-            {
-                std::stringstream input (request.getBody (), std::ios_base::in);
-                cxxtools::JsonDeserializer deserializer (input);
-                deserializer.deserialize (request_doc);
-            }
+            JSON::readFromString(request.getBody(), request_doc);
 
             if (request_doc.category() != cxxtools::SerializationInfo::Object) {
                 bios_throw("bad-request-document", "Request document must be an object.");

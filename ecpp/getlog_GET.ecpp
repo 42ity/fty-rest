@@ -33,8 +33,8 @@
 #include <tnt/mimedb.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_macros.h>
+#include <fty_common_json.h>
 #include <cxxtools/serializationinfo.h>
-#include <cxxtools/jsondeserializer.h>
 #include "shared/utils.h"
 
 // For debugging server credentials in error-reports below
@@ -804,11 +804,8 @@ UserInfo user;
             {
                 const std::string path_name("/usr/share/bios/maintenance-report-conf.json");
                 try {
-                    std::ifstream in(path_name);
-                    in.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                    cxxtools::JsonDeserializer deserializer(in);
                     cxxtools::SerializationInfo si;
-                    deserializer.deserialize(si);
+                    JSON::readFromFile(path_name, si);
 
                     std::string version; // read but not processed
                     if (!si.getMember("version", version)) {

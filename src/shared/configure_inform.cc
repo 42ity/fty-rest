@@ -19,6 +19,7 @@
  */
 
 #include "shared/configure_inform.h"
+#include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db_asset_insert.h>
 #include <fty_common_db_dbpath.h>
