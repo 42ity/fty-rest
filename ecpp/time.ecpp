@@ -142,19 +142,19 @@ UserInfo user;
     if (request.isMethodPOST ()) {
 
         if (!checked_time.empty ()) {
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "stop", ntpServiceName}); !ret || *ret ) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "stop", ntpServiceName}); !ret || *ret ) {
                 std::string err =  TRANSLATE_ME ("Cannot stop ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "disable", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "disable", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot disable ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "mask", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "mask", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot mask away ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
@@ -190,17 +190,17 @@ UserInfo user;
             augeas->run_cmd ("set /files" + ntpConfFile + "/server[1] " + checked_ntp);
             augeas->save ();
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "unmask", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "unmask", ntpServiceName}); !ret || *ret) {
                 log_debug ("Cannot unmask ntp service, maybe it was never masked away yet?");
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "enable", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "enable", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot enable ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "restart", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "restart", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot start ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
