@@ -567,6 +567,7 @@ UserInfo user;
         { "release",            bALL,        true,  "/etc/release-details.json" },
         { "messages",           bALL,        true,  "/var/log/messages" },
         { "firmwares",          bALL,        true,  "/var/lib/fty/etn-mass-management/settings.cfg" },
+        { "timezone",           bALL,        true,  "/etc/fty/fty-timezone.cfg" },
     // cmd export to logfiles
         { "emc4j-bundle",       bALL,        false, "/tmp/etn-emc4j-bundle.log" },  // curl export
         { "emc4j-jdbc",         bALL,        false, "/tmp/etn-emc4j-jdbc.log" },
