@@ -120,39 +120,41 @@ UserInfo user;
     augtool* augeas = nullptr;
     int counter = 0;
 
-    while(augeas == nullptr)
+    while (!augeas)
     {
         augeas = augtool::get_instance (sudoer);
         counter++;
-        if(counter >= 10)
-        {
+        if (counter >= 10) {
             break;
         }
     }
 
     if (!augeas) {
-        std::string err =  TRANSLATE_ME ("Cannot communicate with augtool. Is it installed or properly configured?");
+        std::string err = TRANSLATE_ME ("Cannot communicate with augtool. Is it installed or properly configured?");
         if (request.getMethod () == "POST")
             log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
         http_die ("internal-error", err.c_str ());
     }
 
+    const std::string ntpConfFile{"/etc/ntpsec/ntp.conf"}; // VS "/etc/ntp.conf"
+    const std::string ntpServiceName{"ntpsec"}; // VS "ntp"
+
     if (request.isMethodPOST ()) {
 
         if (!checked_time.empty ()) {
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "stop", "ntp"}); !ret || *ret ) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "stop", ntpServiceName}); !ret || *ret ) {
                 std::string err =  TRANSLATE_ME ("Cannot stop ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "disable", "ntp"}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "disable", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot disable ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "mask", "ntp"}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "mask", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot mask away ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
@@ -185,24 +187,20 @@ UserInfo user;
         }
 
         if (!checked_ntp.empty ()) {
-
-            const std::string ntpConfFile{"/etc/ntpsec/ntp.conf"}; // VS "/etc/ntp.conf"
-            const std::string ntpServiceName{"ntpsec"}; // VS "ntp"
-
             augeas->run_cmd ("set /files" + ntpConfFile + "/server[1] " + checked_ntp);
             augeas->save ();
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "unmask", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "unmask", ntpServiceName}); !ret || *ret) {
                 log_debug ("Cannot unmask ntp service, maybe it was never masked away yet?");
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "enable", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "enable", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot enable ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
 
-            if (auto ret = fty::Process::run("sudo", {"systemctl", "restart", ntpServiceName}); !ret || *ret) {
+            if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "restart", ntpServiceName}); !ret || *ret) {
                 std::string err =  TRANSLATE_ME ("Cannot start ntp service");
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
@@ -212,14 +210,15 @@ UserInfo user;
 
     char time_out[32];
     memset(time_out, 0, sizeof(time_out));
-    if (calendar_to_datetime (time (NULL), time_out, sizeof(time_out)) == -1) {
+    int r = calendar_to_datetime (time (NULL), time_out, sizeof(time_out));
+    if (r == -1) {
         std::string err =  TRANSLATE_ME ("calendar_to_datetime () failed.");
         if (request.getMethod () == "POST")
             log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
         http_die ("internal-error", err.c_str ());
     }
 
-    std::string ntp_out = augeas->get_cmd_out ("get /files/etc/ntp.conf/server[1]");
+    std::string ntp_out = augeas->get_cmd_out ("get /files" + ntpConfFile + "/server[1]");
 
     if (request.getMethod () == "POST")
         log_info_audit ("Request CREATE time %s %s SUCCESS", checked_time.c_str (), checked_ntp.c_str ());
