@@ -1199,7 +1199,7 @@ static std::pair<db_a_elmnt_t, persist::asset_operation> process_row(
                         activationAccessor.deactivate(asset_json);
                     } catch (const std::exception& e) {
                         std::string err = JSONIFY(e.what());
-                        bios_throw("licensing-err", err.c_str())
+                        bios_throw("licensing-err", err.c_str());
                     }
                 }
 
