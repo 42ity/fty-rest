@@ -143,11 +143,11 @@ bool database_ready;
 
     sseManager.setToken(access_token);
 
-    // Every ( connection request time out / 2) minutes we close the connection 
+    // Every ( connection request time out / 2) minutes we close the connection
     // to avoid a connection timeout which would kill tntnet.
     // The client will reconnect itself.
 
-    unsigned tntRequestTimeout = tnt::TntConfig::it().maxRequestTime * 1000 / 2 ;
+    unsigned tntRequestTimeout = static_cast<unsigned>(tnt::TntConfig::it().maxRequestTime) * 1000 / 2 ;
     int64_t start = zclock_mono();
     int64_t sendNextExpTime = 0;
     int64_t diff = 0, now = 0;
@@ -210,7 +210,7 @@ bool database_ready;
                 log_error ("zpoller_wait(timeout = 10000) terminated.");
                 break;
             }
-            
+
             continue;
         }
 
@@ -223,7 +223,7 @@ bool database_ready;
             if (fty_proto_is(recv_msg)) // fty proto msg
             {
                 fty_proto_t *msgProto = fty_proto_decode (&recv_msg);
-                
+
                 if (msgProto == NULL)
                 {
                     log_debug ("msgProto is NULL");
@@ -240,7 +240,7 @@ bool database_ready;
                 }
                 else
                 {
-                    log_debug ("FTY_PROTO message not handled (id: %d)", 
+                    log_debug ("FTY_PROTO message not handled (id: %d)",
                         fty_proto_id (msgProto));
                 }
 
@@ -257,7 +257,7 @@ bool database_ready;
                 }
                 else
                 {
-                    log_debug ("%s message not handled (subject: %s)", 
+                    log_debug ("%s message not handled (subject: %s)",
                         sseManager.messageCommand().c_str(),
                         sseManager.messageSubject().c_str());
                 }
@@ -272,7 +272,7 @@ bool database_ready;
         }
         else
         {
-            log_debug ("%s message not handled", 
+            log_debug ("%s message not handled",
                 sseManager.messageCommand().c_str());
         }
 

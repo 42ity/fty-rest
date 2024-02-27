@@ -1363,9 +1363,7 @@ void load_asset_csv(
 {
     LOG_START;
 
-    std::vector<std::vector<std::string>> data;
-    cxxtools::CsvDeserializer             deserializer(input);
-    char                                  delimiter = findDelimiter(input);
+    char delimiter = findDelimiter(input);
     if (delimiter == '\x0') {
         std::string msg{TRANSLATE_ME("Cannot detect the delimiter, use comma (,) semicolon (;) or tabulator")};
         log_error("%s", msg.c_str());
@@ -1373,6 +1371,10 @@ void load_asset_csv(
         bios_throw("bad-request-document", msg.c_str());
     }
     log_debug("Using delimiter '%c'", delimiter);
+
+    std::vector<std::vector<std::string>> data;
+    cxxtools::CsvDeserializer deserializer;
+    deserializer.read(input);
     deserializer.delimiter(delimiter);
     deserializer.readTitle(false);
     deserializer.deserialize(data);

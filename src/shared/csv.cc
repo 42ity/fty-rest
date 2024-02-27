@@ -188,9 +188,7 @@ bool hasApostrof(std::istream& i)
 }
 CsvMap CsvMap_from_istream(std::istream& in)
 {
-    std::vector<std::vector<std::string>> data;
-    cxxtools::CsvDeserializer                  deserializer(in);
-    char                                       delimiter = findDelimiter(in);
+    char delimiter = findDelimiter(in);
     if (delimiter == '\x0') {
         std::string msg = TRANSLATE_ME("Cannot detect the delimiter, use comma (,) semicolon (;) or tabulator");
         log_error("%s\n", msg.c_str());
@@ -198,6 +196,10 @@ CsvMap CsvMap_from_istream(std::istream& in)
         throw std::invalid_argument(msg);
     }
     log_debug("Using delimiter '%c'", delimiter);
+
+    std::vector<std::vector<std::string>> data;
+    cxxtools::CsvDeserializer deserializer;
+    deserializer.read(in);
     deserializer.delimiter(delimiter);
     deserializer.readTitle(false);
     deserializer.deserialize(data);
