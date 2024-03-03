@@ -408,7 +408,6 @@ cxxtools::SerializationInfo loadConfig(const ConfigMap& configMap, const std::st
 
     cxxtools::SerializationInfo si;
     si <<= child;
-    si.setName("value");
 
     zconfig_destroy(&root);
     return si;
@@ -473,7 +472,7 @@ UserInfo user;
         { BiosProfile::Admin,     "CR" },
     };
 
-    if( (user.profile() == BiosProfile::Dashboard) && 
+    if( (user.profile() == BiosProfile::Dashboard) &&
         (qparam.param("key") == "BIOS_SERVER_TIMEZONE") &&
         (request.getMethod() == "GET") ) {
 
@@ -504,12 +503,11 @@ UserInfo user;
             }
 
             cxxtools::SerializationInfo configSi;
-            configSi.setName("config");
             configSi.addMember("key") <<= key;
-            configSi.addMember("") <<= loadConfig(mapping, key); // "value" key added inside loadConfig()
+            configSi.addMember("value") <<= loadConfig(mapping, key);
 
             cxxtools::SerializationInfo si;
-            si.addMember("") <<= configSi;
+            si.addMember("config") <<= configSi;
 
             reply.out() << JSON::writeToString(si, true);
 
