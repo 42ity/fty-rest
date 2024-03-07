@@ -300,7 +300,6 @@ bool database_ready;
                     }
                 }
 
-
                 { // scoping for error-handling: inspect fty-db-init (schema import) service unit status:
                     std::string proc_out1, proc_err1;
                     int lastResult = 0;
@@ -405,9 +404,6 @@ bool database_ready;
         // Go on to check connectivity below
     }
 
-</%cpp>
-{ "success" : "License version <$ clv $> accepted." }
-<%cpp>
     log_info ("license was accepted, db services were started, db credentials were refreshed");
     log_debug ("Current DB URL is: %s", DBConn::url.c_str ());
 
@@ -425,7 +421,6 @@ bool database_ready;
         conn = tntdb::connect(DBConn::url);
 
         tntdb::Statement st = conn.prepare(
-
             " SELECT * from t_empty"
 //            " SHOW databases"
         );
@@ -450,5 +445,8 @@ bool database_ready;
     uint64_t tme_dbconnok = uint64_t(::time (NULL));
     log_info ("Successfully checked that webserver can connect to database after timestamp=%" PRIu64 " ...", tme_dbconnok);
     log_info_audit ("Request CREATE license SUCCESS");
+</%cpp>
+{ "success" : "License version <$ clv $> accepted." }
+<%cpp>
 }
 </%cpp>
