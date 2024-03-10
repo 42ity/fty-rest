@@ -1374,10 +1374,11 @@ void load_asset_csv(
 
     std::vector<std::vector<std::string>> data;
     cxxtools::CsvDeserializer deserializer;
-    deserializer.read(input);
     deserializer.delimiter(delimiter);
     deserializer.readTitle(false);
+    deserializer.read(input);
     deserializer.deserialize(data);
+
     CsvMap cm{data};
     cm.deserialize();
 

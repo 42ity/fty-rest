@@ -199,10 +199,11 @@ CsvMap CsvMap_from_istream(std::istream& in)
 
     std::vector<std::vector<std::string>> data;
     cxxtools::CsvDeserializer deserializer;
-    deserializer.read(in);
     deserializer.delimiter(delimiter);
     deserializer.readTitle(false);
+    deserializer.read(in);
     deserializer.deserialize(data);
+
     CsvMap cm{data};
     cm.deserialize();
     return cm;
