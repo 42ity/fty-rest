@@ -137,9 +137,9 @@ bool database_ready;
 
     // check user permissions
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
-            {BiosProfile::Dashboard, "R"},
-            {BiosProfile::Admin,     "R"}
-            };
+        {BiosProfile::Dashboard, "R"},
+        {BiosProfile::Admin,     "R"}
+    };
     CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
 
 
@@ -191,12 +191,12 @@ bool database_ready;
     {
         // check if the element really exists, read its name
         auto asset = DBAssets::select_asset_element_web_byId (conn, asset_id);
-        if ( asset.status == 0 && asset.errsubtype == DB_ERROR_NOTFOUND)
+        if (asset.status == 0 && asset.errsubtype == DB_ERROR_NOTFOUND)
         {
             log_warning("Element id '%" PRIu32 "' is not in DB, skipping", asset_id);
             continue;
         }
-        if ( asset.status == 0 && asset.errsubtype == DB_ERROR_INTERNAL) {
+        if (asset.status == 0 && asset.errsubtype == DB_ERROR_INTERNAL) {
             std::string err =  TRANSLATE_ME ("Database failure");
             http_die ("internal-error", err.c_str ());
         }
@@ -345,5 +345,5 @@ bool database_ready;
     }//for
 
     // serialize json response
-    reply.out() << JSON::writeToString(siRoot, true);
+    reply.out() << JSON::writeToString(siRoot, false);
 </%cpp>

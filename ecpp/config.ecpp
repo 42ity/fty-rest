@@ -227,10 +227,7 @@ struct _zconfig_t {
     zfile_t *file;              //  Config file handle
 };
 
-#define freen(x) do {free(x); x = NULL;} while(0)
-
-void
-zconfig_remove_subtree (zconfig_t *self)
+void zconfig_remove_subtree (zconfig_t *self)
 {
     assert (self);
 
@@ -239,8 +236,7 @@ zconfig_remove_subtree (zconfig_t *self)
     self->child = NULL;
 }
 
-void
-zconfig_remove (zconfig_t **self_p)
+void zconfig_remove (zconfig_t **self_p)
 {
     assert (self_p);
 
@@ -268,9 +264,10 @@ zconfig_remove (zconfig_t **self_p)
     //  Destroy other properties and then self
     zlist_destroy (&self->comments);
     zfile_destroy (&self->file);
-    freen (self->name);
-    freen (self->value);
-    freen (self);
+    zstr_free(&self->name);
+    zstr_free(&self->value);
+
+    free(self);
     *self_p = NULL;
 }
 
@@ -280,7 +277,8 @@ zconfig_t* zconfig_parent (zconfig_t* self)
 }
 
 // set zconfig_t* from cxxtools::SerializationInfo
-void operator<<=(zconfig_t* root, const cxxtools::SerializationInfo& si) {
+void operator<<=(zconfig_t* root, const cxxtools::SerializationInfo& si)
+{
     while (zconfig_child(root)) {
         zconfig_t* childRoot = zconfig_child(root);
         zconfig_remove(&childRoot);
@@ -328,7 +326,8 @@ void operator<<=(zconfig_t* root, const cxxtools::SerializationInfo& si) {
 }
 
 // set cxxtools::SerializationInfo from zconfig_t*
-void operator<<=(cxxtools::SerializationInfo& si, zconfig_t* root) {
+void operator<<=(cxxtools::SerializationInfo& si, zconfig_t* root)
+{
     if (zconfig_child(root) == nullptr) {
         const char* zc_value = zconfig_value(root);
         if (!zc_value) {
@@ -378,7 +377,8 @@ void operator<<=(cxxtools::SerializationInfo& si, zconfig_t* root) {
 using ConfigEntry = std::pair<std::string, std::string>; // <filepath,treepath> pair
 using ConfigMap = std::map<std::string, ConfigEntry>;
 
-cxxtools::SerializationInfo loadConfig(const ConfigMap& configMap, const std::string& key) {
+cxxtools::SerializationInfo loadConfig(const ConfigMap& configMap, const std::string& key)
+{
     auto it = configMap.find(key);
     if (it == configMap.end()) {
         bios_throw("element-not-found", key.c_str());
@@ -413,7 +413,8 @@ cxxtools::SerializationInfo loadConfig(const ConfigMap& configMap, const std::st
     return si;
 }
 
-void saveConfig(const ConfigMap& configMap, const std::string& key, const cxxtools::SerializationInfo& in) {
+void saveConfig(const ConfigMap& configMap, const std::string& key, const cxxtools::SerializationInfo& in)
+{
     auto it = configMap.find(key);
     if (it == configMap.end()) {
         bios_throw("element-not-found", key.c_str());
@@ -445,7 +446,8 @@ void saveConfig(const ConfigMap& configMap, const std::string& key, const cxxtoo
     }
 }
 
-ConfigMap loadMapping(zconfig_t* root) {
+ConfigMap loadMapping(zconfig_t* root)
+{
     ConfigMap result;
 
     for (zconfig_t* childRoot = zconfig_child(root); childRoot; childRoot = zconfig_next(childRoot)) {
@@ -509,7 +511,7 @@ UserInfo user;
             cxxtools::SerializationInfo si;
             si.addMember("config") <<= configSi;
 
-            reply.out() << JSON::writeToString(si, true);
+            reply.out() << JSON::writeToString(si, false);
 
             return HTTP_OK;
         }

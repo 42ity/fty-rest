@@ -60,17 +60,16 @@ void operator<<=(cxxtools::SerializationInfo &si, const Asset &asset)
     si.addMember("sub_type") <<= asset.sub_type;
 }
 
-Assets
-    assets_in_container(
-        tntdb::Connection &connection,
-        a_elmnt_id_t container,
-        const std::vector<a_elmnt_tp_id_t> &types,
-        const std::vector<a_elmnt_stp_id_t> &subtypes,
-        const std::vector<std::string> &capabilities,
-        const std::string &without,
-        const std::string &status,
-        const std::string &configured
-    )
+Assets assets_in_container(
+    tntdb::Connection &connection,
+    a_elmnt_id_t container,
+    const std::vector<a_elmnt_tp_id_t> &types,
+    const std::vector<a_elmnt_stp_id_t> &subtypes,
+    const std::vector<std::string> &capabilities,
+    const std::string &without,
+    const std::string &status,
+    const std::string &configured
+)
 {
     Assets result;
     auto func = [&result, &capabilities, &connection](const tntdb::Row& row) {
@@ -94,7 +93,7 @@ Assets
             );
         }
     };
-    int rv;
+    int rv = 0;
     if (container)
         rv = DBAssets::select_assets_by_container(connection, container, types, subtypes, without, status, configured, func);
     else
@@ -245,7 +244,7 @@ bool database_ready;
         for (const auto& asset : assets) {
             si.addMember("") <<= asset;
         }
-        reply.out() << JSON::writeToString(si, true);
+        reply.out() << JSON::writeToString(si, false);
     }
 
     return HTTP_OK;
