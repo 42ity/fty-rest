@@ -826,8 +826,8 @@ UserInfo user;
 
             if (passphrase.empty()) { // fallback
                 log_warning("Encryption passphrase is not set");
-                log_warning("Use default encryption passphrase for basename '%s'", baseName.c_str());
-                passphrase = "7z4u!";
+                //log_warning("Use default encryption passphrase for basename '%s'", baseName.c_str());
+                //passphrase = "7z4u!";
             }
             if (passphrase.empty()) {
                 if (deleteLogfile) remove(baseName_logfile.c_str());
