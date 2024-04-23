@@ -1,4 +1,4 @@
-[zproject] sed'ification of original 99_end.xml (Makemodule-local.am)
+sed'ification of original 99_end.xml (Makemodule-local.am)
 
 
 ./post-process-xml.sh ./99_end.xml.original ./99_end.xml
