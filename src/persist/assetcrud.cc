@@ -86,8 +86,6 @@ zlist_t* select_asset_device_links_all(tntdb::Connection &conn,
                             set("link", link_type_id).
                             select();
         }
-        // TODO move 26 to constants
-        char buff[26];     // 10+3+3+10
 
         // Go through the selected links
         for ( auto &row: result )
@@ -110,7 +108,8 @@ zlist_t* select_asset_device_links_all(tntdb::Connection &conn,
             std::string dest_in = SRCOUT_DESTIN_IS_NULL;
             row[3].get(dest_in);
 
-            sprintf(buff, "%s:%" PRIu32 ":%s:%" PRIu32,
+            char buff[128];
+            snprintf(buff, sizeof(buff), "%s:%" PRIu32 ":%s:%" PRIu32,
                 src_out.c_str(),
                 element_id_src,
                 dest_in.c_str(),

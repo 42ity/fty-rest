@@ -88,12 +88,12 @@ iface get_iface(std::string iface)
         int fd = socket(PF_INET, SOCK_DGRAM, 0);
         if (ret.mac.empty() && ioctl(fd, SIOCGIFHWADDR, &ifr) != -1) {
             char buff[3];
-            memset(buff, 0, sizeof buff);
+            memset(buff, 0, sizeof(buff));
             for (int i = 0; i < 6; ++i) {
                 if (!ret.mac.empty()) {
                     ret.mac += ":";
                 }
-                sprintf(buff, "%02x", static_cast<unsigned char>(ifr.ifr_addr.sa_data[i]));
+                snprintf(buff, sizeof(buff), "%02x", static_cast<unsigned char>(ifr.ifr_addr.sa_data[i]));
                 ret.mac += buff;
             }
         }
