@@ -107,7 +107,6 @@ static int get_rc_info (std::string &output)
     zstr_free(&srv_type);
     zstr_free(&srv_stype);
     zstr_free(&srv_port);
-    zframe_destroy(&frame_infos);
     zhash_destroy(&infos);
 
     zmsg_destroy(&resp);
