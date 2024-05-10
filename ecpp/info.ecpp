@@ -80,14 +80,15 @@ static int get_rc_info (std::string &output)
     zhash_t *infos = zhash_unpack(frame_infos);
 
     output += "{\n";
+
     output += "\"service\" : {\n";
     output += utils::json::jsonify("name", srv_name) + ",\n";
     output += utils::json::jsonify("type", srv_type) + ",\n";
-    output += utils::json::jsonify("sub_type", srv_stype)+ ",\n";
+    output += utils::json::jsonify("sub_type", srv_stype) + ",\n";
     output += utils::json::jsonify("port", srv_port);
     output += "\n},";
-    output += "\"attributes\": {\n";
 
+    output += "\"attributes\": {\n";
     char *value = static_cast<char*>(zhash_first(infos));   // first value
     while (value)
     {
@@ -97,8 +98,8 @@ static int get_rc_info (std::string &output)
         value = static_cast<char*>(zhash_next(infos));   // next value
         if (value) output += ",\n";
     }
-
     output += "\n}";
+
     output += "\n}";
 
     zstr_free (&command);
@@ -106,6 +107,7 @@ static int get_rc_info (std::string &output)
     zstr_free(&srv_type);
     zstr_free(&srv_stype);
     zstr_free(&srv_port);
+    zframe_destroy(&frame_infos);
     zhash_destroy(&infos);
 
     zmsg_destroy(&resp);
