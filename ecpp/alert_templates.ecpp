@@ -20,7 +20,7 @@
 /*!
  \file alert_templates.ecpp
  \author Gerald Guillaume <GeraldGuillaume@Eaton.com>
- \brief  return alert rule templates  known in /usr/share/bios/fty-autoconfig
+ \brief  return alert rule templates known in /usr/share/bios/fty-autoconfig
 */
 #>
 <%pre>
@@ -48,90 +48,98 @@ static zmsg_t* s_request_LIST ( zuuid_t *uuid, const char* type)
     UserInfo user;
 </%request>
 <%cpp>
-// check user permissions
+    // check user permissions
 
-static const std::map <BiosProfile, std::string> PERMISSIONS = {
-        {BiosProfile::Dashboard, "R"},
-        {BiosProfile::Admin,     "R"}
-        };
-CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
+    static const std::map <BiosProfile, std::string> PERMISSIONS = {
+            {BiosProfile::Dashboard, "R"},
+            {BiosProfile::Admin,     "R"}
+            };
+    CHECK_USER_PERMISSIONS_OR_DIE (PERMISSIONS);
 
-std::string type = qparam.param("type");
-// type
-if (type.empty ()) {
-    type = "all";
-}
-// connect to malamute
-auto client = mlm_pool.get();
-if (!client) {
-    log_fatal ("mlm_pool.get () failed.");
-    std::string err =  TRANSLATE_ME ("mlm_pool.get () failed.");
-    http_die ("internal-error", err.c_str ());
-}
-
-ZuuidGuard uuid (zuuid_new ());
-zmsg_t *req = s_request_LIST (uuid, type.c_str());
-int rv = client->sendto ("fty-autoconfig", "rfc-evaluator-rules", 5, &req);
-zmsg_destroy(&req);
-
-if (rv == -1) {
-    log_fatal (
-            "client->sendto (address = '%s', subject = '%s', timeout = 5) failed.",
-            "fty-autoconfig", "rfc-evaluator-rules");
-    std::string err =  TRANSLATE_ME ("client->sendto () failed");
-    http_die ("internal-error", err.c_str ());
-}
-
-ZmsgGuard msg(client->recv (zuuid_str_canonical (uuid), 10));
-if (!msg) {
-    log_fatal ("client->recv (timeout = '10') returned NULL");
-    std::string err =  TRANSLATE_ME ("client->recv () returned NULL");
-    http_die ("internal-error", err.c_str ());
-}
-
-ZstrGuard result (zmsg_popstr (msg));
-if (!result || !streq (result, "LIST")) {
-    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
-    std::string err =  TRANSLATE_ME ("LIST template bad response");
-    http_die ("internal-error", err.c_str ());
-}
-
-result = zmsg_popstr (msg);
-if (!result || !streq (result, type.c_str())) {
-    log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
-    std::string err =  TRANSLATE_ME ("LIST template bad response");
-    http_die ("internal-error", err.c_str ());
-}
-cxxtools::SerializationInfo si;
-si.setCategory(cxxtools::SerializationInfo::Category::Array);
-ZstrGuard template_name (zmsg_popstr (msg));
-ZstrGuard templat (zmsg_popstr (msg));
-ZstrGuard asset_list (zmsg_popstr (msg));
-while(template_name){
-    cxxtools::SerializationInfo &si_templat_obj= si.addMember("");
-    si_templat_obj.addMember("name") <<= std::string(template_name);
-    cxxtools::SerializationInfo &si_templat = si_templat_obj.addMember("template");
-    JSON::readFromString(templat.get(), si_templat);
-    //the name should be set after the deserialization
-    si_templat.setName("template");
-
-    cxxtools::SerializationInfo &si_assets_id = si_templat_obj.addMember("assets_id");
-    si_assets_id.setCategory(cxxtools::SerializationInfo::Category::Array);
-    if (asset_list && strlen(asset_list)>0){
-       std::vector<std::string> asset_array;
-       cxxtools::split(",", std::string(asset_list), std::back_inserter(asset_array));
-       std::vector<std::string>::iterator it=asset_array.begin();
-       while ( it != asset_array.end()) {
-           si_assets_id.addMember("") <<= *it;
-           it++;
-       }
+    // type input (optional)
+    std::string type = qparam.param("type");
+    if (type.empty ()) {
+        type = "all";
     }
-    template_name = zmsg_popstr (msg);
-    templat = zmsg_popstr (msg);
-    asset_list = zmsg_popstr (msg);
-}
 
-std::string json = JSON::writeToString(si, true);
+    // connect to malamute
+    auto client = mlm_pool.get();
+    if (!client) {
+        log_fatal ("mlm_pool.get () failed.");
+        std::string err =  TRANSLATE_ME ("mlm_pool.get () failed.");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    ZuuidGuard uuid (zuuid_new ());
+    zmsg_t *req = s_request_LIST (uuid, type.c_str());
+    int rv = client->sendto ("fty-autoconfig", "rfc-evaluator-rules", 5, &req);
+    zmsg_destroy(&req);
+
+    if (rv == -1) {
+        log_fatal (
+                "client->sendto (address = '%s', subject = '%s', timeout = 5) failed.",
+                "fty-autoconfig", "rfc-evaluator-rules");
+        std::string err =  TRANSLATE_ME ("client->sendto () failed");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    ZmsgGuard msg(client->recv (zuuid_str_canonical (uuid), 10));
+    if (!msg) {
+        log_fatal ("client->recv (timeout = '10') returned NULL");
+        std::string err =  TRANSLATE_ME ("client->recv () returned NULL");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    ZstrGuard result (zmsg_popstr (msg));
+    if (!result || !streq (result, "LIST")) {
+        log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
+        std::string err =  TRANSLATE_ME ("LIST template bad response");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    result = zmsg_popstr (msg);
+    if (!result || !streq (result, type.c_str())) {
+        log_warning ("Error reply LIST template '%s', result=%s", type.c_str(), result.get());
+        std::string err =  TRANSLATE_ME ("LIST template bad response");
+        http_die ("internal-error", err.c_str ());
+    }
+
+    // handle response payload
+
+    cxxtools::SerializationInfo si;
+    si.setCategory(cxxtools::SerializationInfo::Category::Array);
+
+    ZstrGuard template_name (zmsg_popstr (msg));
+    ZstrGuard templat (zmsg_popstr (msg));
+    ZstrGuard asset_list (zmsg_popstr (msg));
+
+    while (template_name) {
+        cxxtools::SerializationInfo si_template;
+        JSON::readFromString(templat.get(), si_template);
+
+        cxxtools::SerializationInfo si_assets_id;
+        si_assets_id.setCategory(cxxtools::SerializationInfo::Category::Array);
+        if (asset_list && (strlen(asset_list) != 0)) {
+           std::vector<std::string> inames;
+           cxxtools::split(",", std::string(asset_list), std::back_inserter(inames));
+           for (const auto& iname : inames) {
+               si_assets_id.addMember("") <<= iname;
+           }
+        }
+
+        cxxtools::SerializationInfo object;
+        object.addMember("name") <<= std::string(template_name);
+        object.addMember("template") <<= si_template;
+        object.addMember("assets_id") <<= si_assets_id;
+
+        si.addMember("") <<= object;
+
+        // next
+        template_name = zmsg_popstr (msg);
+        templat = zmsg_popstr (msg);
+        asset_list = zmsg_popstr (msg);
+    }
+
+    reply.out() << JSON::writeToString(si, false);
 
 </%cpp>
-<$$ json $>
