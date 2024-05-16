@@ -57,9 +57,9 @@ Description: fty-rest shared library
  This package contains shared library for fty-rest:
  common core rest api for 42ity project
 
-# Customization over zproject-generated code follows
-# for the legacy-named metapackage to group the common
-# installation dependency for other components:
+# Customization follows for the legacy-named metapackage 
+# to group the common installation dependency for other 
+# components:
 Package: fty-rest
 Architecture: any
 Section: net
@@ -82,7 +82,6 @@ Description: grouping of end-user solution with fty-rest
  This metapackage depends on actual packages needed to implement
  the core 42ity REST API with fty-rest for end-users of a product.
 
-# Customization over zproject-generated code follows:
 Package: fty-rest-scripts
 Architecture: any
 Section: net
