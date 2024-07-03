@@ -43,7 +43,6 @@
 #include <fty_shm.h>
 #include "persist/assetcrud.h"
 #include "shared/data.h"
-#include "cleanup.h"
 #include "shared/utils.h"
 #include "shared/utilspp.h"
 
