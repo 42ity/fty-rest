@@ -26,6 +26,7 @@
 #pragma once
 
 #include "db/dbhelpers.h"
+#include "dbtypes.h"
 #include <fty_common_db_defs.h>
 #include <tntdb.h>
 

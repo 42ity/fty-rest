@@ -21,27 +21,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 /// @author Alena Chernikava <AlenaChernikava@Eaton.com>
 #pragma once
 
-#include "dbtypes.h"
-
-#include <functional>
-#include <map>
 #include <string>
-#include <tntdb/row.h>
 #include <tuple>
-#include <vector>
-
-/// helper structure for results of v_bios_measurement
-struct db_msrmnt_t
-{
-    m_msrmnt_id_t    id;
-    time_t           timestamp;
-    m_msrmnt_value_t value;
-    m_msrmnt_scale_t scale;
-    m_msrmnt_id_t    device_id;
-    std::string      units;
-    std::string      topic;
-};
-
 
 /// A type for storing basic information about device.
 ///
@@ -49,16 +30,8 @@ struct db_msrmnt_t
 /// Second -- device_name, asset element name of the device in database.
 /// Third  -- device_type_name, name of the device type in database.
 /// Forth  -- device_type_id, id of the device type in database.
+
 using device_info_t = std::tuple<uint32_t, std::string, std::string, uint32_t>;
-
-/// A type for storing basic information about powerlink.
-///
-/// First  -- src_id, asset element id of the source device.
-/// Second -- src_out, output port on the source device.
-/// Third  -- dest_id, asset element id of the destination device.
-/// Forth  -- dest_in, input port on the destination device.
-using powerlink_info_t = std::tuple<a_elmnt_id_t, std::string, a_elmnt_id_t, std::string>;
-
 
 inline uint32_t device_info_id(const device_info_t& d)
 {
@@ -80,35 +53,3 @@ inline std::string device_info_type_name(const device_info_t& d)
     return std::get<2>(d);
 }
 
-/// This function looks for a device_discovered in a monitor part which is connected with the specified asset_element in
-/// the asset part.
-///
-/// Throws exceptions: bios::MonitorCounterpartNotFound
-///                          if apropriate monitor element was not found.
-///                    bios::InternalDBError
-///                          if database error occured.
-///                    bios::ElementIsNotDevice
-///                          if specified element was not a device.
-///                    bios::NotFound
-///                          if specified asset element was not found.
-///
-/// @param url              - the connection to database.
-/// @param asset_element_id - the id of the asset_element.
-/// @return device_discovered_id - of the device connected with the asset_element.
-m_dvc_id_t convert_asset_to_monitor_old(const char* url, a_elmnt_id_t asset_element_id);
-
-
-/// This function looks for an asset_element in an asset part which is connected with the specified device_discovered in
-/// monitor part.
-///
-/// Throws exceptions: bios::NotFound
-///                          if asset element was not found.
-///                    bios::InternalDBError
-///                          if database error occured.
-///
-/// @param url                  - the connection to database.
-/// @param device_discovered_id - the id of the device_discovered.
-/// @return asset_element_id - id of the asset_element connected with the device_discovered.
-a_elmnt_id_t convert_monitor_to_asset(const char* url, m_dvc_id_t discovered_device_id);
-
-int convert_monitor_to_asset_safe(const char* url, m_dvc_id_t discovered_device_id, a_elmnt_id_t* asset_element_id);
