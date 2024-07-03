@@ -39,7 +39,6 @@
 #include "persist/assetcrud.h"
 #include "persist/monitor.h"
 #include "persist/persist_error.h"
-#include "cleanup.h"
 
 zlist_t* select_asset_device_links_all(tntdb::Connection &conn,
                 a_elmnt_id_t device_id, a_lnk_tp_id_t link_type_id)

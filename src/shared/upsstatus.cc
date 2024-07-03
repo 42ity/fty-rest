@@ -25,7 +25,6 @@
  * \brief Not yet documented file
  */
 #include "shared/upsstatus.h"
-#include "cleanup.h"
 #include "shared/utils.h"
 #include <iostream>
 #include <string.h>
@@ -67,7 +66,7 @@ uint16_t upsstatus_single_status_to_int(char* status)
 uint16_t upsstatus_to_int(const char* status)
 {
     int           result = 0;
-    _scoped_char* buff   = strdup(status);
+    char*         buff   = strdup(status);
     char*         b      = buff;
     char*         e      = nullptr;
 
@@ -83,7 +82,7 @@ uint16_t upsstatus_to_int(const char* status)
         result |= upsstatus_single_status_to_int(b);
         b = e;
     }
-    FREE0(buff)
+    free(buff);
     return uint16_t(result);
 }
 

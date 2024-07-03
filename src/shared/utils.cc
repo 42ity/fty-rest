@@ -19,10 +19,10 @@
  */
 
 #include "shared/utils.h"
-#include "cleanup.h"
 #include <assert.h>
 #include <fty_common.h>
 #include <mutex>
+#include <cmath>
 
 std::mutex timegm_mux;  // Mutex for my_timegm function which is not thread-safe
 
@@ -78,7 +78,7 @@ int64_t average_step_seconds(const char* step)
         default:
             return -1;
     }
-    _scoped_char* substr = strndup(step, strlen(step) - 1);
+    char* substr = strndup(step, strlen(step) - 1);
     if (!substr)
         return -1;
     int number = atoi(substr);

@@ -24,7 +24,6 @@
     \author Alena Chernikava <AlenaChernikava@Eaton.com>
 */
 
-#include "cleanup.h"
 #include "db/asset_general.h"
 #include "db/dbhelpers.h"
 #include "db/inout.h"
@@ -49,6 +48,9 @@
 #include <tntdb/connect.h>
 #include <unordered_set>
 
+static void _destroy_zhash(zhash_t** h) { zhash_destroy(h); }
+#define _cleanup_(x) __attribute__((cleanup(x)))
+#define _scoped_zhash_t _cleanup_(_destroy_zhash) zhash_t
 
 #define AGENT_ASSET_ACTIVATOR "etn-licensing-credits"
 
