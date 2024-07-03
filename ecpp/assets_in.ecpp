@@ -36,6 +36,7 @@
 #include <fty_common_macros.h>
 #include <fty_common_json.h>
 #include "shared/utilspp.h"
+#include "dbtypes.h"
 #include "db/inout.h"
 
 class Asset {

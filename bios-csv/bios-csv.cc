@@ -40,6 +40,10 @@
 #include <cxxtools/inifile.h>
 #include <fty_log.h>
 
+#include <sys/types.h>
+#include <unistd.h>
+#include <pwd.h>
+
 #include "db/inout.h"
 #include "shared/csv.h"
 
@@ -61,6 +65,20 @@ s_die_usage()
 {
     s_usage();
     exit(EXIT_FAILURE);
+}
+
+static int
+get_priority(const std::string& s)
+{
+    if (s.size() > 2)
+        return 5;
+
+    for (size_t i = 0; i != 2; i++) {
+        if (s[i] >= 49 && s[i] <= 53) {
+            return s[i] - 48;
+        }
+    }
+    return 5;
 }
 
 static bool
@@ -106,8 +124,8 @@ s_compare(
                 bool equals = false;
                 if (title == "priority")
                 {
-                    auto p1 = persist::get_priority(c1.get(line, title));
-                    auto p2 = persist::get_priority(c2.get(line, title));
+                    auto p1 = get_priority(c1.get(line, title));
+                    auto p2 = get_priority(c2.get(line, title));
                     equals = (p1 == p2);
                 }
                 else if (title == "type" || title == "sub_type" || title == "status") {

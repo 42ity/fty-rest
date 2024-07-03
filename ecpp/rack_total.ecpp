@@ -41,7 +41,6 @@
 #include <fty_common_macros.h>
 #include <fty_common_utf8.h>
 #include <fty_shm.h>
-#include "persist/assetcrud.h"
 #include "shared/data.h"
 #include "shared/utils.h"
 #include "shared/utilspp.h"

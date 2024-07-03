@@ -19,12 +19,14 @@
  */
 
 #include "csv.h"
-#include "persist/assetcrud.h"
-#include <algorithm>
-#include <cxxtools/csvdeserializer.h>
+
 #include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_macros.h>
+
+#include <cxxtools/csvdeserializer.h>
+#include <cxxtools/convert.h>
+#include <algorithm>
 #include <iostream>
 #include <set>
 #include <sstream>

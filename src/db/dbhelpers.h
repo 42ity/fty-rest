@@ -22,7 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 
 #include "dbtypes.h"
-#include <czmq.h>
+
 #include <functional>
 #include <map>
 #include <string>
@@ -96,9 +96,6 @@ inline std::string device_info_type_name(const device_info_t& d)
 /// @param asset_element_id - the id of the asset_element.
 /// @return device_discovered_id - of the device connected with the asset_element.
 m_dvc_id_t convert_asset_to_monitor_old(const char* url, a_elmnt_id_t asset_element_id);
-
-/// the same as previos. but c-style error handling
-int convert_asset_to_monitor_safe_old(const char* url, a_elmnt_id_t asset_element_id, m_dvc_id_t* device_id);
 
 
 /// This function looks for an asset_element in an asset part which is connected with the specified device_discovered in
