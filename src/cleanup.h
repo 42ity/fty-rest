@@ -23,7 +23,6 @@
 /// @brief Not yet documented file
 #pragma once
 
-#include "app.h"
 #include "bios_agent.h"
 #include "ymsg.h"
 #include <czmq.h>
@@ -37,11 +36,6 @@ static inline void _destroy_zmsg(zmsg_t** self_p)
 static inline void _destroy_ymsg(ymsg_t** self_p)
 {
     ymsg_destroy(self_p);
-}
-
-static inline void _destroy_app(app_t** self_p)
-{
-    app_destroy(self_p);
 }
 
 static inline void _destroy_bios_agent(bios_agent_t** self_p)
@@ -113,7 +107,6 @@ static inline void _destroy_mlm_client(mlm_client_t** self_p)
 
 #define _scoped_zmsg_t       _cleanup_(_destroy_zmsg) zmsg_t
 #define _scoped_ymsg_t       _cleanup_(_destroy_ymsg) ymsg_t
-#define _scoped_app_t        _cleanup_(_destroy_app) app_t
 #define _scoped_bios_agent_t _cleanup_(_destroy_bios_agent) bios_agent_t
 
 #define _scoped_zactor_t     _cleanup_(_destroy_zactor) zactor_t
