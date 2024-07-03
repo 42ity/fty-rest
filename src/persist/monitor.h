@@ -23,7 +23,6 @@
 /// @author Alena Chernikava <AlenaChernikava@Eaton.com>
 #pragma once
 
-#include "db/dbhelpers.h"
 #include <fty_common_db.h>
 #include <tntdb/connect.h>
 

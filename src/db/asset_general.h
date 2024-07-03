@@ -25,12 +25,28 @@
 
 #pragma once
 
-#include "db/dbhelpers.h"
 #include "dbtypes.h"
 #include <fty_common_db_defs.h>
 #include <tntdb.h>
+#include <tuple>
 
 #define RC0_INAME "rackcontroller-0"
+
+
+/// A type for storing basic information about device.
+///
+/// First  -- id, asset element id of the device in database.
+/// Second -- device_name, asset element name of the device in database.
+/// Third  -- device_type_name, name of the device type in database.
+/// Forth  -- device_type_id, id of the device type in database.
+
+using device_info_t = std::tuple<uint32_t, std::string, std::string, uint32_t>;
+
+inline uint32_t    device_info_id(const device_info_t& d)        { return std::get<0>(d); }
+inline std::string device_info_name(const device_info_t& d)      { return std::get<1>(d); }
+inline std::string device_info_type_name(const device_info_t& d) { return std::get<2>(d); }
+inline uint32_t    device_info_type_id(const device_info_t& d)   { return std::get<3>(d); }
+
 
 namespace persist {
 
