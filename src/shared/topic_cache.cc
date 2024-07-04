@@ -29,22 +29,23 @@
 namespace persist {
 
 bool TopicCache::has(const std::string& topic_name) const {
-    if (_cache.count(topic_name) == 1)
+    if (_cache.count(topic_name) == 1) {
         return true;
-
+    }
     return false;
 }
 
 void TopicCache::add(const std::string& topic_name, int topic_id) {
-    if (_max <= _cache.size())
-    {
+    if (_max <= _cache.size()) {
         _cache.clear();
     }
     _cache.insert(std::make_pair (topic_name, topic_id));
 }
 
 int TopicCache::get(const std::string& topic_name) {
-    if(!has(topic_name))return 0;
+    if (!has(topic_name)) {
+        return 0;
+    }
     return _cache[topic_name];
 }
 

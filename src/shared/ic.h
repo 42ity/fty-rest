@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <czmq.h>
+#include <cstddef>
 
 /// Converts buffer buf of bytes into other encoding
 ///

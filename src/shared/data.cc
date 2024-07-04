@@ -325,8 +325,8 @@ struct CheckException : public std::runtime_error
     {
     }
 
-    uint32_t   id;
-    int        errType;
+    uint32_t   id{0};
+    int        errType{0};
     db_err_nos errSubType;
 };
 

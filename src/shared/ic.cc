@@ -25,10 +25,11 @@
 #include <iconv.h>
 #include <stdlib.h>
 #include <string.h>
+#include <czmq.h>
 
 static int s_convert(iconv_t id, char* inbuf, size_t* bytes, char* outbuf, size_t* capacity)
 {
-    size_t converted;
+    size_t converted = 0;
 
     while (*bytes) {
         converted = iconv(id, &inbuf, bytes, &outbuf, capacity);
@@ -59,7 +60,7 @@ char* ic_convert(char* buf, size_t bytes, const char* from, const char* to, size
         iconv_close(iconv_cd);
         return NULL;
     }
-    size_t outlen;
+    size_t outlen = 0;
 
     while (1) {
         char*  inbuf  = buf;
