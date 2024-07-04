@@ -22,9 +22,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include <czmq.h>
-#include <map>
 #include <sstream>
+#include <map>
 #include <string>
 
 namespace utils::math {
