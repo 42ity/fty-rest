@@ -66,7 +66,7 @@ private:
     std::map<std::string, int>        _assetsOfDatacenter;
     std::map<std::string, int>        _assetsWithNoLocation;
     std::map<std::string, AlertState> _alertStates;
-    uint32_t                          _datacenter_id;
+    uint32_t                          _datacenter_id{0};
     mlm_client_t*                     _clientMlm = NULL;
     zsock_t*                          _pipe      = NULL;
     zpoller_t*                        _poller    = NULL;
