@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include <malamute.h>
 #include <fty_proto.h>
 #include <string>
 #include <tntdb.h>
@@ -35,4 +34,4 @@
 std::string getJsonAlert(tntdb::Connection connection, fty_proto_t *alert);
 
 //Return an Asset with a json format
-std::string getJsonAsset(mlm_client_t * clientMlm, int64_t elemId);
+std::string getJsonAsset(int64_t elemId);

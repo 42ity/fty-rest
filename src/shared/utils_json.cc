@@ -23,6 +23,7 @@
 #include "shared/utils.h"
 #include "shared/utilspp.h"
 #include "web/src/asset_computed_impl.h"
+
 #include <cmath>
 #include <fty_common.h>
 #include <fty_common_db_asset.h>
@@ -34,14 +35,14 @@
 struct Outlet
 {
     std::string label;
-    bool        label_r;
+    bool        label_r{false};
     std::string type;
-    bool        type_r;
+    bool        type_r{false};
     std::string group;
-    bool        group_r;
+    bool        group_r{false};
 };
 
-std::string getOutletNumber(const std::string& extAttributeName)
+static std::string getOutletNumber(const std::string& extAttributeName)
 {
     auto        dot1    = extAttributeName.find_first_of(".");
     std::string oNumber = extAttributeName.substr(dot1 + 1);
@@ -50,126 +51,49 @@ std::string getOutletNumber(const std::string& extAttributeName)
     return oNumber;
 }
 
-// encode metric GET request
-
-zmsg_t* s_rt_encode_GET(const char* name)
+static double s_rack_realpower_nominal(const std::string& name)
 {
-    static const char* method = "GET";
+    double ret = 0.0;
 
-    zuuid_t* uuid = zuuid_new();
-    zmsg_t*  msg  = zmsg_new();
-
-    zmsg_pushmem(msg, zuuid_data(uuid), zuuid_size(uuid));
-    zuuid_destroy(&uuid);
-    zmsg_addstr(msg, method);
-    zmsg_addstr(msg, name);
-    return msg;
-}
-
-double s_rack_realpower_nominal(mlm_client_t* /*client*/, const std::string& name)
-{
-    double      ret = 0.0;
     std::string value;
     if (fty::shm::read_metric_value(name, "realpower.nominal", value) != 0) {
         log_warning("No realpower.nominal for '%s'", name.c_str());
-    } else {
+    }
+    else {
         try {
             ret = std::stod(value);
         } catch (const std::exception& e) {
             log_error(
-                "the metric returned a string that does not encode a double value: '%s'. Defaulting to 0.0 value.",
+                "the metric returned a string that does not encode a double value: '%s'. Defaulting to NaN value.",
                 value.c_str());
             ret = std::nan("");
         }
     }
 
     return ret;
-    //
-    //  zmsg_t *request = s_rt_encode_GET(name.c_str());
-    //  mlm_client_sendto(client, "fty-metric-cache", "latest-rt-data", NULL, 1000, &request);
-    //
-    //  //TODO: this intentionally wait forewer, to be fixed by proper client pool
-    //  zmsg_t *msg = mlm_client_recv(client);
-    //  if (!msg)
-    //    throw std::runtime_error("no reply from broker!");
-    //
-    //  //TODO: check if we have right uuid, to be fixed by proper client pool
-    //  char *uuid = zmsg_popstr(msg);
-    //  zstr_free(&uuid);
-    //
-    //  char *result = zmsg_popstr(msg);
-    //  if (NULL == result || !streq(result, "OK"))
-    //  {
-    //    log_warning("Error reply for device '%s', result=%s", name.c_str(), result);
-    //    if (NULL != result)
-    //    {
-    //      zstr_free(&result);
-    //    }
-    //    if (NULL != msg)
-    //    {
-    //      zmsg_destroy(&msg);
-    //    }
-    //    return ret;
-    //  }
-    //
-    //  char *element = zmsg_popstr(msg);
-    //  if (!streq(element, name.c_str()))
-    //  {
-    //    log_warning("element name (%s) from message differs from requested one (%s), ignoring", element,
-    //    name.c_str()); zstr_free(&element); zmsg_destroy(&msg); return ret;
-    //  }
-    //  zstr_free(&element);
-    //
-    //  zmsg_t *data = zmsg_popmsg(msg);
-    //  while (data)
-    //  {
-    //    fty_proto_t *bmsg = fty_proto_decode(&data);
-    //    if (!bmsg)
-    //    {
-    //      log_warning("decoding fty_proto_t failed");
-    //      continue;
-    //    }
-    //
-    //    if (!streq(fty_proto_type(bmsg), "realpower.nominal"))
-    //    {
-    //      fty_proto_destroy(&bmsg);
-    //      data = zmsg_popmsg(msg);
-    //      continue;
-    //    }
-    //    else
-    //    {
-    //      ret = std::stod(fty_proto_value(bmsg));
-    //      fty_proto_destroy(&bmsg);
-    //      break;
-    //    }
-    //  }
-    //  zmsg_destroy(&msg);
-    //  return ret;
 }
 
 std::string getJsonAlert(tntdb::Connection connection, fty_proto_t* alert)
 {
-    std::string json = "";
-
-    char     buff[64];
+    char     buff[64] = "";
     uint64_t timestamp = fty_proto_aux_number(alert, "ctime", fty_proto_time(alert));
     int      rv        = calendar_to_datetime(time_t(timestamp), buff, 64);
     if (rv == -1) {
         log_error("can't convert %" PRIu64 "to calendar time, skipping element '%s'", timestamp, fty_proto_rule(alert));
-        return json;
+        return "";
     }
 
     auto asset_element = DBAssets::select_asset_element_web_byName(connection, fty_proto_name(alert));
     if (asset_element.status != 1) {
         log_error("%s", asset_element.msg.c_str());
-        return json;
+        return "";
     }
 
     log_debug("DBAssets::id_to_name_ext_name ('%d')", asset_element.item.id);
     std::pair<std::string, std::string> asset_element_names = DBAssets::id_to_name_ext_name(asset_element.item.id);
     if (asset_element_names.first.empty() && asset_element_names.second.empty()) {
         log_error("internal-error : Database error");
-        return json;
+        return "";
     }
 
     // TBD Workaround for IPMPROG-1729: Replace all occurrences of ename value with correct friendly name
@@ -189,6 +113,7 @@ std::string getJsonAlert(tntdb::Connection connection, fty_proto_t* alert)
         return res;
     };
 
+    std::string json;
     json += "{";
 
     json += utils::json::jsonify("timestamp", buff) + ",";
@@ -202,14 +127,14 @@ std::string getJsonAlert(tntdb::Connection connection, fty_proto_t* alert)
     json += utils::json::jsonify("description", updateDescription(fty_proto_description(alert)));
     const char* md = fty_proto_metadata(alert); // assume json object payload if !empty
     json += "," + utils::json::jsonify("metadata", ((md && (*md)) ? md : "{}"));
+
     json += "}";
 
     return json;
 }
 
-std::string getJsonAsset(mlm_client_t* clientMlm, int64_t elemId)
+std::string getJsonAsset(int64_t elemId)
 {
-    std::string json;
     // Get informations from database
     asset_manager asset_mgr;
     auto          tmp = asset_mgr.get_item1(uint32_t(elemId));
@@ -222,7 +147,7 @@ std::string getJsonAsset(mlm_client_t* clientMlm, int64_t elemId)
             default:
                 log_error("get_item1 Internal database error");
         }
-        return json;
+        return "";
     }
 
     std::pair<std::string, std::string> parent_names    = DBAssets::id_to_name_ext_name(tmp.item.basic.parent_id);
@@ -232,10 +157,11 @@ std::string getJsonAsset(mlm_client_t* clientMlm, int64_t elemId)
     std::pair<std::string, std::string> asset_names = DBAssets::id_to_name_ext_name(tmp.item.basic.id);
     if (asset_names.first.empty() && asset_names.second.empty()) {
         log_error("Database failure");
-        return json;
+        return "";
     }
     std::string asset_ext_name = asset_names.second;
 
+    std::string json;
     json += "{";
 
     json += utils::json::jsonify("id", tmp.item.basic.name) + ",";
@@ -286,6 +212,7 @@ std::string getJsonAsset(mlm_client_t* clientMlm, int64_t elemId)
             i++;
         }
     }
+
     json += "]";
 
     // Device is special element with more attributes
@@ -568,7 +495,7 @@ std::string getJsonAsset(mlm_client_t* clientMlm, int64_t elemId)
     json += ", \"computed\" : {";
     if (persist::is_rack(tmp.item.basic.type_id)) {
         int    freeusize         = free_u_size(tmp.item.basic.id);
-        double realpower_nominal = s_rack_realpower_nominal(clientMlm, tmp.item.basic.name.c_str());
+        double realpower_nominal = s_rack_realpower_nominal(tmp.item.basic.name.c_str());
 
         json += "\"freeusize\":" + (freeusize >= 0 ? std::to_string(freeusize) : "null");
         json +=

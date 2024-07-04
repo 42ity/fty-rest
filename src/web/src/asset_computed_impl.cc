@@ -19,6 +19,9 @@
  */
 
 #include "web/src/asset_computed_impl.h"
+#include "shared/utils.h"
+#include "dbtypes.h"
+
 #include <functional>
 #include <tntdb/connection.h>
 #include <tntdb/row.h>
@@ -26,9 +29,6 @@
 #include <fty_common.h>
 #include <fty_common_db_dbpath.h>
 #include <fty_common_db_asset.h>
-
-#include "shared/utils.h"
-#include "dbtypes.h"
 
 static int
 s_get_devices_usize(

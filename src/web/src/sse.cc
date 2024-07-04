@@ -372,7 +372,7 @@ std::string Sse::changeFtyProtoAsset2Json(fty_proto_t *asset)
     std::string jsonPayload = "";
     if (json.empty())
     {
-      jsonPayload = getJsonAsset(_clientMlm, elemId);
+      jsonPayload = getJsonAsset(elemId);
     }
 
     if (!jsonPayload.empty())
