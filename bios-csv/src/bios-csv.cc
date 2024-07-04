@@ -37,14 +37,18 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include <cxxtools/inifile.h>
 #include <fty_log.h>
 
-#include "db/inout.h"
-#include "shared/csv.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <pwd.h>
 
-static void
-s_usage()
+#include <cxxtools/inifile.h>
+
+#include "db/inout.h"
+#include "csv.h"
+
+static void usage()
 {
     std::cerr << "Usage: bios-csv [export|compare]" << std::endl;
     std::cerr << "       export     export csv file from current DB" << std::endl;
@@ -56,20 +60,29 @@ s_usage()
     std::cerr << "      ~/.my.cnf   read client/name, client/password if variables not specified" << std::endl;
 }
 
-static void
-s_die_usage()
+static void die_usage()
 {
-    s_usage();
+    usage();
     exit(EXIT_FAILURE);
 }
 
-static bool
-s_compare(
-        const char* file1,
-        const char* file2)
+static int get_priority(const std::string& s)
 {
-    std::ifstream   sfile1{file1};
-    std::ifstream   sfile2{file2};
+    if (s.size() > 2)
+        return 5;
+
+    for (size_t i = 0; i != 2; i++) {
+        if (s[i] >= 49 && s[i] <= 53) {
+            return s[i] - 48;
+        }
+    }
+    return 5;
+}
+
+static bool compare(const char* file1, const char* file2)
+{
+    std::ifstream sfile1{file1};
+    std::ifstream sfile2{file2};
 
     shared::CsvMap c1 = shared::CsvMap_from_istream(sfile1);
     shared::CsvMap c2 = shared::CsvMap_from_istream(sfile2);
@@ -106,8 +119,8 @@ s_compare(
                 bool equals = false;
                 if (title == "priority")
                 {
-                    auto p1 = persist::get_priority(c1.get(line, title));
-                    auto p2 = persist::get_priority(c2.get(line, title));
+                    auto p1 = get_priority(c1.get(line, title));
+                    auto p2 = get_priority(c2.get(line, title));
                     equals = (p1 == p2);
                 }
                 else if (title == "type" || title == "sub_type" || title == "status") {
@@ -151,8 +164,7 @@ s_compare(
     return true;
 }
 
-void
-s_load_name_password ()
+static void load_name_password ()
 {
     if (::getenv ("DB_USER") && ::getenv ("DB_PASSWD"))
         return;
@@ -177,29 +189,30 @@ s_load_name_password ()
 
 int main(int argc, char** argv)
 {
-    if (argc <= 1)
-        s_die_usage();
+    if (argc <= 1) {
+        die_usage();
+    }
 
-    s_load_name_password ();
+    load_name_password ();
 
     try {
-
         if (!strcmp(argv[1], "export"))
         {
            // log_set_level(LOG_WARNING); //to suppress messages from src/db
             persist::export_asset_csv(std::cout);
         }
-        else
-        if (!strcmp(argv[1], "compare"))
+        else if (!strcmp(argv[1], "compare"))
         {
             //log_set_level(LOG_INFO);
-            if (argc < 4)
-                s_die_usage();
+            if (argc < 4) {
+                die_usage();
+            }
 
             const char* file1 = argv[2];
             const char* file2 = argv[3];
-            if (!s_compare(file1, file2))
+            if (!compare(file1, file2)) {
                 exit(EXIT_FAILURE);
+            }
         }
         else
         {
@@ -208,13 +221,13 @@ int main(int argc, char** argv)
         }
     }
     catch (const std::exception& e) {
-        log_error ("%s", e.what());
+        log_error ("Exception: %s", e.what());
         exit (EXIT_FAILURE);
     }
     catch (...) {
         log_error ("Unknown exception");
         exit (EXIT_FAILURE);
     }
-    exit(EXIT_SUCCESS);
 
+    exit(EXIT_SUCCESS);
 }

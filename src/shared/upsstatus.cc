@@ -25,18 +25,37 @@
  * \brief Not yet documented file
  */
 #include "shared/upsstatus.h"
-#include "cleanup.h"
 #include "shared/utils.h"
 #include <iostream>
 #include <string.h>
 
-namespace shared {
+/// following definition is taken as fty-nut/lib/src/ups_status.cc
 
-/* following definition is taken as it is from network ups tool project (dummy-ups.h)*/
+#define STATUS_CAL     (1 << 0)  //!< calibration
+#define STATUS_TRIM    (1 << 1)  //!< SmartTrim
+#define STATUS_BOOST   (1 << 2)  //!< SmartBoost
+#define STATUS_OL      (1 << 3)  //!< on line
+#define STATUS_OB      (1 << 4)  //!< on battery
+#define STATUS_OVER    (1 << 5)  //!< overload
+#define STATUS_LB      (1 << 6)  //!< low battery
+#define STATUS_RB      (1 << 7)  //!< replace battery
+#define STATUS_BYPASS  (1 << 8)  //!< on bypass
+#define STATUS_OFF     (1 << 9)  //!< ups is off
+#define STATUS_CHRG    (1 << 10) //!< charging
+#define STATUS_DISCHRG (1 << 11) //!< discharging
+#define STATUS_HB      (1 << 12) //!< High battery
+#define STATUS_FSD     (1 << 13) //!< Forced Shutdown
 
 /**
  * Status lookup table
  */
+
+typedef struct
+{
+    const char* status_str{nullptr};    //!< ups.status string
+    int         status_value{0};        //!< ups.status flag bit
+} status_lkp_t;
+
 status_lkp_t status_info[] = {
     {"CAL", STATUS_CAL}, {"TRIM", STATUS_TRIM}, {"BOOST", STATUS_BOOST},
     {"OL", STATUS_OL},   {"OB", STATUS_OB},     {"OVER", STATUS_OVER},
@@ -44,53 +63,8 @@ status_lkp_t status_info[] = {
     {"OFF", STATUS_OFF}, {"CHRG", STATUS_CHRG}, {"DISCHRG", STATUS_DISCHRG},
     {"HB", STATUS_HB},   {"FSD", STATUS_FSD},   {"NULL", 0},
 };
-/* previous definition is taken as it is from network ups tool project (dummy-ups.h)*/
 
-
-uint16_t upsstatus_single_status_to_int(char* status)
-{
-    if (!status)
-        return 0;
-    int i = 0;
-    while (true) {
-        if (status_info[i].status_value == 0) {
-            // end of array, not found
-            return 0;
-        }
-        if (strncasecmp(status_info[i].status_str, status, strlen(status_info[i].status_str)) == 0) {
-            return uint16_t(status_info[i].status_value);
-        }
-        i++;
-    }
-}
-
-uint16_t upsstatus_to_int(const char* status)
-{
-    int           result = 0;
-    _scoped_char* buff   = strdup(status);
-    char*         b      = buff;
-    char*         e      = nullptr;
-
-    if (!buff) {
-        return 0;
-    }
-    while (b) {
-        e = strchr(b, ' ');
-        if (e) {
-            *e = 0;
-            e++;
-        }
-        result |= upsstatus_single_status_to_int(b);
-        b = e;
-    }
-    FREE0(buff)
-    return uint16_t(result);
-}
-
-uint16_t upsstatus_to_int(const std::string& status)
-{
-    return upsstatus_to_int(status.c_str());
-}
+namespace shared {
 
 std::string upsstatus_to_string(uint16_t status)
 {
@@ -98,20 +72,11 @@ std::string upsstatus_to_string(uint16_t status)
     int         bit    = 1;
     for (unsigned int i = 0; i < sizeof(status_info) / sizeof(status_lkp_t) - 1; ++i) {
         if (status & bit) {
-            if (result.length()) {
-                result += " ";
-            }
-            result += status_info[i].status_str;
+            result += std::string(result.empty() ? "" : " ") + status_info[i].status_str;
         }
         bit <<= 1;
     }
     return result;
 }
-
-std::string upsstatus_to_string(std::string status)
-{
-    return upsstatus_to_string(uint16_t(atoi(status.c_str())));
-}
-
 
 } // namespace shared

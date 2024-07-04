@@ -27,7 +27,6 @@ etn_target(static ${PROJECT_NAME}-lib
         fty-cmake-rest
         fty-utils
         cidr
-        magic
         cxxtools
         tntnet
         tntdb

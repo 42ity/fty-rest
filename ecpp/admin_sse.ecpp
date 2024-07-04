@@ -33,7 +33,6 @@
 #include "web/src/sse.h"
 #include "shared/utils.h"
 #include "shared/utilspp.h"
-#include "cleanup.h"
 
 </%pre>
 <%request scope="global">

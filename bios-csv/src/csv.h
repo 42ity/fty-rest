@@ -43,11 +43,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
+#include <cxxtools/serializationinfo.h>
 #include <cstdint>
-#include <cxxtools/csvdeserializer.h>
 #include <map>
-#include <string>
 #include <vector>
+#include <string>
 
 namespace shared {
 

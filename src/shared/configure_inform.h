@@ -24,14 +24,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #pragma once
 
-#include "db/dbhelpers.h"
 #include <fty_common.h>
 #include <fty_common_db.h>
 #include <string>
 #include <vector>
 
-void send_configure(
-    const std::vector<std::pair<db_a_elmnt_t, persist::asset_operation>>& rows, const std::string& agent_name);
+void send_configure(const std::vector<std::pair<db_a_elmnt_t, persist::asset_operation>>& rows, const std::string& agent_name);
 
 void send_configure(const db_a_elmnt_t row, persist::asset_operation action_type, const std::string& agent_name);
 

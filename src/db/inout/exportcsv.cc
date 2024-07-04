@@ -26,14 +26,16 @@
 #include "dbtypes.h"
 #include "shared/data.h"
 #include "shared/utilspp.h"
-#include <algorithm>
-#include <cxxtools/csvserializer.h>
-#include <cxxtools/regex.h>
+
 #include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db_asset.h>
 #include <fty_common_db_dbpath.h>
 #include <fty_common_macros.h>
+
+#include <algorithm>
+#include <cxxtools/csvserializer.h>
+#include <cxxtools/regex.h>
 #include <functional>
 #include <iostream>
 #include <tntdb/row.h>
@@ -69,7 +71,9 @@ static int s_update_keytags(tntdb::Connection& conn, const std::vector<std::stri
 // for power links and print it inside the cycle
 //
 // at the same time I don't think this is general enough to be in src/db, so static functions here
+
 typedef std::vector<std::tuple<std::string, std::string, std::string>> power_links_t;
+
 static int s_power_links(tntdb::Connection& conn, a_elmnt_id_t id, power_links_t& out)
 {
     row_cb_f foo = [&out](const tntdb::Row& r) {
@@ -352,7 +356,7 @@ struct Outlet
     bool        group_r;
 };
 
-std::string getOutletNumber(const std::string& extAttributeName)
+static std::string getOutletNumber(const std::string& extAttributeName)
 {
     auto        dot1    = extAttributeName.find_first_of(".");
     std::string oNumber = extAttributeName.substr(dot1 + 1);

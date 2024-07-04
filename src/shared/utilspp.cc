@@ -18,13 +18,14 @@
  *
  */
 
+#include "shared/utilspp.h"
+
 #include <sstream>
 #include <limits>
 #include <cmath>
 #include <algorithm>
 #include <fty_log.h>
 #include <fty_common.h>
-#include "shared/utilspp.h"
 
 //Initilialize the logger for tntnet process
 int setFtylog()

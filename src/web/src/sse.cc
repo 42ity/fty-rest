@@ -41,14 +41,9 @@ Sse::Sse()
 
 Sse::~Sse()
 {
-  if (_clientMlm)
-  {
-    mlm_client_destroy(&_clientMlm);
-  }
-  if (_poller)
-  {
-    zpoller_destroy(&_poller);
-  }
+  _pipe = NULL;
+  zpoller_destroy(&_poller);
+  mlm_client_destroy(&_clientMlm);
 }
 
 std::string Sse::connectMalamute()
@@ -65,7 +60,7 @@ std::string Sse::connectMalamute()
   log_debug("malamute client name = '%s'.", client_name.c_str());
 
   int rv = mlm_client_connect(_clientMlm, MLM_ENDPOINT, 1000, client_name.c_str());
-  if (rv == -1)
+  if (rv != 0)
   {
     log_fatal("mlm_client_connect (endpoint = '%s', timeout = '%" PRIu32"', address = '%s') failed.",
                  MLM_ENDPOINT, 1000, client_name.c_str());
@@ -86,7 +81,7 @@ std::string Sse::connectMalamute()
     return TRANSLATE_ME ("zpoller_new() failed.");
   }
 
-  return std::string("");
+  return "";
 }
 
 int Sse::consumeStream(std::string stream, std::string pattern)
@@ -104,6 +99,9 @@ long int Sse::checkTokenValidity()
   if (BiosProfile::Anonymous == tokens::get_instance()->verify_token(_token, &tme, &uid, &gid, &user_name))
   {
     log_info("sse : Token revoked or expired");
+    if (user_name) {
+      free (user_name);
+    }
     return -1;
   }
   if (user_name) {
@@ -140,7 +138,6 @@ zmsg_t * Sse::getMessageFromMlm()
 
 std::string Sse::loadAssetFromDatacenter()
 {
-
   std::map<std::string, int> assets;
   std::map<std::string, int> assetsWithNoLocation;
 
@@ -378,7 +375,7 @@ std::string Sse::changeFtyProtoAsset2Json(fty_proto_t *asset)
     std::string jsonPayload = "";
     if (json.empty())
     {
-      jsonPayload = getJsonAsset(_clientMlm, elemId);
+      jsonPayload = getJsonAsset(elemId);
     }
 
     if (!jsonPayload.empty())

@@ -33,9 +33,11 @@
 #include <fty_common_rest_helpers.h>
 #include <fty_common_db_dbpath.h>
 #include <fty_common_db_asset.h>
+#include <fty_common_asset_types.h>
 #include <fty_common_macros.h>
+
 #include "shared/utilspp.h"
-#include "db/inout.h"
+#include "dbtypes.h"
 
 int
     assets_in_count_container(

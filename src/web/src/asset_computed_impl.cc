@@ -19,6 +19,9 @@
  */
 
 #include "web/src/asset_computed_impl.h"
+#include "shared/utils.h"
+#include "dbtypes.h"
+
 #include <functional>
 #include <tntdb/connection.h>
 #include <tntdb/row.h>
@@ -27,11 +30,7 @@
 #include <fty_common_db_dbpath.h>
 #include <fty_common_db_asset.h>
 
-#include "shared/utils.h"
-#include "dbtypes.h"
-
-static int
-s_get_devices_usize(
+static int s_get_devices_usize(
     tntdb::Connection &conn,
     std::set<a_elmnt_id_t> &elements )
 {
@@ -97,8 +96,7 @@ int free_u_size( a_elmnt_id_t elementId)
     }
 }
 
-static uint32_t
-s_select_outlet_count(
+static uint32_t s_select_outlet_count(
         tntdb::Connection &conn,
         a_elmnt_id_t id)
 {
@@ -125,8 +123,7 @@ s_select_outlet_count(
     return string_to_uint32(foo.c_str());
 }
 
-int
-rack_outlets_available(
+int rack_outlets_available(
         uint32_t elementId,
         std::map<std::string, int> &res)
 {

@@ -286,7 +286,7 @@ db_reply_t asset_manager::delete_item(uint32_t id, db_a_elmnt_t& element_info)
             case persist::asset_type::DEVICE: {
                 if (basic_info.item.status == "active") {
                     // we need device JSON in order to delete active device
-                    std::string asset_json = getJsonAsset(NULL, id);
+                    std::string asset_json = getJsonAsset(id);
                     ret                    = persist::delete_device(conn, id, asset_json);
                 } else {
                     ret = persist::delete_device(conn, id);
@@ -325,8 +325,8 @@ struct CheckException : public std::runtime_error
     {
     }
 
-    uint32_t   id;
-    int        errType;
+    uint32_t   id{0};
+    int        errType{0};
     db_err_nos errSubType;
 };
 
@@ -415,7 +415,7 @@ static db_reply_t deleteAsset(tntdb::Connection& conn, const ElementInfo& item)
             case persist::asset_type::DEVICE:
                 if (item.el.status == "active") {
                     // we need device JSON in order to delete active device
-                    std::string asset_json = getJsonAsset(nullptr, item.el.id);
+                    std::string asset_json = getJsonAsset(item.el.id);
                     return persist::delete_device(conn, item.el.id, asset_json);
                 }
                 return persist::delete_device(conn, item.el.id);

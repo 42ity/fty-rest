@@ -20,6 +20,7 @@
 
 #include "db/agentstate/agentstate.h"
 #include "shared/utils.h"
+
 #include <fty_log.h>
 #include <fty_common.h>
 #include <fty_common_db_dbpath.h>
@@ -63,7 +64,7 @@ static int update_agent_info(
 
 int save_agent_info(tntdb::Connection& conn, const std::string& agent_name, const std::string& data)
 {
-    uint16_t rows;
+    uint16_t rows = 0;
 
     return update_agent_info(conn, agent_name, data.c_str(), data.size(), rows);
 }

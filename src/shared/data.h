@@ -25,7 +25,6 @@
 /// @brief Not yet documented file
 #pragma once
 
-#include "db/dbhelpers.h"
 #include <fty_common_asset_types.h>
 #include <fty_common_db_asset.h>
 #include <map>
