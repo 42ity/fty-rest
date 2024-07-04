@@ -10,12 +10,14 @@ set(EXE_NAME "bios-csv")
 # Build exe
 etn_target(exe ${EXE_NAME}
     SOURCES
-        bios-csv.cc
+        src/bios-csv.cc
+        src/csv.h
+        src/csv.cc
     INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/../src
     USES
         ${PROJECT_NAME}-lib
 )
 
-# Install usr/libexec/fty-rest/bios-csv
+# Install exe in usr/libexec/fty-rest/bios-csv
 install(PROGRAMS ${PROJECT_BINARY_DIR}/bios-csv/${EXE_NAME} DESTINATION ${CMAKE_INSTALL_FULL_LIBEXECDIR}/${PROJECT_NAME_HYPHEN})
