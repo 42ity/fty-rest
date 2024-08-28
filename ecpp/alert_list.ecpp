@@ -354,10 +354,18 @@ if (streq (part, "LIST")) {
 %       continue;
 %   }
 %   if ((!checked_asset.empty () && desired_elements.find (fty_proto_name (decoded)) == desired_elements.end ())) {
-%       log_debug ("skipping due to element_src '%s' not being in the list", fty_proto_name (decoded));
-%       fty_proto_destroy (&decoded);
-%       frame = zmsg_pop (recv_msg);
-%       continue;
+%       // ** don't skip connectors (ex.: vmware.vcenter.connector-16)
+%       // there is no datacenter owner defined for these assets
+%       bool skip{true};
+%       if (strstr(fty_proto_name (decoded), ".connector-")) {
+%           skip = false;
+%       }
+%       if (skip) {
+%           log_debug ("skipping due to element_src '%s' not being in the list", fty_proto_name (decoded));
+%           fty_proto_destroy (&decoded);
+%           frame = zmsg_pop (recv_msg);
+%           continue;
+%       }
 %   }
 %   if (!is_state_included (checked_state.c_str (), fty_proto_state (decoded))) {
 %       log_debug ("skipping due to state '%s' not being requested", fty_proto_state (decoded));
