@@ -55,6 +55,8 @@ etn_target(shared ${PROJECT_NAME}
         ${PROJECT_NAME}-lib
 )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+
 # Get the ecpp
 file(GLOB ECPP_FILES
   ecpp/*.ecpp
