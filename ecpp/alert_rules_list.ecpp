@@ -132,7 +132,7 @@ bool database_ready;
     static const char* COMMAND = "LIST2"; // LIST version 2
 
     std::string jsonOutput{"["}; // alerts json array (start of)
-    bool first{true}; // alert in jsonOutput
+    bool firstOutput{true}; // alert in jsonOutput
 
     // request agents, append jsonOutput with alarms
     for (const auto& destination : destinations)
@@ -218,7 +218,6 @@ bool database_ready;
 
             log_debug ("Collecting alarms from %s...", destination.c_str());
 
-            const std::string RULE_CAT_INTERNAL{"CAT_INTERNAL"};
             const std::string RULE_CAT_AUTOMATION{"CAT_AUTOMATION"};
 
             // loop on alert rules
@@ -239,15 +238,15 @@ bool database_ready;
                         for (const auto& it : rule_cat) {
                             std::string cat;
                             it >>= cat;
-                            if ((cat == RULE_CAT_AUTOMATION) || (cat == RULE_CAT_INTERNAL)) {
+                            if (cat == RULE_CAT_AUTOMATION) {
                                 regular = false;
                                 break;
                             }
                         }
                     }
                     if (regular) { // keep it in jsonOutput
-                        jsonOutput += std::string{(first ? "" : ",")} + JSON::writeToString(si, false);
-                        first = false;
+                        jsonOutput += std::string{(firstOutput ? "" : ",")} + JSON::writeToString(si, false);
+                        firstOutput = false;
                     }
                 }
                 catch (const std::exception& e) {
