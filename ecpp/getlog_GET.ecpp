@@ -119,9 +119,10 @@ int exec_journalctl_command (const std::string& logfile, bool truncate = true, b
         cmd.append(" --since \"3 hours ago\" --until \"now\"");
     }
     cmd.append(" > ").append(logfile);
+    cmd.insert(0, "sudo "); // IPMPROG-9778: www-data needs escalation
 
     log_debug("running journalctl command to generate %s", logfile.c_str());
-    int r = system(cmd.c_str());
+    int r = system(cmd.c_str()); // see WIFSIGNALED, WTERMSIG macros
     if (r != 0) log_error("journalctl command returns %d ", r);
     else log_debug("journalctl command returns %d ", r);
 
