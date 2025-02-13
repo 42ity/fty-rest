@@ -190,6 +190,9 @@ ETN_GRAPHITE_BASENAME = ""
 ETN_GRAPHITE_ACTIVATE = ""
     filepath = "/etc/etn-graphite/etn-graphite.cfg"
     treepath = "configuration/activated"
+ETN_GRAPHITE_ADD_TAGS = ""
+    filepath = "/etc/etn-graphite/etn-graphite.cfg"
+    treepath = "configuration/tags"
 
 # etn-automation
 ETN_AUTOMATION_NOTIF_EMAIL = ""
