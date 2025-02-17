@@ -355,7 +355,7 @@ void operator<<=(cxxtools::SerializationInfo& si, zconfig_t* root)
                     si.setValue(value);
                 }
             }
-            catch (std::invalid_argument& e) {
+            catch (...) {
                 si.setValue(value);
             }
         }
