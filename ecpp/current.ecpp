@@ -220,7 +220,8 @@ bool database_ready;
                 "status.battery",
                 "status.battery.charger",
                 "battery.alarm.code",
-                "power.status"
+                "power.status",
+                "outage",
             };
 
             for (auto &metric : metrics) {
