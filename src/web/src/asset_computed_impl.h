@@ -21,10 +21,12 @@
 /// @file  asset_computed_impl.h
 /// @author Tomas Halman <TomasHalman@Eaton.com>
 /// @brief Helper functions for computed values for assets
+
 #pragma once
 
 #include <map>
 #include <string>
+#include <cstdint>
 
 int free_u_size(uint32_t elementId);
 
