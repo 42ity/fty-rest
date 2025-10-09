@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <sstream>
 #include <map>
 #include <string>
+#include <cstdint>
 
 namespace utils::math {
 
