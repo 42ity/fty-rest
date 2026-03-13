@@ -7,7 +7,8 @@ Currently highly in progress and supports only time command.
 Requirements
 ------------
 
-Requires 'tntnet', 'libsodium', 'cxxtools', 'libsasl2' and 'saslauthd'.
+Requires : see CMakeList.txt and debian/control files.
+
 To be able to set date/time, also needs properly setup 'sudo' (example
 configuration provided in the project documentation).
 
