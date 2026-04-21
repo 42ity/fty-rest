@@ -120,7 +120,7 @@ bool database_ready;
 
         for ( size_t D = 0 ; D < DCNames.size(); D++ )
         {
-            int r = mlm_client_sendtox (client, "uptime", "UPTIME", "UPTIME", DCNames[D].c_str(), NULL);
+            int r = mlm_client_sendtox (client, "fty-kpi-power-uptime", "REQUEST", "UPTIME", DCNames[D].c_str(), NULL);
             if (r != 0) {
                 throw std::runtime_error ("Can't send the request");
             }
