@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cxxtools/regex.h>
 #include "shared/utils.h"
+#include <fty_log.h>
 #include <fty_common_macros.h>
 #include <fty_common_rest_helpers.h>
 #include <fty_common_rest_audit_log.h>
@@ -60,14 +61,12 @@ UserInfo user;
     // GET: We only get the first line, and extract <value>
     // PUT: We build the 3 lines using the single provided value
 
-    std::string checked_http_proxy;
+    const std::string PATH("/etc/default/fty-proxy");
+
     std::string proxy_line;
-    std::string path("/etc/default/fty-proxy");
 
     // Process PUT first, so that we always read back the current content
     if (request.getMethod() == "PUT") {
-        std::string proxy_file_content;
-
         cxxtools::SerializationInfo si;
         try {
             JSON::readFromString(request.getBody(), si);
@@ -90,7 +89,7 @@ UserInfo user;
             }
         }
 
-        std::ofstream out_file (path);
+        std::ofstream out_file (PATH);
         if (!out_file) {
             std::string err {"open HTTP proxy file for writing"};
             log_error("%s", err.c_str());
@@ -99,6 +98,7 @@ UserInfo user;
         }
 
         // Build content
+        std::string proxy_file_content;
         proxy_file_content = "http_proxy=\"" + proxy_line + "\"\n";
         proxy_file_content += "https_proxy=\"" + proxy_line + "\"\n";
         proxy_file_content += "ftp_proxy=\"" + proxy_line + "\"\n";
@@ -110,30 +110,29 @@ UserInfo user;
         // Send message to licensing agent so that it takes into account new proxy settings to react as quickly
         // as possible.
 
-        const char *AGENT_ETN_LICENSING_ADDRESS = "etn-licensing";
-        const char *TEST_ONLINE_FORCE_COMMAND = "TEST_ONLINE_FORCE";
-
         // connect to mlm client
         auto client = mlm_pool.get();
         if (!client) {
             std::string err {"mlm_pool.get () failed."};
-            log_fatal(err.c_str());
+            log_fatal("%s", err.c_str());
             log_error_audit("Request CREATE OR UPDATE http_proxy %s FAILED", proxy_line.c_str());
             http_die("internal-error", TRANSLATE_ME(err.c_str()).c_str());
         }
+
+        const char *AGENT_ETN_LICENSING_ADDRESS = "etn-licensing";
+        const char *TEST_ONLINE_FORCE_COMMAND = "TEST_ONLINE_FORCE";
 
         // send message
         ZuuidGuard uuid(zuuid_new());
         zmsg_t *send = zmsg_new();
         zmsg_addstr(send, "REQUEST");
         zmsg_addstr(send, zuuid_str_canonical(uuid));
-        zmsg_addstr(send, "TEST_ONLINE_FORCE");
+        zmsg_addstr(send, TEST_ONLINE_FORCE_COMMAND);
 
         int rv = client->sendto(AGENT_ETN_LICENSING_ADDRESS, TEST_ONLINE_FORCE_COMMAND, 10, &send);
         zmsg_destroy(&send);
 
-        if (rv == -1)
-        {
+        if (rv != 0) {
             log_fatal("Error: client->sendto(address = '%s', subject = '%s', timeout = '%d') failed.",
                 AGENT_ETN_LICENSING_ADDRESS, TEST_ONLINE_FORCE_COMMAND, 10);
             std::string err = TRANSLATE_ME("client->sendto() failed");
@@ -142,8 +141,7 @@ UserInfo user;
         }
 
         ZmsgGuard receive(client->recv(zuuid_str_canonical(uuid) , 10));
-        if (!receive)
-        {
+        if (!receive) {
             std::string err {"Error: receive timeout client"};
             log_error("%s", err.c_str());
             log_error_audit("Request CREATE OR UPDATE http_proxy %s FAILED", proxy_line.c_str());
@@ -152,8 +150,7 @@ UserInfo user;
 
         ZstrGuard err_code(zmsg_popstr(receive));
         const char *msg_subject = client->subject();
-        if (!streq(msg_subject, TEST_ONLINE_FORCE_COMMAND))
-        {
+        if (!streq(msg_subject, TEST_ONLINE_FORCE_COMMAND)) {
             log_fatal("Error: message recieved with invalid subject.");
             std::string err = TRANSLATE_ME("client->recv() invalid message subject");
             log_error_audit("Request CREATE OR UPDATE http_proxy %s FAILED", proxy_line.c_str());
@@ -161,7 +158,7 @@ UserInfo user;
         }
     }
 
-    std::ifstream in_file (path);
+    std::ifstream in_file (PATH);
     if (!in_file) {
         std::string err =  TRANSLATE_ME ("Cannot open HTTP proxy file for reading");
         if (request.getMethod () == "PUT") {
@@ -173,6 +170,7 @@ UserInfo user;
     getline (in_file, proxy_line);
     in_file.close ();
 
+    std::string checked_http_proxy;
     if (!proxy_line.empty ()) {
         checked_http_proxy = proxy_line.substr (proxy_line.find ("=") + 1);
         checked_http_proxy.erase (std::remove (checked_http_proxy.begin (), checked_http_proxy.end (), '"'), checked_http_proxy.end ());
