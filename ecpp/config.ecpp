@@ -37,6 +37,8 @@
 #include <fty_common_rest_audit_log.h>
 #include <fty_common_quote_codec.h>
 #include <fty_common_json.h>
+#include <fty/string-utils.h>
+#include <fty/process.h>
 
 /**
  * FIXME: Move that file into the file-system and maybe split it per components.
@@ -44,7 +46,7 @@
  * fty-rest doesn't seem to have any way to simply drop files into the
  * file-system, keep this in memory until that can be reworked.
  */
-static const char* CONF_MAPPING_STR = R"xxx(
+static const char* CONF_MAPPING_STR = R"EOS(
 # FTY
 
 # compatibility
@@ -172,6 +174,11 @@ FTY_SESSION_TIMEOUT_LEASE = ""
     filepath = "/etc/fty/fty-session.cfg"
     treepath = "timeout/lease_time"
 
+# fty-alert-engine
+FTY_ALERT_ENGINE_SETTINGS_VOLTAGE_STANDARD = ""
+    filepath = "/etc/fty-alert-engine/fty-alert-engine.cfg"
+    treepath = "settings/voltage_standard"
+
 # IPM2
 
 # etn-graphite
@@ -203,7 +210,7 @@ ETN_AUTOMATION_NOTIF_EMAIL = ""
 BIOS_SERVER_TIMEZONE = ""
     filepath = "/etc/fty/fty-timezone.cfg"
     treepath = "server/timezone"
-)xxx";
+)EOS";
 
 // JSON <-> ZPL helpers
 
@@ -403,6 +410,12 @@ cxxtools::SerializationInfo loadConfig(const ConfigMap& configMap, const std::st
         zconfig_put(root, treepath.c_str(), "");
         child = zconfig_locate(root, treepath.c_str());
     }
+    else if (!child && (key == "FTY_ALERT_ENGINE_SETTINGS_VOLTAGE_STANDARD")) {
+        // Workaround when setting values does not exist with old configuration file (version < 3.1.0)
+        // In this case return the EU default
+        zconfig_put(root, treepath.c_str(), "EUROPE");
+        child = zconfig_locate(root, treepath.c_str());
+    }
 
     if (!child) {
         zconfig_destroy(&root);
@@ -418,9 +431,22 @@ cxxtools::SerializationInfo loadConfig(const ConfigMap& configMap, const std::st
 
 void saveConfig(const ConfigMap& configMap, const std::string& key, const cxxtools::SerializationInfo& in)
 {
-    auto it = configMap.find(key);
+    auto it = configMap.find(key); //ConfigEntry <filepath,treepath>
     if (it == configMap.end()) {
         bios_throw("element-not-found", key.c_str());
+    }
+
+    // sanity check
+    if (key == "FTY_ALERT_ENGINE_SETTINGS_VOLTAGE_STANDARD") {
+        std::string value;
+        in >>= value;
+        std::transform(value.begin(), value.end(), value.begin(), ::toupper);
+
+        static const std::string strVS{"EUROPE, USA, AUSTRALIA, EUROPE_208"};
+        static const auto allVS{fty::split(strVS, ",", fty::SplitOption::Trim)};
+        if (std::find(allVS.begin(), allVS.end(), value) == allVS.end()) { // rejected
+            bios_throw("request-param-bad", key.c_str(), value.c_str(), strVS.c_str());
+        }
     }
 
     zconfig_t* root = zconfig_load(it->second.first.c_str());
@@ -531,8 +557,35 @@ UserInfo user;
             }
 
             std::lock_guard<std::mutex> lock (config_mux);
+            bool restart_alert_engine{false};
+
             for (const auto& si : request_doc) {
-                saveConfig(mapping, si.name(), si);
+                std::string key = si.name();
+                saveConfig(mapping, key, si);
+
+                if (key.find("FTY_ALERT_ENGINE_SETTINGS") == 0) {
+                    restart_alert_engine = true;
+                }
+            }
+
+            if (restart_alert_engine) { // required to take changes into account
+                const char* COMMAND = "systemctl";
+                const char* ACTION = "restart";
+                const char* SERVICE = "fty-alert-engine";
+                const int TIMEOUT_MS = 5000;
+
+                fty::Process proc("sudo", {COMMAND, ACTION, SERVICE});
+                proc.run();
+                auto ret = proc.wait(TIMEOUT_MS);
+                if (!ret) {
+                    log_error("%s %s %s failed (%s, TIMEOUT_MS: %d)", COMMAND, ACTION, SERVICE, ret.error().c_str(), TIMEOUT_MS);
+                }
+                else if (*ret != 0) {
+                    log_warning("%s %s %s failed (ret: %d, TIMEOUT_MS: %d)", COMMAND, ACTION, SERVICE, *ret, TIMEOUT_MS);
+                }
+                else {
+                    log_info("%s %s %s success", COMMAND, ACTION, SERVICE);
+                }
             }
 
             reply.out() << "{}";
