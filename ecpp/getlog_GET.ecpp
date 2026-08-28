@@ -431,10 +431,10 @@ UserInfo user;
         if (baseName_isArchive) {
             // built a tar archive (unique logfile) owning a set of logfiles
 
-            const std::string targetdir = "/tmp/IPM2-logs";
+            const std::string targetdir = "/tmp/logs";
             const std::string mkdir("mkdir -p " + targetdir);
             const std::string rmdir("rm -fr " + targetdir);
-            const std::string tar("/bin/tar cf " + baseName_logfile + " -C /tmp/ IPM2-logs");
+            const std::string tar("/bin/tar cf " + baseName_logfile + " -C /tmp/ logs");
 
             // pre cleanup
             remove(baseName_logfile.c_str());
