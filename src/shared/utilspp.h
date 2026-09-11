@@ -27,35 +27,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <string>
 #include <cstdint>
 
-namespace utils::math {
-
-/// Format double @a number into std::string @a result with floating point precision given by @a precision
-/// @todo Decide if noexcept (not throwing, return int) or follow a style of letting the exception bubble up
-void dtos(double number, std::streamsize precision, std::string& result);
-
-/// Take string encoded double value and if possible return representation: integer x 10^scale
-bool stobiosf(const std::string& string, int32_t& integer, int8_t& scale);
-
-} // namespace utils::math
-
 namespace utils {
 
 /// strip whitespaces from input string
 /// @param[in] _str is a string to strip
 /// @return new allocated string with whitespaces deleted
-std::string strip(const std::string& _str);
-
-/// universal escaping function
-/// @param[in] in is input string to be escaped
-/// @param[in] escape_chars is list of characters to be escaped
-/// @todo TODO: escaping of backslash itself is not implemented and if present in escape_chars, nothing is escaped
-/// @return escaped string
-std::string escape(const std::string& in, const std::string& escape_chars);
-
-/// escape special characters for SQL (_ and %)
-/// @param[in] in is input string to be escaped
-/// @return escaped string
-std::string sql_escape(const std::string& in);
+std::string strip(const std::string& str);
 
 /// Join keys of std::map using given separator
 ///
@@ -84,7 +61,7 @@ std::string join_keys_map(const std::map<K, V>& t, const std::string& separator)
 
 /// NULL encountered sooner than length items terminates the concatenation.
 /// @return Concatenated string or empty on error
-std::string join(const char** str_arr, uint32_t length, const char* separator);
+std::string join(const char** str_arr, size_t length, const char* separator);
 
 /// Version of join(const char **str_arr, uint32_t length, const char *separator)" that works until NULL terminating
 /// item is encountered
