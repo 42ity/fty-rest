@@ -27,182 +27,44 @@
 #include <fty_log.h>
 #include <fty_common.h>
 
-//Initilialize the logger for tntnet process
-int setFtylog()
+// Initialize the logger for tntnet process
+static int setFtylog()
 {
-  ManageFtyLog::setInstanceFtylog("tntnet","/etc/fty/wwwlog.cfg");
-  return 1;
+    ManageFtyLog::setInstanceFtylog("tntnet", "/etc/fty/wwwlog.cfg");
+    return 1;
 }
 
-static int _ftylog=setFtylog();
+static int _ftylog = setFtylog();
 
 namespace utils {
 
-namespace math {
-
-void dtos (double number, std::streamsize precision, std::string& result) {
-    std::ostringstream stream;
-    stream.precision (precision);
-    stream << std::fixed;
-
-    stream << number;
-    result.assign (stream.str ());
-}
-
-bool
-stobiosf (const std::string& string, int32_t& integer, int8_t& scale) {
-    // Note: Shall performance __really__ become an issue, consider
-    // http://stackoverflow.com/questions/1205506/calculating-a-round-order-of-magnitude
-    if (string.empty ())
-        return false;
-
-    // See if string is encoded double
-    size_t pos = 0;
-    double temp = 0;
-    try {
-        temp = std::stod (string, &pos);
-    }
-    catch (...) {
-        return false;
-    }
-    if (pos != string.size () || std::isnan (temp) || std::isinf (temp)) {
-        return false;
-    }
-
-    // parse out the string
-    std::string integer_string, fraction_string;
-    int32_t integer_part = 0, fraction_part = 0;
-    std::string::size_type comma = string.find (".");
-    bool minus = false;
-
-    integer_string = string.substr (0, comma);
-    try {
-        integer_part = std::stoi (integer_string);
-    }
-    catch (...) {
-        return false;
-    }
-    if (integer_part < 0)
-        minus = true;
-    if (comma ==  std::string::npos) {
-        scale = 0;
-        integer = integer_part;
-        return true;
-    }
-    fraction_string = string.substr (comma+1);
-    // strip zeroes from right
-    while (!fraction_string.empty ()  && fraction_string.back () == 48) {
-        fraction_string.resize (fraction_string.size () - 1);
-    }
-    if (fraction_string.empty ()) {
-        scale = 0;
-        integer = integer_part;
-        return true;
-    }
-    std::string::size_type fraction_size = fraction_string.size ();
-    try {
-        fraction_part = std::stoi (fraction_string);
-    }
-    catch (...) {
-        return false;
-    }
-
-    int64_t sum = integer_part;
-    for (std::string::size_type i = 0; i < fraction_size; i++) {
-        sum = sum * 10;
-    }
-    if (minus)
-        sum = sum - fraction_part;
-    else
-        sum = sum + fraction_part;
-
-    if ( sum > std::numeric_limits<int32_t>::max ()) {
-        return false;
-    }
-    if (fraction_size - 1 > std::numeric_limits<int8_t>::max ()) {
-        return false;
-    }
-    scale = int8_t(-fraction_size);
-    integer = static_cast <int32_t> (sum);
-    return true;
-}
-
-
-} // namespace utils::math
-
-std::string
-strip (const std::string &_str) {
-    std::string str {_str};
+std::string strip (const std::string& strIn)
+{
+    std::string str{strIn};
     str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
     return str;
 }
 
-std::string escape (const std::string& in, const std::string& escape_chars) {
-
-    std::stringstream s;
-
-    if (in.empty() || escape_chars.empty())
-        return in;
-
-    if (in.size() == 1 && in.find_first_of(escape_chars) != std::string::npos)
-        return "\\" + in;
-
-    if (escape_chars.find('\\') != std::string::npos)
-        return in;
-
-    if (in.find_first_of(escape_chars) == std::string::npos) {
-        return in;
-    }
-
-    size_t i = 0;
-    while (i < in.size()) {
-        if (in[i] == '\\') {
-            s << in[i] << in[i+1];
-            i++;
-        }
-        else if (in.substr(i, i+1).find_first_of(escape_chars) == 0) {
-            s << '\\' << in[i];
-        }
-        else {
-            s << in[i];
-        }
-        i++;
-    }
-
-    return s.str();
-}
-
-std::string sql_escape(const std::string& in) {
-    return escape(in, "_%");
-}
-
-std::string
-join (const char **str_arr, uint32_t length, const char *separator) {
+std::string join (const char **str_arr, size_t length, const char *separator)
+{
     std::string result;
-    if (!str_arr || !*str_arr || !separator)
-        return result;
-    result.append (str_arr[0]);
-    for (uint32_t i = 1; i < length; ++i) {
-        if (!str_arr[i])
-            return result;
-        result.append (separator).append (str_arr[i]);
+
+    if (str_arr && (*str_arr) && separator) {
+        result.append (str_arr[0]);
+
+        size_t i = 1;
+        while ((i < length) && str_arr[i]) {
+            result.append (separator).append (str_arr[i]);
+            ++i;
+        }
     }
+
     return result;
 }
 
-std::string
-join (const char **str_arr, const char *separator) {
-    std::string result;
-    if (!str_arr || !*str_arr || !separator)
-        return result;
-    result.append (str_arr[0]);
-    uint32_t i = 1;
-    while (true) {
-        if (!str_arr[i])
-            return result;
-        result.append (separator).append (str_arr[i]);
-        ++i;
-    }
+std::string join (const char **str_arr, const char *separator)
+{
+    return join(str_arr, ((str_arr && (*str_arr)) ? strlen(*str_arr) : 0), separator);
 }
 
 } // namespace utils
