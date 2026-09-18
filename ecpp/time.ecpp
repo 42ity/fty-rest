@@ -35,6 +35,7 @@
 #include <fty_common_macros.h>
 #include <fty_common_json.h>
 #include <time.h>
+#include <unistd.h> //sleep
 #include <fty_common_rest_audit_log.h>
 #include <fty/process.h>
 </%pre>
@@ -45,9 +46,10 @@ UserInfo user;
 
     // check user permissions
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
-            {BiosProfile::Dashboard, "R"},
-            {BiosProfile::Admin,     "RE"}
-            };
+        {BiosProfile::Dashboard, "R"},
+        {BiosProfile::Admin,     "RE"}
+    };
+
     std::string audit_msg;
     if (request.getMethod () == "POST")
         audit_msg = std::string ("Request CREATE time FAILED");
@@ -118,15 +120,12 @@ UserInfo user;
 
     const bool sudoer = (request.getMethod () != "GET"); // augtool require sudo privileges?
     augtool* augeas = nullptr;
-    int counter = 0;
 
-    while (!augeas)
-    {
+    int counter = 0;
+    while (!augeas && (counter < 10)) {
         augeas = augtool::get_instance (sudoer);
+        if (!augeas && (counter > 5)) { sleep(1); }
         counter++;
-        if (counter >= 10) {
-            break;
-        }
     }
 
     if (!augeas) {
@@ -140,6 +139,7 @@ UserInfo user;
     const std::string ntpServiceName{"ntpsec"}; // VS "ntp"
 
     if (request.isMethodPOST ()) {
+        unsigned int awaitSec = 0;
 
         if (!checked_time.empty ()) {
             if (auto ret = fty::Process::run("sudo", {"/bin/systemctl", "stop", ntpServiceName}); !ret || *ret ) {
@@ -184,6 +184,8 @@ UserInfo user;
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
+
+            awaitSec = 3;
         }
 
         if (!checked_ntp.empty ()) {
@@ -205,8 +207,16 @@ UserInfo user;
                 log_error_audit ("Request CREATE time %s %s FAILED", checked_time.c_str (), checked_ntp.c_str ());
                 http_die ("internal-error", err.c_str ());
             }
+
+            awaitSec = 3;
         }
-    }
+
+        if (awaitSec > 0) {
+            // We are giving things time to happen
+            log_debug("Awaiting %d sec...", awaitSec);
+            sleep(awaitSec);
+        }
+    }//POST
 
     char time_out[32];
     memset(time_out, 0, sizeof(time_out));
@@ -222,8 +232,8 @@ UserInfo user;
 
     if (request.getMethod () == "POST")
         log_info_audit ("Request CREATE time %s %s SUCCESS", checked_time.c_str (), checked_ntp.c_str ());
+
+    const std::string response = "{ \"time\": \"" + std::string{time_out} +"\", \"ntp\": \"" + ntp_out + "\" }";
+    reply.out () << response;
+
 </%cpp>
-{
-    <$$ utils::json::jsonify ("time", time_out) $>,
-    <$$ utils::json::jsonify ("ntp", ntp_out) $>
-}

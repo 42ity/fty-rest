@@ -37,33 +37,24 @@
 #include <fty/process.h>
 #include <fty/string-utils.h>
 
-bool
-is_GET_operation (const std::string& operation)
+static bool is_GET_operation (const std::string& operation)
 {
-    if (operation.compare ("list") == 0
-        || operation.compare ("status") == 0)
-    {
-        return true;
-    }
-    return false;
+    return (operation == "list")
+        || (operation == "status")
+    ;
 }
 
-bool
-is_POST_operation (const std::string& operation)
+static bool is_POST_operation (const std::string& operation)
 {
-    if (operation.compare ("start") == 0
-        || operation.compare ("stop") == 0
-        || operation.compare ("restart") == 0
-        || operation.compare ("enable") == 0
-        || operation.compare ("disable") == 0)
-    {
-        return true;
-    }
-    return false;
+    return (operation == "start")
+        || (operation == "stop")
+        || (operation == "restart")
+        || (operation == "enable")
+        || (operation == "disable")
+    ;
 }
 
-bool
-systemctl_service_status (const std::string& service_name, std::string& load, std::string& active, std::string& unit_file, std::string& sub)
+static bool systemctl_service_status (const std::string& service_name, std::string& load, std::string& active, std::string& unit_file, std::string& sub)
 {
     fty::Process proc("sudo", {"systemctl", "show", service_name,
                        "-p", "LoadState", "-p", "ActiveState", "-p", "UnitFileState", "-p", "SubState"});
@@ -89,20 +80,12 @@ systemctl_service_status (const std::string& service_name, std::string& load, st
             return false;
         }
         std::string key = item.substr (0, found);
-        std::string value  = item.substr (found + 1, std::string::npos);
+        std::string value = item.substr (found + 1, std::string::npos);
 
-        if (key.compare ("LoadState") == 0) {
-            load = value;
-        }
-        else if (key.compare ("ActiveState") == 0) {
-            active = value;
-        }
-        else if (key.compare ("UnitFileState") == 0) {
-            unit_file = value;
-        }
-        else if (key.compare ("SubState") == 0) {
-            sub = value;
-        }
+             if (key == "LoadState")     { load = value; }
+        else if (key == "ActiveState")   { active = value; }
+        else if (key == "UnitFileState") { unit_file = value; }
+        else if (key == "SubState")      { sub = value; }
         else {
             return false;
         }
@@ -116,9 +99,10 @@ UserInfo user;
 <%cpp>
     // check user permissions
     static const std::map <BiosProfile, std::string> PERMISSIONS = {
-            {BiosProfile::Dashboard, "R"},
-            {BiosProfile::Admin,     "RE"}
-            };
+        {BiosProfile::Dashboard, "R"},
+        {BiosProfile::Admin,     "RE"}
+    };
+
     std::string audit_msg;
     if (request.getMethod () == "POST")
         audit_msg = std::string ("Request EXECUTE systemctl FAILED");
@@ -135,6 +119,7 @@ UserInfo user;
     {
         std::string operation = request.getArg ("operation");
         std::transform (operation.begin (), operation.end (), operation.begin (), ::tolower);
+
         if (!is_GET_operation (operation) && !is_POST_operation (operation)) {
             std::string param = TRANSLATE_ME ("operation");
             std::string expected = TRANSLATE_ME ("status/list/enable/disable/start/stop/restart");
@@ -168,12 +153,12 @@ UserInfo user;
     // check service name
     {
         std::string service_name;
+
         if (request.getMethod () == "GET")
         {
             service_name = request.getArg ("service_name");
         }
-        else
-        if (request.getMethod () == "POST")
+        else if (request.getMethod () == "POST")
         {
             if (request.getBody ().empty ()) {
                 std::string msg = TRANSLATE_ME ("Expected json document") + "  { \"service_name\" : \"<service_name>\" }." + TRANSLATE_ME (" Received empty request document.");
@@ -182,6 +167,7 @@ UserInfo user;
                 }
                 http_die ("bad-request-document", msg.c_str ());
             }
+
             try {
                 cxxtools::SerializationInfo si;
                 JSON::readFromString(request.getBody(), si);
@@ -225,7 +211,7 @@ UserInfo user;
             http_die ("request-param-bad", "service_name", service_name.c_str (), expected.c_str ());
         }
 
-        checked_service_name.assign (service_name);
+        checked_service_name = service_name;
     }
     log_info ("checked_service_name: '%s'", checked_service_name.c_str ());
 
@@ -261,8 +247,7 @@ UserInfo user;
         }
         return HTTP_OK;
     }
-    else
-    if (checked_operation == "status") {
+    else if (checked_operation == "status") {
         std::string ActiveState, SubState, LoadState, UnitFileState;
         if (!systemctl_service_status (checked_service_name, LoadState, ActiveState, UnitFileState, SubState)) {
             std::string err =  TRANSLATE_ME ("Executing systemctl failed. Please check logs for more details.");
@@ -321,6 +306,7 @@ UserInfo user;
             }
             http_die ("internal-error", err.c_str ());
         }
+
         std::string message;
         message.assign (
             "{\n"
@@ -332,6 +318,7 @@ UserInfo user;
             "\t}\n"
             "}");
         reply.out () << message;
+
         if (request.getMethod () == "POST") {
             log_info_audit ("Request EXECUTE systemctl %s %s SUCCESS", checked_operation.c_str (), checked_service_name.c_str ());
         }
