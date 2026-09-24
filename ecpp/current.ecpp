@@ -222,6 +222,10 @@ bool database_ready;
                 "battery.alarm.code",
                 "power.status",
                 "outage",
+                "status.input.1.voltage",
+                "status.input.2.voltage",
+                "status.input.1.frequency",
+                "status.input.2.frequency",
             };
 
             for (auto &metric : metrics) {
@@ -242,10 +246,10 @@ bool database_ready;
                     measurements.emplace(std::make_pair(quantity, dvalue));
                 }
                 catch (const std::exception& e) {
-                    log_error ("%s@%s value does not encode a float ('%s'). Defaulting to 0.",
+                    log_error ("%s@%s value does not encode a float ('%s')",
                         quantity.c_str(), asset.item.name.c_str(), value.c_str());
-                    // std::stod has failed, default is 0
-                    measurements.emplace(std::make_pair(quantity, 0.0));
+                    // std::stod has failed, default as str
+                    str_measurements.emplace(std::make_pair(quantity, value));
                 }
             }
         }
